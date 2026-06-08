@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TrackOMatic.Data;
 
 namespace TrackOMatic
 {
@@ -59,7 +60,7 @@ namespace TrackOMatic
             foreach (var hint in RegionToBLockerHint.Values)
             {
                 hint.GBCount.Text = "?";
-                hint.GB.SetImage(new BitmapImage(new Uri("../images/dk64/gb.png", UriKind.Relative)));
+                hint.GB.SetIndex(0);
             }
         }
 
@@ -97,6 +98,21 @@ namespace TrackOMatic
                 imageIndexes[entry.Key] = entry.Value.GB.GetIndex();
             }
             return imageIndexes;
+        }
+
+        public void LoadBLockerInfo(List<BLockerInfo> blockerInfo)
+        {
+            if (blockerInfo == null) return;
+            for (int i = 0; i < blockerInfo.Count; i++)
+            {
+                var blocker = blockerInfo[i];
+                var regionName = Region.LOBBY_ORDER[i];
+                if (!RegionToBLockerHint.TryGetValue(regionName, out var hint)) continue;
+                if (!JSONKeyMappings.SPOILER_BARRIER_TO_BARRIER_ITEM.ContainsKey(blocker.item)) continue;
+                var adjusted_index = (int)JSONKeyMappings.SPOILER_BARRIER_TO_BARRIER_ITEM[blocker.item];
+                hint.GB.SetIndex(adjusted_index);
+                hint.GBCount.Text = blocker.cost.ToString();
+            }
         }
     }
 }
