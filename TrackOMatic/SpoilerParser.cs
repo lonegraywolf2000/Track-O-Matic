@@ -251,7 +251,8 @@ namespace TrackOMatic
                 {
                     if (i < info.helm_order.Count)
                     {
-                        MainWindow.HelmKongs[i].SetIndex(info.helm_order[i]);
+                        //add 1 to account for unknown kong
+                        MainWindow.HelmKongs[i].SetIndex(info.helm_order[i] + 1);
                         MainWindow.HelmKongs[i].Enabled = false;
                         MainWindow.HelmKongs[i].Visibility = Visibility.Visible;
                     }
