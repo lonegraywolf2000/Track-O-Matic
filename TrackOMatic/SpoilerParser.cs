@@ -1,18 +1,19 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
-using System.IO;
-using Microsoft.Win32;
-using System.Linq;
-using Newtonsoft.Json;
-using System.Text;
-using System.Security.Cryptography;
 using System.Windows.Media;
-using System.Text.RegularExpressions;
+using System.Windows.Media.Imaging;
+using TrackOMatic.Data;
 using TrackOMatic.Properties;
-using System.Runtime;
 
 namespace TrackOMatic
 {
@@ -181,8 +182,9 @@ namespace TrackOMatic
             public List<string> starting_moves_not_hintable { get; }
             public int starting_moves_woth_count { get; }
             public List<int> level_order { get; }
+            public List<BLockerInfo> blocker_info { get; }
 
-            public StartingInfo(List<int> krool_order, List<int> helm_order, List<int> starting_kongs, List<string> starting_keys, List<int> level_order, List<string> starting_moves, List<string> starting_moves_not_hintable, int starting_moves_woth_count)
+            public StartingInfo(List<int> krool_order, List<int> helm_order, List<int> starting_kongs, List<string> starting_keys, List<int> level_order, List<string> starting_moves, List<string> starting_moves_not_hintable, int starting_moves_woth_count, List<BLockerInfo> blocker_info)
             {
                 this.krool_order = krool_order;
                 this.helm_order = helm_order;
@@ -192,6 +194,7 @@ namespace TrackOMatic
                 this.starting_moves = starting_moves;
                 this.starting_moves_not_hintable = starting_moves_not_hintable;
                 this.starting_moves_woth_count = starting_moves_woth_count;
+                this.blocker_info = blocker_info;
             }
         }
 
@@ -223,6 +226,7 @@ namespace TrackOMatic
             ReadStartingItemsIntoUI();
             ReadHelmAndKRoolOrder(info);
             ReadLevelOrder(info);
+            MainWindow.BLockerHints.LoadBLockerInfo(info.blocker_info);
         }
 
         private void ReadKongsAndKeys(StartingInfo info)
@@ -247,8 +251,7 @@ namespace TrackOMatic
                 {
                     if (i < info.helm_order.Count)
                     {
-                        var imageName = JSONKeyMappings.KONGS[info.helm_order[i]].ToString().ToLower();
-                        MainWindow.HelmKongs[i].SetImage(new BitmapImage(new Uri("Images/dk64/" + imageName + ".png", UriKind.Relative)));
+                        MainWindow.HelmKongs[i].SetIndex(info.helm_order[i]);
                         MainWindow.HelmKongs[i].Enabled = false;
                         MainWindow.HelmKongs[i].Visibility = Visibility.Visible;
                     }
@@ -265,17 +268,8 @@ namespace TrackOMatic
                     if (i < info.krool_order.Count)
                     {
                         int kroolIndex = info.krool_order[i];
-                        string imageName = "";
-                        if (JSONKeyMappings.KROOL_MAP_TO_IMAGE.ContainsKey(kroolIndex))
-                        {
-                            imageName = JSONKeyMappings.KROOL_MAP_TO_IMAGE[kroolIndex];
-                        }
-                        else if (kroolIndex < JSONKeyMappings.KONGS.Count)
-                        {
-                            imageName = JSONKeyMappings.KONGS[kroolIndex].ToString();
-                        }
-                        imageName = imageName.ToLower();
-                        MainWindow.BossKongs[i].SetImage(new BitmapImage(new Uri("Images/dk64/" + imageName + ".png", UriKind.Relative)));
+                        var index = (int)JSONKeyMappings.KROOL_MAP_TO_IMAGE_INDEX[kroolIndex];
+                        MainWindow.BossKongs[i].SetIndex(index);
                         MainWindow.BossKongs[i].Enabled = false;
                         MainWindow.BossKongs[i].Visibility = Visibility.Visible;
                     }
@@ -301,7 +295,6 @@ namespace TrackOMatic
                 }
             }
         }
-
         private void ReadPointSpread(string JSONString)
         {
             var pointPairs = JsonConvert.DeserializeObject <Dictionary<string, int>>(JSONString);
