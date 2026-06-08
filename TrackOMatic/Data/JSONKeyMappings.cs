@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using TrackOMatic.Data;
 
 namespace TrackOMatic
 {
@@ -140,20 +141,33 @@ namespace TrackOMatic
         ItemName.DONKEY, ItemName.DIDDY, ItemName.LANKY, ItemName.TINY, ItemName.CHUNKY
         };
 
-        public static readonly Dictionary<int, string> KROOL_MAP_TO_IMAGE = new()
+        public static readonly Dictionary<int, Bosses> KROOL_MAP_TO_IMAGE_INDEX = new()
         {
-            {0x53, "doga2" },
-            {0xC5, "doga" },
-            {0x08, "army" },
-            {0xC4, "army2" },
-            {0x6F, "pufftoss" },
-            {0xC7, "kutout" },
-            {0x9A, "madjack" },
-            {0xCB, "donkey" },
-            {0xCC, "diddy" },
-            {0xCD, "lanky" },
-            {0xCE, "tiny" },
-            {0xCF, "chunky" },
+            {0x53, Bosses.DOGA_2 },
+            {0xC5, Bosses.DOGA_1 },
+            {0x08, Bosses.ARMY_1 },
+            {0xC4, Bosses.ARMY_2 },
+            {0x6F, Bosses.PUFFTOSS },
+            {0xC7, Bosses.KUTOUT },
+            {0x9A, Bosses.MAD_JACK},
+            {0xCB, Bosses.DONKEY },
+            {0xCC, Bosses.DIDDY },
+            {0xCD, Bosses.LANKY },
+            {0xCE, Bosses.TINY },
+            {0xCF, Bosses.CHUNKY },
+        };
+
+        public static readonly Dictionary<int, BarrierItems> SPOILER_BARRIER_TO_BARRIER_ITEM = new()
+        {
+            {3, BarrierItems.GOLDEN_BANANA },
+            {4, BarrierItems.BLUEPRINT },
+            {5, BarrierItems.FAIRY },
+            {7, BarrierItems.CROWN },
+            {8, BarrierItems.COMPANY_COIN },
+            {9, BarrierItems.MEDAL },
+            {10, BarrierItems.BEAN },
+            {11, BarrierItems.PEARL },
+            {12, BarrierItems.RAINBOW_COIN }
         };
 
         public static readonly Dictionary<string, ItemType> POINT_NAME_TO_GROUP = new()
