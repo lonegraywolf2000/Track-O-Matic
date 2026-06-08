@@ -72,7 +72,7 @@ namespace TrackOMatic
             ReadCurrentIndex();
         }
 
-        public void SetImage(BitmapImage newImage)
+        private void SetImage(BitmapImage newImage)
         {
             image.Source = newImage;
             UpdateBroadcastView();

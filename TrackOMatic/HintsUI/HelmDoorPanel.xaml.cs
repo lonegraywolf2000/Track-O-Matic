@@ -63,7 +63,7 @@ namespace TrackOMatic
                 if(element is HelmDoorHint hint)
                 {
                     hint.ItemCount.Text = "?";
-                    hint.DoorItem.SetImage(new BitmapImage(new Uri("../images/dk64/gb.png", UriKind.Relative)));
+                    hint.DoorItem.SetIndex(0);
                 }
             }
         }
