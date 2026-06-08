@@ -15,4 +15,5 @@ namespace TrackOMatic
         Visibility PotionCountVisibility = Visibility.Collapsed, 
         Visibility HintSorterVisibility = Visibility.Collapsed);
     public record HintShortcutInfo(string JSONShortcutsKey, List<string> DefaultSortedList);
+    public record BLockerInfo(int item, int cost);
 }
