@@ -2,11 +2,47 @@ using TrackOMatic.Logic.Enums;
 
 namespace TrackOMatic.Logic.Models;
 
-public class SavedHint(string hintPanelKey, string locationText, string potionCountText, Dictionary<ItemName, bool> pathItems, Dictionary<ItemName, bool> foundItems)
+/// <summary>
+/// Represents a saved hint with its associated data, including the hint panel key, location text, potion count text, path items, found items, and an optional hint ID.
+/// </summary>
+/// <param name="hintPanelKey">The key of the hint panel.</param>
+/// <param name="locationText">The text describing the location of the hint.</param>
+/// <param name="potionCountText">The text describing the potion count.</param>
+/// <param name="pathItems">A dictionary of path items and their found status.</param>
+/// <param name="foundItems">A dictionary of found items and their found status.</param>
+/// <param name="hintId">The optional ID of the hint.</param>
+public class SavedHint(string hintPanelKey, string locationText, string potionCountText, Dictionary<ItemName, bool> pathItems, Dictionary<ItemName, bool> foundItems, string hintId = "")
 {
+    /// <summary>
+    /// The ID of the hint. This is meant to be auto-generated if it doesn't exist.
+    /// </summary>
+    public string HintId { get; set; } = hintId;
+    /// <summary>
+    /// Gets the key of the hint panel associated with this saved hint.
+    /// </summary>
+    /// <remarks>This should become the <see cref="HintPanelType"/> in the future.</remarks>
     public string HintPanelKey { get; } = hintPanelKey;
+    /// <summary>
+    /// Gets or sets the location within the region/panel where the hint is relevant.
+    /// </summary>
+    /// <remarks>This is a free form text field, though drop downs can help guide users to a more specific location.</remarks>
     public string LocationText { get; set; } = locationText;
+    /// <summary>
+    /// Gets or sets the number of potions found within the specific region/panel.
+    /// </summary>
+    /// <remarks>
+    /// This is a free form text field, but should ideally only have numbers.
+    /// This field is only relevant for the "Potion Count" hint panel, and should be ignored for other panels.
+    /// </remarks>
     public string PotionCountText { get; set; } = potionCountText;
+    /// <summary>
+    /// Gets or sets the dictionary of path items and their checked status.
+    /// </summary>
+    /// <remarks>This field is only relevant in the "Path Items" hint panel, and should be ignored for other panels.</remarks>
     public Dictionary<ItemName, bool> PathItems { get; set; } = pathItems;
+    /// <summary>
+    /// Gets or sets the dictionary of found items and their checked status.
+    /// </summary>
+    /// <remarks>This field is only unused in the Foolish and Potion Counts panels.</remarks>
     public Dictionary<ItemName, bool> FoundItems { get; set; } = foundItems;
 }

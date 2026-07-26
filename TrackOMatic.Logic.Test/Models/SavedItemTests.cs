@@ -1,5 +1,7 @@
-using TrackOMatic.Logic.Enums;
 using System.Text.Json;
+
+using TrackOMatic.Logic.Enums;
+using TrackOMatic.Logic.Models;
 
 namespace TrackOMatic.Logic.Test.Models;
 
@@ -121,7 +123,7 @@ public class SavedItemTests
     }
 
     [Fact]
-    public void Region_IsReadOnly_CannotBeChanged()
+    public void Region_CanBeModified_PropertyAllowsSetAfterConstruction()
     {
         // Arrange
         var savedItem = new SavedItem(
@@ -132,12 +134,15 @@ public class SavedItemTests
             opacity: 1.0
         );
 
+        // Act
+        savedItem.Region = RegionName.SHOPS;
+
         // Assert
-        Assert.Equal(RegionName.JUNGLE_JAPES, savedItem.Region);
+        Assert.Equal(RegionName.SHOPS, savedItem.Region);
     }
 
     [Fact]
-    public void Starred_IsReadOnly_CannotBeChanged()
+    public void Starred_CanBeModified_PropertyAllowsSetAfterConstruction()
     {
         // Arrange
         var savedItem = new SavedItem(
@@ -148,12 +153,15 @@ public class SavedItemTests
             opacity: 1.0
         );
 
+        // Act
+        savedItem.Starred = ItemVisibilityState.Hidden;
+
         // Assert
-        Assert.Equal(ItemVisibilityState.Visible, savedItem.Starred);
+        Assert.Equal(ItemVisibilityState.Hidden, savedItem.Starred);
     }
 
     [Fact]
-    public void Opacity_IsReadOnly_CannotBeChanged()
+    public void Opacity_CanBeModified_PropertyAllowsSetAfterConstruction()
     {
         // Arrange
         var savedItem = new SavedItem(
@@ -164,12 +172,15 @@ public class SavedItemTests
             opacity: 0.7
         );
 
+        // Act
+        savedItem.Opacity = 0.3;
+
         // Assert
-        Assert.Equal(0.7, savedItem.Opacity);
+        Assert.Equal(0.3, savedItem.Opacity);
     }
 
     [Fact]
-    public void Hinted_IsReadOnly_CannotBeChanged()
+    public void Hinted_CanBeModified_PropertyAllowsSetAfterConstruction()
     {
         // Arrange
         var savedItem = new SavedItem(
@@ -181,8 +192,11 @@ public class SavedItemTests
             hinted: true
         );
 
+        // Act
+        savedItem.Hinted = false;
+
         // Assert
-        Assert.True(savedItem.Hinted);
+        Assert.False(savedItem.Hinted);
     }
 
     [Fact]

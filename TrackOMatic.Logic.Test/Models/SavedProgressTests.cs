@@ -168,13 +168,17 @@ public class SavedProgressTests
     }
 
     [Fact]
-    public void HelmKongs_NullByDefault()
+    public void HelmKongs_EmptyByDefault()
     {
         // Arrange & Act
         var progress = new SavedProgress();
 
         // Assert
-        Assert.Null(progress.HelmKongs);
+        Assert.Multiple(() =>
+        {
+            Assert.NotNull(progress.HelmKongs);
+            Assert.Empty(progress.HelmKongs);
+        });
     }
 
     [Fact]
@@ -195,23 +199,28 @@ public class SavedProgressTests
     }
 
     [Fact]
-    public void BossKongs_NullByDefault()
+    public void BossKongs_EmptyByDefault()
     {
         // Arrange & Act
         var progress = new SavedProgress();
 
         // Assert
-        Assert.Null(progress.BossKongs);
+        Assert.Multiple(() =>
+        {
+            Assert.NotNull(progress.BossKongs);
+            Assert.Empty(progress.BossKongs);
+        });
     }
 
     [Fact]
     public void BossKongs_CanBePopulated()
     {
         // Arrange
-        var progress = new SavedProgress();
-
-        // Act
-        progress.BossKongs = [0, 1, 2];
+        var progress = new SavedProgress
+        {
+            // Act
+            BossKongs = [0, 1, 2]
+        };
 
         // Assert
         Assert.Multiple(() =>
@@ -222,13 +231,17 @@ public class SavedProgressTests
     }
 
     [Fact]
-    public void LevelOrder_NullByDefault()
+    public void LevelOrder_EmptyByDefault()
     {
         // Arrange & Act
         var progress = new SavedProgress();
 
         // Assert
-        Assert.Null(progress.LevelOrder);
+        Assert.Multiple(() =>
+        {
+            Assert.NotNull(progress.LevelOrder);
+            Assert.Empty(progress.LevelOrder);
+        });
     }
 
     [Fact]
