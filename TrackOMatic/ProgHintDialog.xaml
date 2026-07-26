@@ -6,10 +6,12 @@
              xmlns:properties="clr-namespace:TrackOMatic.Properties"
              xmlns:local="clr-namespace:TrackOMatic"
              mc:Ignorable="d" 
-             Height="160" Width="240" Topmost ="{Binding Source={x:Static properties:Settings.Default}, Path=TopMost}"
-    Title="Set Progressive Hint Settings"
-        ResizeMode="NoResize"
-        Background="{StaticResource RegionBG}">
+             Height="160"
+             Width="240"
+             Topmost ="{Binding TopMostSetting, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+             Title="Set Progressive Hint Settings"
+             ResizeMode="NoResize"
+             Background="{StaticResource RegionBG}">
     <Grid Name="ItemGrid" Grid.Row="4" Visibility="Visible"  Margin="2" >
         <Grid.RowDefinitions>
             <RowDefinition Height=".75*"/>

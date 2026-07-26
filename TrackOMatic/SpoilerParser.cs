@@ -1,15 +1,12 @@
 using Newtonsoft.Json;
 
 using System.IO;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Media.Imaging;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
-using TrackOMatic.Properties;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
@@ -20,9 +17,12 @@ namespace TrackOMatic
         public MainWindow MainWindow { get; }
         public Dictionary<ItemName, RegionName> StartingItems { get; private set; } = new();
         public Dictionary<ItemName, RegionName> TrainingItems { get; private set; } = new();
-        public SpoilerParser(MainWindow mainWindow)
+
+        private IUserSettingsService UserSettings { get; init; }
+        public SpoilerParser(MainWindow mainWindow, IUserSettingsService userSettings)
         {
             MainWindow = mainWindow;
+            UserSettings = userSettings;
         }
 
         private string CheckForSlam(string itemString)
@@ -276,7 +276,7 @@ namespace TrackOMatic
 
         private void ReadHelmAndKRoolOrder(StartingInfo info)
         {
-            if (Settings.Default.HelmOrder)
+            if (UserSettings.ShowHelmOrder)
             {
                 for (int i = 0; i < MainWindow.HelmKongs.Count; ++i)
                 {
@@ -293,7 +293,7 @@ namespace TrackOMatic
                     }
                 }
             }
-            if (Settings.Default.KRoolOrder)
+            if (UserSettings.ShowKRoolOrder)
             {
                 for (int i = 0; i < MainWindow.BossKongs.Count; ++i)
                 {

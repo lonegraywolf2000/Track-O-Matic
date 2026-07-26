@@ -3,14 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:properties="clr-namespace:TrackOMatic.Properties"
              xmlns:local="clr-namespace:TrackOMatic"
              xmlns:enums="clr-namespace:TrackOMatic.Logic.Enums;assembly=TrackOMatic.Logic"
              mc:Ignorable="d"
-             Height="392" Width="470" Topmost ="{Binding Source={x:Static properties:Settings.Default}, Path=TopMost}"
-    Title="Broadcast View"
-        ResizeMode="NoResize"
-        Background="{StaticResource VeryDark}">
+             Height="392"
+             Width="470"
+             Topmost ="{Binding TopMostSetting, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+             Title="Broadcast View"
+             ResizeMode="NoResize"
+             Background="{StaticResource VeryDark}">
     <Window.Resources>
         <Style TargetType="Image">
             <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
@@ -24,11 +25,8 @@
                     <Style TargetType="{x:Type RowDefinition}">
                         <Setter Property="Height" Value="0" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=BroadcastHelmKRool}" Value="True">
+                            <DataTrigger Binding="{Binding BroadcastHelmKRoolSetting, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
                                 <Setter Property="Height" Value="47" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=BroadcastHelmKRool}" Value="False">
-                                <Setter Property="Height" Value="0" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -41,11 +39,8 @@
                     <Style TargetType="{x:Type RowDefinition}">
                         <Setter Property="Height" Value="0" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=BroadcastSongDisplay}" Value="True">
+                            <DataTrigger Binding="{Binding BroadcastSongDisplaySetting, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
                                 <Setter Property="Height" Value="52" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=BroadcastSongDisplay}" Value="False">
-                                <Setter Property="Height" Value="0" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -70,11 +65,8 @@
                             <Style TargetType="{x:Type RowDefinition}">
                                 <Setter Property="Height" Value="0" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=BroadcastShopkeepers}" Value="True">
+                                    <DataTrigger Binding="{Binding BroadcastShopkeepersSetting, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
                                         <Setter Property="Height" Value="47" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Source={x:Static properties:Settings.Default}, Path=BroadcastShopkeepers}" Value="False">
-                                        <Setter Property="Height" Value="0" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

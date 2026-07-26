@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -5,15 +6,22 @@ using System.Windows.Media.Imaging;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
-using TrackOMatic.Properties;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
     /// <summary>
     /// Interaction logic for HintItemSelectionDialog.xaml
     /// </summary>
-    public partial class BroadcastView : Window
+    public partial class BroadcastView : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public Dictionary<ItemName, bool> SelectedItems { get; private set; } = new();
         private Dictionary<ItemName, ItemBackground> ItemMap = new();
 
@@ -38,7 +46,7 @@ namespace TrackOMatic
 
         private Dictionary<ItemName, bool> StarredSharedMoves = new()
         {
-             {ItemName.PROGRESSIVE_SLAM_1, false },
+            {ItemName.PROGRESSIVE_SLAM_1, false },
             {ItemName.PROGRESSIVE_SLAM_2, false },
             {ItemName.PROGRESSIVE_SLAM_3, false },
 
@@ -81,6 +89,77 @@ namespace TrackOMatic
         private List<TextBlock> WOTHLabels;
         private bool pointsEnabled = false;
         private bool WOTHEnabled = false;
+
+        #region Proxy Properties for User Settings
+
+        public IUserSettingsService UserSettings { get; init; }
+
+        /// <summary>
+        /// Proxy property for XAML binding to TopMost setting.
+        /// </summary>
+        public bool TopMostSetting
+        {
+            get => UserSettings.TopMost;
+            set
+            {
+                if (UserSettings.TopMost != value)
+                {
+                    UserSettings.TopMost = value;
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to Helm & K. Rool broadcast setting.
+        /// </summary>
+        public bool BroadcastHelmKRoolSetting
+        {
+            get => UserSettings.BroadcastHelmKRool;
+            set
+            {
+                if (UserSettings.BroadcastHelmKRool != value)
+                {
+                    UserSettings.BroadcastHelmKRool = value;
+                    OnPropertyChanged(nameof(BroadcastHelmKRoolSetting));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to shopkeepers broadcast setting.
+        /// </summary>
+        public bool BroadcastShopkeepersSetting
+        {
+            get => UserSettings.BroadcastShopkeepers;
+            set
+            {
+                if (UserSettings.BroadcastShopkeepers != value)
+                {
+                    UserSettings.BroadcastShopkeepers = value;
+                    OnPropertyChanged(nameof(BroadcastShopkeepersSetting));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to song display broadcast setting.
+        /// </summary>
+        public bool BroadcastSongDisplaySetting
+        {
+            get => UserSettings.BroadcastSongDisplay;
+            set
+            {
+                if (UserSettings.BroadcastSongDisplay != value)
+                {
+                    UserSettings.BroadcastSongDisplay = value;
+                    OnPropertyChanged(nameof(BroadcastSongDisplaySetting));
+                }
+            }
+        }
+
+        #endregion
+
         private void InitializeMap()
         {
             var keys = new List<ItemBackground>() { key_1, key_2, key_3, key_4, key_5, key_6, key_7, key_8 };
@@ -131,8 +210,29 @@ namespace TrackOMatic
                 }
             }
         }
-        public BroadcastView()
+        public BroadcastView(IUserSettingsService userSettings)
         {
+            UserSettings = userSettings;
+            UserSettings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(IUserSettingsService.TopMost))
+                {
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+                else if (e.PropertyName == nameof(IUserSettingsService.BroadcastHelmKRool))
+                {
+                    OnPropertyChanged(nameof(BroadcastHelmKRoolSetting));
+                }
+                else if (e.PropertyName == nameof(IUserSettingsService.BroadcastShopkeepers))
+                {
+                    OnPropertyChanged(nameof(BroadcastShopkeepersSetting));
+                }
+                else if (e.PropertyName == nameof(IUserSettingsService.BroadcastSongDisplay))
+                {
+                    OnPropertyChanged(nameof(BroadcastSongDisplaySetting));
+                }
+            };
+
             InitializeComponent();
             InitializeMap();
             Collectibles = new() {
@@ -274,10 +374,10 @@ namespace TrackOMatic
         public void AdjustLayout()
         {
             var bothEnabled = pointsEnabled && WOTHEnabled;
-            var displayOption = Settings.Default.BroadcastNumberLabel;
+            var displayOption = UserSettings.BroadcastNumberLabel;
 
-            var pointsCanDisplay = pointsEnabled && (!bothEnabled || displayOption == "Points");
-            var WOTHCanDisplay = WOTHEnabled && (!bothEnabled || displayOption == "WOTH Count");
+            var pointsCanDisplay = pointsEnabled && (!bothEnabled || displayOption == BroadcastNumberLabel.Points);
+            var WOTHCanDisplay = WOTHEnabled && (!bothEnabled || displayOption == BroadcastNumberLabel.WothCount);
 
             SetVisibility(PointLabels, pointsCanDisplay);
             SetVisibility(WOTHLabels, WOTHCanDisplay);
@@ -318,7 +418,7 @@ namespace TrackOMatic
 
         public void UpdateShopkeeperHeight()
         {
-            bool on = Settings.Default.BroadcastShopkeepers;
+            bool on = UserSettings.BroadcastShopkeepers;
             var shopkeeperHeight = on ? 1.0 : 0;
             var mainItemsHeight = on ? 336 : 290;
             var climbingColumnWidth = on ? 0 : 0;

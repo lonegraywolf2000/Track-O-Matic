@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 using TrackOMatic.Logic.Enums;
-using TrackOMatic.Properties;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
@@ -13,11 +13,13 @@ namespace TrackOMatic
         private int currentNumber = 0;
         private bool disabled = false;
         public RegionName RegionName { get; private set; }
+        public IUserSettingsService UserSettings { get; init; }
 
         public LevelOrderNumber()
         {
             InitializeComponent();
             currentNumber = 0;
+            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
         }
 
         public void UpdateLabel()
@@ -54,24 +56,24 @@ namespace TrackOMatic
 
         private void LevelOrder_LeftPress(object sender, RoutedEventArgs e)
         {
-            if (RegionName == RegionName.HIDEOUT_HELM && currentNumber == 8 && !Settings.Default.HelmInLevelOrder)
+            if (RegionName == RegionName.HIDEOUT_HELM && currentNumber == 8 && !UserSettings.HelmInLevelOrder)
             {
                 return;
             }
 
-            int max = (Settings.Default.HelmInLevelOrder) ? 8 : 7;
+            int max = (UserSettings.HelmInLevelOrder) ? 8 : 7;
             currentNumber = (currentNumber + 1) % (max + 1);
             UpdateLabel();
         }
 
         private void LevelOrder_RightPress(object sender, RoutedEventArgs e)
         {
-            if (RegionName == RegionName.HIDEOUT_HELM && currentNumber == 8 && !Settings.Default.HelmInLevelOrder)
+            if (RegionName == RegionName.HIDEOUT_HELM && currentNumber == 8 && !UserSettings.HelmInLevelOrder)
             {
                 return;
             }
 
-            int max = (Settings.Default.HelmInLevelOrder) ? 8 : 7;
+            int max = (UserSettings.HelmInLevelOrder) ? 8 : 7;
             currentNumber = (currentNumber + (max)) % (max + 1);
             UpdateLabel();
         }

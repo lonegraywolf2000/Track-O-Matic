@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 
 using TrackOMatic.Logic.Enums;
-using TrackOMatic.Properties;
+using TrackOMatic.Logic;
 
 namespace TrackOMatic
 {
@@ -10,107 +10,129 @@ namespace TrackOMatic
     {
         private void TopMostToggle(object? sender, RoutedEventArgs? e)
         {
-            Settings.Default.TopMost = TopMostOption.IsChecked;
-            Topmost = TopMostOption.IsChecked;
-            Settings.Default.Save();
+            UserSettings.TopMost = TopMostOption.IsChecked;
         }
 
         private void AutoSortToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.AutoSortPathHints = SortNewHintsOption.IsChecked;
-            Settings.Default.Save();
+            UserSettings.AutoSortPathHints = SortNewHintsOption.IsChecked;
         }
 
         private void EnemyAutofillToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.EnemiesInAutofill = EnemiesInAutofillOption.IsChecked;
-            Settings.Default.Save();
+            UserSettings.EnemiesInAutofill = EnemiesInAutofillOption.IsChecked;
         }
         private void CompactModeToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.CompactMode = CompactOption.IsChecked;
-            Settings.Default.Save();
+            UserSettings.CompactMode = CompactOption.IsChecked;
             AdjustBasedOnCompactMode();
         }
 
         private void SongDisplayToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.SongDisplay = SongDisplayOption.IsChecked;
-            Settings.Default.Save();
+            UserSettings.SongDisplay = SongDisplayOption.IsChecked;
         }
 
         private void BroadcastSongDisplayToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.BroadcastSongDisplay = BroadcastSongDisplay.IsChecked;
-            Settings.Default.Save();
-            if (BroadcastView != null)
-            {
-                BroadcastView.AdjustWindowSize();
-            }
+            UserSettings.BroadcastSongDisplay = BroadcastSongDisplay.IsChecked;
+            BroadcastView?.AdjustWindowSize();
         }
 
         private void BroadcastHelmKRoolToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.BroadcastHelmKRool = BroadcastHelmKRool.IsChecked;
-            Settings.Default.Save();
-            if (BroadcastView != null)
-            {
-                BroadcastView.AdjustWindowSize();
-            }
+            UserSettings.BroadcastHelmKRool = BroadcastHelmKRool.IsChecked;
+            BroadcastView?.AdjustWindowSize();
         }
 
         private void BroadcastShopkeepersToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.BroadcastShopkeepers = BroadcastShopkeepers.IsChecked;
-            Settings.Default.Save();
-            if (BroadcastView != null)
-            {
-                BroadcastView.UpdateShopkeeperHeight();
-            }
+            UserSettings.BroadcastShopkeepers = BroadcastShopkeepers.IsChecked;
+            BroadcastView?.UpdateShopkeeperHeight();
         }
 
         private void HintDisplayToggle(object sender, RoutedEventArgs e)
         {
+            // XAML Contract: This method is wired via the Checked="HintDisplayToggle" attribute
+            // on RadioButtons in MainWindow.xaml (lines 64-66). WPF automatically invokes this method
+            // when any RadioButton with that Checked handler is selected.
+            //
+            // RadioButton content (e.g., "Off", "Multipath Hints") maps to HintDisplayMode enum values
+            // via the LegacyNameAttribute. The content string MUST exactly match a LegacyName on an enum value,
+            // or the conversion will fail silently (defaulting to the first enum value).
+            //
+            // If you change a RadioButton's content text or rename this method, you must also update:
+            // 1. The MainWindow.xaml Checked attribute to match the new method name
+            // 2. The HintDisplayMode enum's LegacyNameAttribute to match the new RadioButton content
+
             var button = sender as RadioButton;
-            Settings.Default.HintDisplay = button?.Content.ToString();
-            bool compactModeOn = Settings.Default.CompactMode;
+            string? legacyName = button?.Content.ToString();
+            if (string.IsNullOrEmpty(legacyName))
+            {
+                return;
+            }
+
+            var mode = legacyName.FromLegacyToEnum<HintDisplayMode>();
+            UserSettings.HintDisplay = mode;
+            bool compactModeOn = UserSettings.CompactMode;
             var newRatio = compactModeOn ? 1.43 : 2.15;
-            if (Settings.Default.HintDisplay == "Multipath Hints")
+            switch (mode)
             {
-                MultipathGrid.Visibility = Visibility.Visible;
-                DirectItemHintGrid.Visibility = Visibility.Hidden;
-                HelmPanel.Visibility = Visibility.Hidden;
-                PotionCountsPanel.Visibility = Visibility.Visible;
-            }
-            else if (Settings.Default.HintDisplay == "Direct Item Hints")
-            {
-                DirectItemHintGrid.Visibility = Visibility.Visible;
-                MultipathGrid.Visibility = Visibility.Hidden;
-                HelmPanel.Visibility = Visibility.Visible;
-                PotionCountsPanel.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                newRatio = 0;
+                case HintDisplayMode.Off:
+                    MultipathGrid.Visibility = Visibility.Hidden;
+                    DirectItemHintGrid.Visibility = Visibility.Hidden;
+                    HelmPanel.Visibility = Visibility.Hidden;
+                    PotionCountsPanel.Visibility = Visibility.Hidden;
+                    newRatio = 0;
+                    break;
+                case HintDisplayMode.MultipathHints:
+                    MultipathGrid.Visibility = Visibility.Visible;
+                    DirectItemHintGrid.Visibility = Visibility.Hidden;
+                    HelmPanel.Visibility = Visibility.Hidden;
+                    PotionCountsPanel.Visibility = Visibility.Visible;
+                    break;
+                case HintDisplayMode.DirectItemHints:
+                    DirectItemHintGrid.Visibility = Visibility.Visible;
+                    MultipathGrid.Visibility = Visibility.Hidden;
+                    HelmPanel.Visibility = Visibility.Visible;
+                    PotionCountsPanel.Visibility = Visibility.Hidden;
+                    break;
             }
             HintsColumn.Width = new GridLength(newRatio, GridUnitType.Star);
             ResetWidthHeight();
             UpdateHintDisplayToggles();
-            Settings.Default.Save();
         }
 
         private void BroadcastNumberDisplayToggle(object sender, RoutedEventArgs e)
         {
+            // XAML Contract: This method is wired via the Checked="BroadcastNumberDisplayToggle" attribute
+            // on RadioButtons in MainWindow.xaml (lines 80-81). WPF automatically invokes this method
+            // when any RadioButton with that Checked handler is selected.
+            //
+            // RadioButton content (e.g., "Points", "WOTH Count") maps to BroadcastNumberLabel enum values
+            // via the LegacyNameAttribute. The content string MUST exactly match a LegacyName on an enum value,
+            // or the conversion will fail silently (defaulting to the first enum value).
+            //
+            // If you change a RadioButton's content text or rename this method, you must also update:
+            // 1. The MainWindow.xaml Checked attribute to match the new method name
+            // 2. The BroadcastNumberLabel enum's LegacyNameAttribute to match the new RadioButton content
+
             var button = (sender as RadioButton);
-            Settings.Default.BroadcastNumberLabel = button.Content.ToString();
-            Settings.Default.Save();
+            string? legacyName = button?.Content.ToString();
+            if (string.IsNullOrEmpty(legacyName))
+            {
+                return;
+            }
+
+            var label = legacyName.FromLegacyToEnum<BroadcastNumberLabel>();
+            UserSettings.BroadcastNumberLabel = label;
             BroadcastView?.AdjustLayout();
+            UpdateBroadcastNumberDisplayToggles();
         }
 
         private void AutotrackToggle(object sender, RoutedEventArgs e)
         {
-            Settings.Default.Autotracking = AutotrackOption.IsChecked;
-            Settings.Default.Save();
+            UserSettings.Autotracking = AutotrackOption.IsChecked;
         }
 
         private void BroadcastToggle(object sender, RoutedEventArgs e)
@@ -121,7 +143,7 @@ namespace TrackOMatic
                 BroadcastView = null;
                 return;
             }
-            BroadcastView = new BroadcastView();
+            BroadcastView = new BroadcastView(UserSettings);
             BroadcastView.UpdateSongInfo(SongGame.Text, SongName.Text);
             BroadcastView.Closed += BroadcastClosed;
             BroadcastView.Show();
@@ -147,62 +169,43 @@ namespace TrackOMatic
 
         private void TotalBPs_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.TotalBPs = TotalBPs.IsChecked;
-            FormatCollectibles();
-            Settings.Default.Save();
+            UserSettings.ShowTotalBPs = TotalBPs.IsChecked;
         }
 
         private void CompanyCoins_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.CompanyCoins = CompanyCoins.IsChecked;
-            FormatCollectibles();
-            Settings.Default.Save();
+            UserSettings.ShowCompanyCoins = CompanyCoins.IsChecked;
         }
 
         private void KRoolOrder_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.KRoolOrder = KRoolOrder.IsChecked;
-            Settings.Default.Save();
+            UserSettings.ShowKRoolOrder = KRoolOrder.IsChecked;
         }
 
         private void HelmOrder_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.HelmOrder = HelmOrder.IsChecked;
-            Settings.Default.Save();
+            UserSettings.ShowHelmOrder = HelmOrder.IsChecked;
         }
 
         private void HelmInLevelOrder_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.HelmInLevelOrder = HelmInLevelOrder.IsChecked;
-            if (!Settings.Default.HelmInLevelOrder)
+            UserSettings.HelmInLevelOrder = HelmInLevelOrder.IsChecked;
+            if (!UserSettings.HelmInLevelOrder)
             {
+                // Known issue: MainWindow shouldn't care about Region like this.
+                // This will be refactored later.
                 Regions[RegionName.HIDEOUT_HELM].SetLevelOrderNumber(8);
             }
-            Settings.Default.Save();
         }
 
         private void ColoredBarrelPadMoves_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.ColoredBarrelPadMoves = ColorBarrelPadMoves.IsChecked;
-            Settings.Default.Save();
-            ((App)Application.Current).UpdatePadBarrelImages();
+            UserSettings.ColoredBarrelPadMoves = ColorBarrelPadMoves.IsChecked;
         }
 
         private void HelmDoors_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.HelmDoors = HelmDoors.IsChecked;
-            Settings.Default.Save();
+            UserSettings.HelmDoors = HelmDoors.IsChecked;
         }
-
-        /*
-        private void SetProgHintType(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ProgHintDialog();
-            var mousePosition = Mouse.GetPosition(this);
-            mousePosition = PointToScreen(mousePosition);
-            UIUtils.MoveWindowAndEnsureVisible(dialog, mousePosition.X - dialog.Width/2, mousePosition.Y-dialog.Height/2);
-            dialog.ShowDialog();
-            UpdateProgHintImage();
-        }*/
     }
 }

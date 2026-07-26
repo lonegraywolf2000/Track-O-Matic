@@ -7,10 +7,12 @@
              xmlns:local="clr-namespace:TrackOMatic"
              xmlns:enums="clr-namespace:TrackOMatic.Logic.Enums;assembly=TrackOMatic.Logic"
              mc:Ignorable="d" 
-             Height="335" Width="420" Topmost ="{Binding Source={x:Static properties:Settings.Default}, Path=TopMost}"
-    Title="Select Items"
-        ResizeMode="NoResize"
-        Background="{StaticResource RegionBG}"  KeyDown="ItemGrid_KeyDown">
+             Height="335"
+             Width="420"
+             Topmost ="{Binding TopMostSetting, RelativeSource={RelativeSource Self}, Mode=TwoWay}"
+             Title="Select Items"
+             ResizeMode="NoResize"
+             Background="{StaticResource RegionBG}"  KeyDown="ItemGrid_KeyDown">
     <Grid Name="ItemGrid" Grid.Row="4" Visibility="Visible"  Margin="2" >
         <Grid.RowDefinitions>
             <RowDefinition />

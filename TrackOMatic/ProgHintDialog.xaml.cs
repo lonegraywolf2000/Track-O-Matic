@@ -3,14 +3,21 @@ using System.Windows;
 using System.Windows.Input;
 
 using TrackOMatic.Logic.Enums;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
     /// <summary>
     /// Interaction logic for HintItemSelectionDialog.xaml
     /// </summary>
-    public partial class ProgHintDialog : Window
+    public partial class ProgHintDialog : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private string selectedItemType = "";
         private string hintCap = "";
         private readonly Dictionary<ItemType, string> ItemTypeToPlural = new()
@@ -37,10 +44,49 @@ namespace TrackOMatic
             {"Pearls", ItemType.PEARL },
             {"Colored Bananas",ItemType.COLORED_BANANA }
         };
+
+        public IUserSettingsService UserSettings { get; init; }
+        public IApplicationStateService AppState { get; init; }
+
+        /// <summary>
+        /// Proxy property for XAML binding to TopMost setting.
+        /// </summary>
+        public bool TopMostSetting
+        {
+            get => UserSettings.TopMost;
+            set
+            {
+                if (UserSettings.TopMost != value)
+                {
+                    UserSettings.TopMost = value;
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+            }
+        }
+
         public ProgHintDialog()
         {
             InitializeComponent();
-            var itemType = (ItemType)Properties.Settings.Default.ProgressiveHintItem;
+
+            // Get the injected services via ServiceLocator
+            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
+            AppState = ServiceLocator.GetService<IApplicationStateService>();
+
+            // Set TopMost from user settings
+            Topmost = UserSettings.TopMost;
+
+            // Subscribe to user settings changes to keep TopMost in sync
+            UserSettings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(IUserSettingsService.TopMost))
+                {
+                    Topmost = UserSettings.TopMost;
+                }
+            };
+
+            // Initialize from application state
+            var itemType = AppState.ProgressiveHintItem;
+
             SelectedItemType = ItemTypeToPlural[itemType];
             var itemTypes = new ItemType[] { ItemType.GOLDEN_BANANA, ItemType.TOTAL_BLUEPRINTS, ItemType.KEY, ItemType.BANANA_MEDAL, ItemType.BATTLE_CROWN, ItemType.FAIRY, ItemType.RAINBOW_COIN, ItemType.PEARL, ItemType.COLORED_BANANA };
             var stringTypes = new List<string>();
@@ -49,14 +95,7 @@ namespace TrackOMatic
                 stringTypes.Add(ItemTypeToPlural[item]);
             }
             itemDropdown.ItemsSource = stringTypes;
-            HintCap = Properties.Settings.Default.ProgressiveHintCap.ToString();
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        private void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            HintCap = AppState.ProgressiveHintCap.ToString();
         }
 
         public ItemType GetActualItemType()
@@ -75,8 +114,7 @@ namespace TrackOMatic
                     selectedItemType = value;
                     OnPropertyChanged(nameof(SelectedItemType));
                     var actualItem = PluralToItemType[SelectedItemType];
-                    Properties.Settings.Default.ProgressiveHintItem = (int)actualItem;
-                    Properties.Settings.Default.Save();
+                    AppState.ProgressiveHintItem = actualItem;
                 }
             }
         }
@@ -92,8 +130,7 @@ namespace TrackOMatic
                     OnPropertyChanged(nameof(hintCap));
                     if (int.TryParse(hintCap, out int hintCapInt))
                     {
-                        Properties.Settings.Default.ProgressiveHintCap = hintCapInt;
-                        Properties.Settings.Default.Save();
+                        AppState.ProgressiveHintCap = hintCapInt;
                     }
                 }
             }

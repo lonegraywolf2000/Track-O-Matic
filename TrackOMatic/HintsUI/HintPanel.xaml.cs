@@ -2,12 +2,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Logic.Models.Hints;
-using TrackOMatic.Properties;
+using TrackOMatic.Services;
+
 
 namespace TrackOMatic
 {
@@ -46,6 +46,8 @@ namespace TrackOMatic
             set { SetValue(RegionNameProperty, value); }
         }
 
+        public IUserSettingsService UserSettings { get; init; }
+
         public void OnLoaded(object sender, RoutedEventArgs e)
         {
             var hintSettings = HintTypeSettingsList.SETTINGS[HintType];
@@ -56,6 +58,7 @@ namespace TrackOMatic
         {
             Console.WriteLine(HintType);
             InitializeComponent();
+            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
             Loaded += OnLoaded;
         }
 
@@ -172,7 +175,7 @@ namespace TrackOMatic
 
         private void OnPathItemsSelected()
         {
-            if (Settings.Default.AutoSortPathHints)
+            if (UserSettings.AutoSortPathHints)
             {
                 Sort();
             }

@@ -1,52 +1,73 @@
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
-using TrackOMatic.Properties;
 
-namespace TrackOMatic
+using Microsoft.Extensions.DependencyInjection;
+
+using TrackOMatic.Services;
+
+namespace TrackOMatic;
+
+/// <summary>
+/// Interaction logic for App.xaml
+/// </summary>
+public partial class App : Application
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application
+    private readonly IServiceProvider _serviceProvider;
+
+    public App()
     {
+        var services = new ServiceCollection();
+        services.AddSingleton<IUserSettingsService, UserSettingsService>();
+        services.AddSingleton<IApplicationStateService, ApplicationStateService>();
 
-        App()
-        {
-            Dispatcher.UnhandledException += OnDispatcherUnhandledException;
-        }
+        _serviceProvider = services.BuildServiceProvider();
+        ServiceLocator.Initialize(_serviceProvider);
+        Dispatcher.UnhandledException += OnDispatcherUnhandledException;
+    }
 
-        private void App_Exit(object sender, ExitEventArgs e)
-        {
-        }
+    private void App_Exit(object sender, ExitEventArgs e)
+    {
+    }
 
-        void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
-        }
+    void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    {
+    }
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            base.OnStartup(e);
-            UpdatePadBarrelImages();
-        }
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
 
-        public void UpdatePadBarrelImages()
+        var settingsService = _serviceProvider.GetRequiredService<IUserSettingsService>();
+        var appStateService = _serviceProvider.GetRequiredService<IApplicationStateService>();
+        MainWindow mainWindow = new
+        (
+            settingsService,
+            appStateService
+        );
+        mainWindow.Show();
+
+        UpdatePadBarrelImages();
+        settingsService.PropertyChanged += (s, args) =>
         {
-            var dicts = Resources.MergedDictionaries;
-            dicts.Clear();
-            dicts.Add(new ResourceDictionary
+            if (args.PropertyName == nameof(IUserSettingsService.ColoredBarrelPadMoves))
             {
-                Source = new Uri("Dictionary1.xaml", UriKind.Relative)
-            });
-            var path = Settings.Default.ColoredBarrelPadMoves ? "ColoredBarrelPadImages.xaml" : "BaseBarrelPadImages.xaml";
-            dicts.Add(new ResourceDictionary
-            {
-                Source = new Uri(path, UriKind.Relative)
-            });
-        }
+                UpdatePadBarrelImages();
+            }
+        };
+    }
+
+    public void UpdatePadBarrelImages()
+    {
+        var settingsService = _serviceProvider.GetRequiredService<IUserSettingsService>();
+        var dicts = Resources.MergedDictionaries;
+        dicts.Clear();
+        dicts.Add(new ResourceDictionary
+        {
+            Source = new Uri("Dictionary1.xaml", UriKind.Relative)
+        });
+        var path = settingsService.ColoredBarrelPadMoves ? "ColoredBarrelPadImages.xaml" : "BaseBarrelPadImages.xaml";
+        dicts.Add(new ResourceDictionary
+        {
+            Source = new Uri(path, UriKind.Relative)
+        });
     }
 }

@@ -9,6 +9,7 @@ using System.Windows.Media;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Logic.Models.Hints;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
@@ -39,6 +40,8 @@ namespace TrackOMatic
 
         public SavedHint SavedHint { get; private set; }
 
+        private IUserSettingsService UserSettingsService { get; init; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
@@ -48,6 +51,7 @@ namespace TrackOMatic
         public HintInfo(HintType hintType, string panelName, bool isSavedHint = false, RegionName regionName = RegionName.UNKNOWN)
         {
             InitializeComponent();
+            UserSettingsService = ServiceLocator.GetService<IUserSettingsService>();
             if (!isSavedHint)
             {
                 Location.Loaded += (sender, e) => Location.Focus();
@@ -147,7 +151,7 @@ namespace TrackOMatic
             List<string> sortBy = new();
             IEnumerable<string> filteredItems = new List<string>();
             CheckForShortcuts(matches);
-            var include_enemies = Properties.Settings.Default.EnemiesInAutofill;
+            var include_enemies = UserSettingsService.EnemiesInAutofill;
             if (HintTypeSettings.HintSuggestion == HintSuggestion.NONE)
             {
                 SuggestionBox.ItemsSource = null;

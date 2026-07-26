@@ -1,19 +1,55 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 
 using TrackOMatic.Logic.Enums;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
     /// <summary>
     /// Interaction logic for HintItemSelectionDialog.xaml
     /// </summary>
-    public partial class HintItemSelectionDialog : Window
+    public partial class HintItemSelectionDialog : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public IUserSettingsService UserSettings;
+
+        /// <summary>
+        /// Proxy property for XAML binding to TopMost setting.
+        /// </summary>
+        public bool TopMostSetting
+        {
+            get => UserSettings.TopMost;
+            set
+            {
+                if (UserSettings.TopMost != value)
+                {
+                    UserSettings.TopMost = value;
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+            }
+        }
+
         public Dictionary<ItemName, bool> SelectedItems { get; private set; } = new();
         public HintItemSelectionDialog(List<ItemName> itemsToTurnOn)
         {
             InitializeComponent();
+            // Get the injected user settings service via ServiceLocator
+            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
+            UserSettings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(IUserSettingsService.TopMost))
+                {
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+            };
             foreach (var child in ItemGrid.Children)
             {
                 if (child is SelectableHintItem hintItem)

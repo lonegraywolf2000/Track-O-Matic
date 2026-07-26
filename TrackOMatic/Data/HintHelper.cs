@@ -1,3 +1,5 @@
+using TrackOMatic.Services;
+
 namespace TrackOMatic
 {
     public static class HintHelper
@@ -21,7 +23,9 @@ namespace TrackOMatic
         }
         public static void GenerateThresholds()
         {
-            hintCap = Properties.Settings.Default.ProgressiveHintCap;
+            // Get the injected application state service via ServiceLocator
+            var appState = ServiceLocator.GetService<IApplicationStateService>();
+            hintCap = appState.ProgressiveHintCap;
             thresholds = new();
             for (int i = 0; i < 33; i += 4)
             {

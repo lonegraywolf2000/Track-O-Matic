@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.IO;
+using System.Reflection;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,9 +11,12 @@ using AutoUpdaterDotNET;
 
 using Microsoft.Win32;
 
+using Newtonsoft.Json.Linq;
+
+using TrackOMatic.Logic;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
-using TrackOMatic.Properties;
+using TrackOMatic.Services;
 
 using Timer = System.Timers.Timer;
 
@@ -21,7 +25,7 @@ namespace TrackOMatic
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public int TotalGBs { get; private set; }
         public BroadcastView? BroadcastView { get; private set; }
@@ -50,11 +54,421 @@ namespace TrackOMatic
         public Dictionary<ItemName, PathOrFoundItem> ITEM_TO_DIRECT_HINT { get; } = new();
         public Dictionary<ItemName, Item> ITEM_NAME_TO_ITEM { get; } = new();
 
+        private string _applicationVersion = "";
+        public string ApplicationVersion
+        {
+            get => _applicationVersion;
+            private set
+            {
+                if (_applicationVersion != value)
+                {
+                    _applicationVersion = value;
+                    OnPropertyChanged(nameof(ApplicationVersion));
+                }
+            }
+        }
+
+        public IUserSettingsService UserSettings { get; init; }
+        public IApplicationStateService AppState { get; init; }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #region Proxy Properties for User Settings
+
+        /// <summary>
+        /// Proxy property for XAML binding to the broadcast Helm & K. Rool setting.
+        /// </summary>
+        public bool BroadcastHelmKRoolSetting
+        {
+            get => UserSettings.BroadcastHelmKRool;
+            set
+            {
+                if (UserSettings.BroadcastHelmKRool != value)
+                {
+                    UserSettings.BroadcastHelmKRool = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the broadcast shopkeepers setting.
+        /// </summary>
+        public bool BroadcastShopkeepersSetting
+        {
+            get => UserSettings.BroadcastShopkeepers;
+            set
+            {
+                if (UserSettings.BroadcastShopkeepers != value)
+                {
+                    UserSettings.BroadcastShopkeepers = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the broadcast song display setting.
+        /// </summary>
+        public bool BroadcastSongDisplaySetting
+        {
+            get => UserSettings.BroadcastSongDisplay;
+            set
+            {
+                if (UserSettings.BroadcastSongDisplay != value)
+                {
+                    UserSettings.BroadcastSongDisplay = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the colored barrel/pad moves setting.
+        /// </summary>
+        public bool ColoredBarrelPadMovesSetting
+        {
+            get => UserSettings.ColoredBarrelPadMoves;
+            set
+            {
+                if (UserSettings.ColoredBarrelPadMoves != value)
+                {
+                    UserSettings.ColoredBarrelPadMoves = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the song display setting.
+        /// </summary>
+        public bool SongDisplaySetting
+        {
+            get => UserSettings.SongDisplay;
+            set
+            {
+                if (UserSettings.SongDisplay != value)
+                {
+                    UserSettings.SongDisplay = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the compact mode setting.
+        /// </summary>
+        public bool CompactModeSetting
+        {
+            get => UserSettings.CompactMode;
+            set
+            {
+                if (UserSettings.CompactMode != value)
+                {
+                    UserSettings.CompactMode = value;
+                    AdjustBasedOnCompactMode();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the topmost window setting.
+        /// </summary>
+        public bool TopMostSetting
+        {
+            get => UserSettings.TopMost;
+            set
+            {
+                if (UserSettings.TopMost != value)
+                {
+                    UserSettings.TopMost = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the Helm in level order setting.
+        /// </summary>
+        public bool HelmInLevelOrderSetting
+        {
+            get => UserSettings.HelmInLevelOrder;
+            set
+            {
+                if (UserSettings.HelmInLevelOrder != value)
+                {
+                    UserSettings.HelmInLevelOrder = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the Helm doors setting.
+        /// </summary>
+        public bool HelmDoorsSetting
+        {
+            get => UserSettings.HelmDoors;
+            set
+            {
+                if (UserSettings.HelmDoors != value)
+                {
+                    UserSettings.HelmDoors = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the auto-sort path hints setting.
+        /// </summary>
+        public bool AutoSortPathHintsSetting
+        {
+            get => UserSettings.AutoSortPathHints;
+            set
+            {
+                if (UserSettings.AutoSortPathHints != value)
+                {
+                    UserSettings.AutoSortPathHints = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the enemies in autofill setting.
+        /// </summary>
+        public bool EnemiesInAutofillSetting
+        {
+            get => UserSettings.EnemiesInAutofill;
+            set
+            {
+                if (UserSettings.EnemiesInAutofill != value)
+                {
+                    UserSettings.EnemiesInAutofill = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the autotracking setting.
+        /// </summary>
+        public bool AutotrackingSetting
+        {
+            get => UserSettings.Autotracking;
+            set
+            {
+                if (UserSettings.Autotracking != value)
+                {
+                    UserSettings.Autotracking = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the show total blueprints setting.
+        /// </summary>
+        public bool ShowTotalBlueprintsSetting
+        {
+            get => UserSettings.ShowTotalBPs;
+            set
+            {
+                if (UserSettings.ShowTotalBPs != value)
+                {
+                    UserSettings.ShowTotalBPs = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the show total company coins setting.
+        /// </summary>
+        public bool ShowTotalCompanyCoinsSetting
+        {
+            get => UserSettings.ShowCompanyCoins;
+            set
+            {
+                if (UserSettings.ShowCompanyCoins != value)
+                {
+                    UserSettings.ShowCompanyCoins = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the show K. Rool order setting.
+        /// </summary>
+        public bool ShowKRoolOrderSetting
+        {
+            get => UserSettings.ShowKRoolOrder;
+            set
+            {
+                if (UserSettings.ShowKRoolOrder != value)
+                {
+                    UserSettings.ShowKRoolOrder = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the show Helm order setting.
+        /// </summary>
+        public bool ShowHelmOrderSetting
+        {
+            get => UserSettings.ShowHelmOrder;
+            set
+            {
+                if (UserSettings.ShowHelmOrder != value)
+                {
+                    UserSettings.ShowHelmOrder = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the hint display setting.
+        /// </summary>
+        public HintDisplayMode HintDisplaySetting
+        {
+            get => UserSettings.HintDisplay;
+            set
+            {
+                if (UserSettings.HintDisplay != value)
+                {
+                    UserSettings.HintDisplay = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Proxy property for XAML binding to the show amount for hints setting.
+        /// </summary>
+        public bool ShowAmountForHintsSetting
+        {
+            get => UserSettings.ShowAmountForHints;
+            set
+            {
+                if (UserSettings.ShowAmountForHints != value)
+                {
+                    UserSettings.ShowAmountForHints = value;
+                }
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Helper method to get the LegacyName attribute value for a HintDisplayMode enum value.
+        /// </summary>
+        private static string GetHintDisplayModeName(HintDisplayMode mode)
+        {
+            var field = typeof(HintDisplayMode).GetField(mode.ToString());
+            if (field == null)
+            {
+                return mode.ToString();
+            }
+
+            var legacyAttr = field.GetCustomAttribute<LegacyNameAttribute>();
+            return legacyAttr?.LegacyName ?? mode.ToString();
+        }
+
+        /// <summary>
+        /// Returns the LegacyName attribute value for the current HintDisplay setting.
+        /// Used for XAML DataTrigger bindings in styles.
+        /// Example: HintDisplayMode.DirectItemHints → "Direct Item Hints"
+        /// </summary>
+        public string HintDisplayModeName
+        {
+            get => GetHintDisplayModeName(UserSettings.HintDisplay);
+        }
+
         // Timer to save the data every minute. This is properly initialized, but the compiler is finicky.
         private Timer SaveTimer = null!;
-        public MainWindow()
+        public MainWindow(IUserSettingsService settingsSergice, IApplicationStateService appStateService)
+
         {
+            DataContext = this;
             InitializeComponent();
+            UserSettings = settingsSergice;
+            AppState = appStateService;
+
+            // Subscribe to settings changes to notify XAML bindings
+            UserSettings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(UserSettings.BroadcastHelmKRool))
+                {
+                    OnPropertyChanged(nameof(BroadcastHelmKRoolSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.BroadcastSongDisplay))
+                {
+                    OnPropertyChanged(nameof(BroadcastSongDisplaySetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.BroadcastShopkeepers))
+                {
+                    OnPropertyChanged(nameof(BroadcastShopkeepersSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.ColoredBarrelPadMoves))
+                {
+                    OnPropertyChanged(nameof(ColoredBarrelPadMovesSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.SongDisplay))
+                {
+                    OnPropertyChanged(nameof(SongDisplaySetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.CompactMode))
+                {
+                    OnPropertyChanged(nameof(CompactModeSetting));
+                    AdjustBasedOnCompactMode();
+                }
+                else if (e.PropertyName == nameof(UserSettings.TopMost))
+                {
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.HelmInLevelOrder))
+                {
+                    OnPropertyChanged(nameof(HelmInLevelOrderSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.HelmDoors))
+                {
+                    OnPropertyChanged(nameof(HelmDoorsSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.AutoSortPathHints))
+                {
+                    OnPropertyChanged(nameof(AutoSortPathHintsSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.EnemiesInAutofill))
+                {
+                    OnPropertyChanged(nameof(EnemiesInAutofillSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.Autotracking))
+                {
+                    OnPropertyChanged(nameof(AutotrackingSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.ShowTotalBPs))
+                {
+                    OnPropertyChanged(nameof(ShowTotalBlueprintsSetting));
+                    AdjustCollectibleColumns();
+                }
+                else if (e.PropertyName == nameof(UserSettings.ShowCompanyCoins))
+                {
+                    OnPropertyChanged(nameof(ShowTotalCompanyCoinsSetting));
+                    AdjustCollectibleColumns();
+                }
+                else if (e.PropertyName == nameof(UserSettings.ShowKRoolOrder))
+                {
+                    OnPropertyChanged(nameof(ShowKRoolOrderSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.ShowHelmOrder))
+                {
+                    OnPropertyChanged(nameof(ShowHelmOrderSetting));
+                }
+                else if (e.PropertyName == nameof(UserSettings.HintDisplay))
+                {
+                    OnPropertyChanged(nameof(HintDisplaySetting));
+                    OnPropertyChanged(nameof(HintDisplayModeName));
+                }
+                else if (e.PropertyName == nameof(UserSettings.ShowAmountForHints))
+                {
+                    OnPropertyChanged(nameof(ShowAmountForHintsSetting));
+                }
+            };
+
             HintData.Init();
             InitOptions();
             InitData();
@@ -87,7 +501,7 @@ namespace TrackOMatic
                 progressiveItem.ImageSources = allBosses;
             }
 
-            SpoilerParser = new(this);
+            SpoilerParser = new(this, UserSettings);
             DataSaver = new(this);
             Reset();
             AdjustBasedOnCompactMode();
@@ -95,11 +509,15 @@ namespace TrackOMatic
 
         private void UpdateHintDisplayToggles()
         {
-            hintDisplayOff.IsChecked = (Settings.Default.HintDisplay == "Off");
-            hintDisplayMP.IsChecked = (Settings.Default.HintDisplay == "Multipath Hints");
-            hintDisplayDirect.IsChecked = (Settings.Default.HintDisplay == "Direct Item Hints");
-            broadcastNumberDisplayPoints.IsChecked = (Settings.Default.BroadcastNumberLabel == "Points");
-            broadcastNumberDisplayWOTHCount.IsChecked = (Settings.Default.BroadcastNumberLabel == "WOTH Count");
+            hintDisplayOff.IsChecked = (UserSettings.HintDisplay == HintDisplayMode.Off);
+            hintDisplayMP.IsChecked = (UserSettings.HintDisplay == HintDisplayMode.MultipathHints);
+            hintDisplayDirect.IsChecked = (UserSettings.HintDisplay == HintDisplayMode.DirectItemHints);
+        }
+
+        private void UpdateBroadcastNumberDisplayToggles()
+        {
+            broadcastNumberDisplayPoints.IsChecked = (UserSettings.BroadcastNumberLabel == BroadcastNumberLabel.Points);
+            broadcastNumberDisplayWOTHCount.IsChecked = (UserSettings.BroadcastNumberLabel == BroadcastNumberLabel.WothCount);
         }
 
         private ItemBackground? FindMatchingBackgroundImage(Item item)
@@ -121,6 +539,7 @@ namespace TrackOMatic
         private void InitData()
         {
             UpdateHintDisplayToggles();
+            UpdateBroadcastNumberDisplayToggles();
             Regions = new()
             {
                 { RegionName.DK_ISLES, new Region(RegionName.DK_ISLES, DKIslesRegion, DKIslesImagePointsGrid, DKIslesPicture, DKIslesRegionGrid, DKIslesPoints, DKIslesTopLabel) },
@@ -197,11 +616,10 @@ namespace TrackOMatic
                 PotionCountsPanel,
                 UnhintedPanel
             ];
-            Autotracker = new Autotracker(ProcessNewAutotrackedItem, UpdateCollectible, SetRegionLighting, SetShopkeepers, SetSong, UpdateUIAmountToNextHint, UpdateProgHintImage);
+            Autotracker = new Autotracker(UserSettings, ProcessNewAutotrackedItem, UpdateCollectible, SetRegionLighting, SetShopkeepers, SetSong, UpdateUIAmountToNextHint, UpdateProgHintImage);
             SaveTimer = new Timer(60000);
             SaveTimer.Elapsed += OnTimerSave;
             SaveTimer.Start();
-            FormatCollectibles();
         }
 
         public void SetRegionLighting(RegionName regionName, bool lightUp)
@@ -286,18 +704,18 @@ namespace TrackOMatic
 
         private void InitOptions()
         {
-            TopMostOption.IsChecked = Properties.Settings.Default.TopMost;
+            TopMostOption.IsChecked = UserSettings.TopMost;
             TopMostToggle(null, null);
 
-            Top = Properties.Settings.Default.WindowY;
-            Left = Properties.Settings.Default.WindowX;
+            Top = AppState.WindowY;
+            Left = AppState.WindowX;
 
             ResetWidthHeight();
         }
         private void Window_LocationChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default.WindowY = RestoreBounds.Top;
-            Properties.Settings.Default.WindowX = RestoreBounds.Left;
+            AppState.WindowY = RestoreBounds.Top;
+            AppState.WindowX = RestoreBounds.Left;
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -307,18 +725,18 @@ namespace TrackOMatic
         private void ResetWidthHeight()
         {
             double newWidth = 580;
-            if (Settings.Default.HintDisplay != "Off")
+            if (UserSettings.HintDisplay != HintDisplayMode.Off)
             {
-                newWidth = (Settings.Default.CompactMode) ? 1392.0 : 1800.0;
+                newWidth = (UserSettings.CompactMode) ? 1392.0 : 1800.0;
             }
             Width = newWidth;
             Height = 820;
-            if (Settings.Default.HintDisplay == "Multipath Hints")
+            if (UserSettings.HintDisplay == HintDisplayMode.MultipathHints)
             {
                 MultipathGrid.Visibility = Visibility.Visible;
                 DirectItemHintGrid.Visibility = Visibility.Hidden;
             }
-            if (Settings.Default.HintDisplay == "Direct Item Hints")
+            if (UserSettings.HintDisplay == HintDisplayMode.DirectItemHints)
             {
                 DirectItemHintGrid.Visibility = Visibility.Visible;
                 MultipathGrid.Visibility = Visibility.Hidden;
@@ -395,7 +813,7 @@ namespace TrackOMatic
         private void AdjustBasedOnCompactMode()
         {
             var isActuallyOn = (MultipathColumns.Width.Value == 2 && MultipathColumns.Width.IsStar);
-            var on = Settings.Default.CompactMode;
+            var on = UserSettings.CompactMode;
             if (on == isActuallyOn)
             {
                 return;
@@ -404,7 +822,7 @@ namespace TrackOMatic
             var totalColumns = on ? 2 : 3;
             MultipathColumns.Width = new GridLength(totalColumns, GridUnitType.Star);
             double newRatio = on ? 1.43 : 2.15;
-            if (Settings.Default.HintDisplay != "Off")
+            if (UserSettings.HintDisplay != HintDisplayMode.Off)
             {
                 HintsColumn.Width = new GridLength(newRatio, GridUnitType.Star);
             }
@@ -412,6 +830,19 @@ namespace TrackOMatic
             Width = newWidth;
             CompactModeMultipathChanges(on);
             CompactModeDirectItemChanges(on);
+        }
+
+        private void AdjustCollectibleColumns()
+        {
+            // When ShowTotalBPs is false and ShowCompanyCoins is true, move Blueprints Total to column 6
+            if (UserSettings.ShowTotalBPs && !UserSettings.ShowCompanyCoins)
+            {
+                Grid.SetColumn(BlueprintsTotal, 6);
+            }
+            else
+            {
+                Grid.SetColumn(BlueprintsTotal, 4);
+            }
         }
 
         private void ResetSize(object sender, RoutedEventArgs e)
@@ -432,18 +863,6 @@ namespace TrackOMatic
             {
                 BroadcastView.UpdateSongInfo(songGame, songName);
             }
-        }
-
-        public bool TopMostSetting
-        {
-            get { return Properties.Settings.Default.TopMost; }
-            set { Properties.Settings.Default.TopMost = value; }
-        }
-
-        public bool AutotrackingSetting
-        {
-            get { return Properties.Settings.Default.Autotracking; }
-            set { Properties.Settings.Default.Autotracking = value; }
         }
 
         private void rootGrid_LostFocus(object sender, RoutedEventArgs e)
@@ -512,7 +931,7 @@ namespace TrackOMatic
             OpenFileDialog openFileDialog = new();
             openFileDialog.Filter = "JSON files (*.json)|*.json";
 
-            string lastFolderPath = Properties.Settings.Default.LastFolderPath;
+            string lastFolderPath = AppState.LastFolderPath;
 
             if (!string.IsNullOrEmpty(lastFolderPath))
             {
@@ -524,8 +943,7 @@ namespace TrackOMatic
                 string selectedFilePath = openFileDialog.FileName;
                 string folderPath = Path.GetDirectoryName(selectedFilePath) ?? "";
 
-                Properties.Settings.Default.LastFolderPath = folderPath;
-                Properties.Settings.Default.Save();
+                AppState.LastFolderPath = folderPath;
                 Reset();
                 ParseSpoiler(selectedFilePath);
                 DataSaver.setSpoilerPath(selectedFilePath);
@@ -576,7 +994,7 @@ namespace TrackOMatic
                 var region = entry.Value;
                 region.Reset();
                 region.SetLevelOrderNumber(0);
-                if (entry.Key == RegionName.HIDEOUT_HELM && !Settings.Default.HelmInLevelOrder)
+                if (entry.Key == RegionName.HIDEOUT_HELM && !UserSettings.HelmInLevelOrder)
                 {
                     region.SetLevelOrderNumber(8);
                 }
@@ -705,20 +1123,19 @@ namespace TrackOMatic
             AutoUpdater.InstalledVersion = new Version("2.2.3");
 
             AutoUpdater.Start("https://raw.githubusercontent.com/Brian0255/Track-O-Matic/master/TrackOMatic/AutoUpdateInfo.xml");
-            if (Settings.Default.DesiredHeight == 0 || Settings.Default.DesiredWidth == 0)
+            if (AppState.DesiredHeight == 0 || AppState.DesiredWidth == 0)
             {
                 return;
             }
 
-            Width = Settings.Default.DesiredWidth;
-            Height = Settings.Default.DesiredHeight;
+            Width = AppState.DesiredWidth;
+            Height = AppState.DesiredHeight;
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            Settings.Default.DesiredWidth = Width;
-            Settings.Default.DesiredHeight = Height;
-            Settings.Default.Save();
+            AppState.DesiredWidth = Width;
+            AppState.DesiredHeight = Height;
             DataSaver.Save();
             Autotracker.Shutdown();
             if (BroadcastView != null)
@@ -739,20 +1156,6 @@ namespace TrackOMatic
             var shopkeeperColumnWidth = on ? 1.0 : 0;
             ItemsSeparator.Width = new GridLength(separatorWidth, GridUnitType.Star);
             ShopkeeperColumn.Width = new GridLength(shopkeeperColumnWidth, GridUnitType.Star);
-        }
-
-        private void FormatCollectibles()
-        {
-            int startColumn = 18;
-            for (int i = CollectiblesGrid.Children.Count - 1; i >= 0; --i)
-            {
-                var element = CollectiblesGrid.Children[i];
-                if (element is CollectibleItem collectible && collectible.Visibility == Visibility.Visible)
-                {
-                    Grid.SetColumn(collectible, startColumn);
-                    startColumn -= 2;
-                }
-            }
         }
 
         private void BroadcastClosed(object? sender, EventArgs e)

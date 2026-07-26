@@ -6,7 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 
 using TrackOMatic.Logic.Enums;
-using TrackOMatic.Properties;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
@@ -136,14 +136,17 @@ namespace TrackOMatic
             Text = newAmount;
         }
 
+        public IUserSettingsService UserSettings { get; init; }
+
         public CollectibleItem()
         {
             InitializeComponent();
+            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
         }
 
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (Settings.Default.Autotracking || !Interactible)
+            if (UserSettings.Autotracking || !Interactible)
             {
                 return;
             }
@@ -157,7 +160,7 @@ namespace TrackOMatic
 
         private void Image_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (Settings.Default.Autotracking || !Interactible)
+            if (UserSettings.Autotracking || !Interactible)
             {
                 return;
             }

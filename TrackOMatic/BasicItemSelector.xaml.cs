@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -5,17 +6,65 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 
+using TrackOMatic.Services;
+
 namespace TrackOMatic
 {
-    public partial class BasicItemSelector : Window
+    public partial class BasicItemSelector : Window, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public int SelectedImageIndex { get; private set; }
         private List<Image> images;
+        public IUserSettingsService UserSettings { get; init; }
+
+        /// <summary>
+        /// Proxy property for XAML binding to TopMost setting.
+        /// </summary>
+        public bool TopMostSetting
+        {
+            get => UserSettings.TopMost;
+            set
+            {
+                if (UserSettings.TopMost != value)
+                {
+                    UserSettings.TopMost = value;
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+            }
+        }
+
         public BasicItemSelector(List<List<BitmapImage>> toAdd)
         {
             SelectedImageIndex = -1;
             images = new();
             InitializeComponent();
+
+            // Get the injected user settings service via ServiceLocator
+            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
+            UserSettings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(IUserSettingsService.TopMost))
+                {
+                    OnPropertyChanged(nameof(TopMostSetting));
+                }
+            };
+            Topmost = UserSettings.TopMost;
+
+            // Subscribe to settings changes to keep TopMost in sync
+            UserSettings.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(IUserSettingsService.TopMost))
+                {
+                    Topmost = UserSettings.TopMost;
+                }
+            };
+
             for (int i = 0; i < toAdd.Count; ++i)
             {
                 var row = toAdd[i];

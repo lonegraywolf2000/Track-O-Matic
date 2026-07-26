@@ -9,6 +9,7 @@ using System.Windows;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Logic.Models.Autotracking;
+using TrackOMatic.Services;
 
 using Timer = System.Timers.Timer;
 
@@ -42,7 +43,6 @@ namespace TrackOMatic
         public int RandomizerVersion { get; private set; }
         public int RandomizerSubVersion { get; private set; }
 
-        private Dictionary<ItemName, RegionName> trackedItemLocations;
         private Timer timer;
 
         private bool attached = false;
@@ -55,8 +55,11 @@ namespace TrackOMatic
         private ItemType progHintItem;
         private IntPtr processHandle;
         private volatile bool resetRequested = false;
-        public Autotracker(ProcessNewItem processItemCallback, UpdateCollectible updateCollectibleCallback, SetRegionLighting setRegionLightingCallback, SetShopkeepers setShopkeepersCallback, SetSong setSong, UpdateUIAmountToNextHint updateUIAmountToNextHint, UpdateProgHintImage updateProgHintImage)
+
+        private IUserSettingsService UserSettings { get; init; }
+        public Autotracker(IUserSettingsService userSettings, ProcessNewItem processItemCallback, UpdateCollectible updateCollectibleCallback, SetRegionLighting setRegionLightingCallback, SetShopkeepers setShopkeepersCallback, SetSong setSong, UpdateUIAmountToNextHint updateUIAmountToNextHint, UpdateProgHintImage updateProgHintImage)
         {
+            UserSettings = userSettings;
             CurrentRegion = RegionName.UNKNOWN;
             previousRegion = RegionName.UNKNOWN;
             Checks = new();
@@ -435,7 +438,7 @@ namespace TrackOMatic
                 resetRequested = false;
                 ResetInternal();
             }
-            if (!Properties.Settings.Default.Autotracking)
+            if (!UserSettings.Autotracking)
             {
                 return;
             }
