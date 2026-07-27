@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
+using TrackOMatic.Services.SpoilerDeserialization;
 using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic.Services;
@@ -14,6 +15,9 @@ public static class ServiceRegistryExtensions
     /// </summary>
     public static IServiceCollection AddTrackOMaticServices(this IServiceCollection services)
     {
+        // Spoiler deserialization services
+        services.AddSingleton<IRawSpoilerFileDeserializer, RawSpoilerFileDeserializer>();
+
         // Existing application services
         services.AddSingleton<IUserSettingsService, UserSettingsService>();
         services.AddSingleton<IApplicationStateService, ApplicationStateService>();
