@@ -3,30 +3,28 @@ using TrackOMatic.Logic.Enums;
 namespace TrackOMatic.Logic.Models;
 
 /// <summary>
-/// Represents a saved hint with its associated data, including the hint panel key, location text, potion count text, path items, found items, and an optional hint ID.
+/// Represents a saved hint with its associated data, including the hint panel key, location text, potion count text, path items, found items, and a hint ID.
 /// </summary>
-/// <param name="hintPanelKey">The key of the hint panel.</param>
-/// <param name="locationText">The text describing the location of the hint.</param>
-/// <param name="potionCountText">The text describing the potion count.</param>
-/// <param name="pathItems">A dictionary of path items and their found status.</param>
-/// <param name="foundItems">A dictionary of found items and their found status.</param>
-/// <param name="hintId">The optional ID of the hint.</param>
-public class SavedHint(string hintPanelKey, string locationText, string potionCountText, Dictionary<ItemName, bool> pathItems, Dictionary<ItemName, bool> foundItems, string hintId = "")
+public class SavedHint
 {
     /// <summary>
-    /// The ID of the hint. This is meant to be auto-generated if it doesn't exist.
+    /// Gets the ID of the hint. This is meant to be auto-generated if it doesn't exist.
+    /// If not provided or empty, a 8-character ID will be generated from a random GUID during initialization.
     /// </summary>
-    public string HintId { get; set; } = hintId;
+    public string HintId { get; init; } = string.Empty;
+
     /// <summary>
     /// Gets the key of the hint panel associated with this saved hint.
     /// </summary>
-    /// <remarks>This should become the <see cref="HintPanelType"/> in the future.</remarks>
-    public string HintPanelKey { get; } = hintPanelKey;
+    /// <remarks>This should become the <see cref="HintPanelType"/> in the future. Hints cannot move across panels.</remarks>
+    public string HintPanelKey { get; init; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the location within the region/panel where the hint is relevant.
     /// </summary>
     /// <remarks>This is a free form text field, though drop downs can help guide users to a more specific location.</remarks>
-    public string LocationText { get; set; } = locationText;
+    public string LocationText { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the number of potions found within the specific region/panel.
     /// </summary>
@@ -34,15 +32,59 @@ public class SavedHint(string hintPanelKey, string locationText, string potionCo
     /// This is a free form text field, but should ideally only have numbers.
     /// This field is only relevant for the "Potion Count" hint panel, and should be ignored for other panels.
     /// </remarks>
-    public string PotionCountText { get; set; } = potionCountText;
+    public string PotionCountText { get; set; } = string.Empty;
+
     /// <summary>
     /// Gets or sets the dictionary of path items and their checked status.
     /// </summary>
     /// <remarks>This field is only relevant in the "Path Items" hint panel, and should be ignored for other panels.</remarks>
-    public Dictionary<ItemName, bool> PathItems { get; set; } = pathItems;
+    public Dictionary<ItemName, bool> PathItems { get; set; } = [];
+
     /// <summary>
     /// Gets or sets the dictionary of found items and their checked status.
     /// </summary>
     /// <remarks>This field is only unused in the Foolish and Potion Counts panels.</remarks>
-    public Dictionary<ItemName, bool> FoundItems { get; set; } = foundItems;
+    public Dictionary<ItemName, bool> FoundItems { get; set; } = [];
+
+    /// <summary>
+    /// Parameterless constructor for deserialization. All properties can be initialized via object initializers.
+    /// </summary>
+    public SavedHint()
+    {
+        // This constructor is used by JSON deserialization and allows all properties to be set via initializers.
+    }
+
+    /// <summary>
+    /// Initializes a new SavedHint with the specified parameters.
+    /// </summary>
+    /// <param name="hintPanelKey">The key of the hint panel (init-only, cannot be changed after initialization).</param>
+    /// <param name="locationText">The text describing the location of the hint.</param>
+    /// <param name="potionCountText">The text describing the potion count.</param>
+    /// <param name="pathItems">A dictionary of path items and their found status.</param>
+    /// <param name="foundItems">A dictionary of found items and their found status.</param>
+    /// <param name="hintId">The ID of the hint. If empty, will be auto-generated from a random GUID.</param>
+    public SavedHint(string hintPanelKey, string locationText, string potionCountText, Dictionary<ItemName, bool> pathItems, Dictionary<ItemName, bool> foundItems, string hintId = "")
+    {
+        HintPanelKey = hintPanelKey;
+        LocationText = locationText;
+        PotionCountText = potionCountText;
+        PathItems = pathItems;
+        FoundItems = foundItems;
+        HintId = GenerateHintIdIfNeeded(hintId);
+    }
+
+    /// <summary>
+    /// Generates a HintId if the provided ID is empty or null, using the first 8 characters of a random GUID.
+    /// </summary>
+    /// <param name="hintId">The hint ID to check and potentially replace.</param>
+    /// <returns>The provided hint ID if non-empty, or a newly generated 8-character ID from a GUID.</returns>
+    private static string GenerateHintIdIfNeeded(string hintId)
+    {
+        if (string.IsNullOrEmpty(hintId))
+        {
+            return Guid.NewGuid().ToString().Substring(0, 8);
+        }
+
+        return hintId;
+    }
 }

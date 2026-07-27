@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using TrackOMatic.Logic.Enums;
 
 namespace TrackOMatic.Logic.Events;
@@ -8,6 +10,7 @@ namespace TrackOMatic.Logic.Events;
 /// <param name="regionName">The name of the region where the barrier type changed.</param>
 /// <param name="oldValue">The old barrier type value.</param>
 /// <param name="newValue">The new barrier type value.</param>
+[method: SetsRequiredMembers]
 public class BlockerBarrierTypeChangedEventArgs(RegionName regionName, BarrierItems oldValue, BarrierItems newValue) : ValueChangedEventArgs<BarrierItems>(oldValue, newValue)
 {
     /// <summary>

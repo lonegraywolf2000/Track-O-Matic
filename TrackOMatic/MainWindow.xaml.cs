@@ -70,6 +70,7 @@ namespace TrackOMatic
 
         public IUserSettingsService UserSettings { get; init; }
         public IApplicationStateService AppState { get; init; }
+        public IDataPersistenceService DataPersistenceService { get; init; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -380,13 +381,17 @@ namespace TrackOMatic
 
         // Timer to save the data every minute. This is properly initialized, but the compiler is finicky.
         private Timer SaveTimer = null!;
-        public MainWindow(IUserSettingsService settingsSergice, IApplicationStateService appStateService)
-
+        public MainWindow(
+            IUserSettingsService settingsSergice,
+            IApplicationStateService appStateService,
+            IDataPersistenceService dataPersistenceService
+        )
         {
             DataContext = this;
             InitializeComponent();
             UserSettings = settingsSergice;
             AppState = appStateService;
+            DataPersistenceService = dataPersistenceService;
 
             // Subscribe to settings changes to notify XAML bindings
             UserSettings.PropertyChanged += (s, e) =>
@@ -502,7 +507,7 @@ namespace TrackOMatic
             }
 
             SpoilerParser = new(this, UserSettings);
-            DataSaver = new(this);
+            DataSaver = new(this, DataPersistenceService);
             Reset();
             AdjustBasedOnCompactMode();
         }

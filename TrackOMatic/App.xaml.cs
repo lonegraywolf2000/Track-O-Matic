@@ -37,10 +37,12 @@ public partial class App : Application
 
         var settingsService = _serviceProvider.GetRequiredService<IUserSettingsService>();
         var appStateService = _serviceProvider.GetRequiredService<IApplicationStateService>();
+        var dataPersistenceService = _serviceProvider.GetRequiredService<IDataPersistenceService>();
         MainWindow mainWindow = new
         (
             settingsService,
-            appStateService
+            appStateService,
+            dataPersistenceService
         );
         mainWindow.Show();
 

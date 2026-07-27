@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using TrackOMatic.Logic.Enums;
 
 namespace TrackOMatic.Logic.Events;
@@ -8,6 +10,7 @@ namespace TrackOMatic.Logic.Events;
 /// <param name="itemType">The type of collectible item that changed.</param>
 /// <param name="oldValue">The old value of the collectible item.</param>
 /// <param name="newValue">The new value of the collectible item.</param>
+[method: SetsRequiredMembers]
 public class CollectiblesChangedEventArgs(ItemType itemType, int oldValue, int newValue) : ValueChangedEventArgs<int>(oldValue, newValue)
 {
     public required ItemType ItemType { get; init; } = itemType;

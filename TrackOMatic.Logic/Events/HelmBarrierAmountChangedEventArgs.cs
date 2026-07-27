@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using TrackOMatic.Logic.Enums;
 
 namespace TrackOMatic.Logic.Events;
@@ -8,7 +10,8 @@ namespace TrackOMatic.Logic.Events;
 /// <param name="helmDoor">The Helm door associated with the barrier constraint change.</param>
 /// <param name="oldValue">The old value of the barrier constraint.</param>
 /// <param name="newValue">The new value of the barrier constraint.</param>
-public class HelmBarrierAmountChangedEventArgs(HelmDoor helmDoor, int oldValue, int newValue) : ValueChangedEventArgs<int>(oldValue, newValue)
+[method: SetsRequiredMembers]
+public class HelmBarrierAmountChangedEventArgs(HelmDoor helmDoor, string oldValue, string newValue) : ValueChangedEventArgs<string>(oldValue, newValue)
 {
     /// <summary>
     /// Gets the Helm door associated with the barrier constraint change.

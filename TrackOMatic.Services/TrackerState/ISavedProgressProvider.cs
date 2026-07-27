@@ -18,11 +18,11 @@ public interface ISavedProgressProvider
     /// Called when SavedProgress is replaced (e.g., during Reset or Load).
     /// Services holding a reference should subscribe to this event and re-initialize.
     /// </summary>
-    event EventHandler<SavedProgressChangedEventArgs>? ProgressChanged;
+    event EventHandler<ProgressReplacedEventArgs>? ProgressChanged;
 
     /// <summary>
     /// Updates the current SavedProgress instance and fires ProgressChanged event.
-    /// Called by DataSaver when Reset() or ReadSavedDataFromFile() replaces the instance.
+    /// Called by SavedProgressProvider implementation when Reset() or Load() replaces the instance.
     /// </summary>
     void UpdateProgress(SavedProgress newProgress);
 }

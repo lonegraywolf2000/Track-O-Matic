@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using TrackOMatic.Logic.Enums;
 
 namespace TrackOMatic.Logic.Events;
@@ -8,6 +10,7 @@ namespace TrackOMatic.Logic.Events;
 /// <param name="helmDoor">The Helm door associated with the barrier type change.</param>
 /// <param name="oldValue">The old barrier type value.</param>
 /// <param name="newValue">The new barrier type value.</param>
+[method: SetsRequiredMembers]
 public class HelmBarrierTypeChangedEventArgs(HelmDoor helmDoor, BarrierItems oldValue, BarrierItems newValue) : ValueChangedEventArgs<BarrierItems>(oldValue, newValue)
 {
     /// <summary>

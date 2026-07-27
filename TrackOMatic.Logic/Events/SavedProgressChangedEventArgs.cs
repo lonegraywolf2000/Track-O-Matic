@@ -1,3 +1,5 @@
+using TrackOMatic.Logic.Models;
+
 namespace TrackOMatic.Logic.Events;
 
 public class SavedProgressChangedEventArgs: EventChangeData
@@ -8,12 +10,9 @@ public class SavedProgressChangedEventArgs: EventChangeData
     public string? FilePath { get; init; }
 
     /// <summary>
-    /// Gets a flag indicating whether the save operation succeeded.
-    /// </summary>
-    public required bool IsSuccessful { get; init; }
-
-    /// <summary>
     /// Gets the error message if the operation failed. Successful saves should have this as null.
     /// </summary>
     public string? ErrorMessage { get; init; }
+
+    public bool Success { get; init; }
 }

@@ -4,6 +4,7 @@ using System.IO;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
@@ -12,11 +13,14 @@ namespace TrackOMatic
         private SavedProgress savedProgress;
         public MainWindow MainWindow { get; }
 
+        private readonly IDataPersistenceService _dataPersistenceService;
+
         public bool WriteToFile { get; set; }
 
-        public DataSaver(MainWindow mainWindow)
+        public DataSaver(MainWindow mainWindow, IDataPersistenceService dataPersistenceService)
         {
             MainWindow = mainWindow;
+            _dataPersistenceService = dataPersistenceService;
             savedProgress = new SavedProgress();
         }
 

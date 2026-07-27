@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 using TrackOMatic.Logic.Models;
 
 namespace TrackOMatic.Logic.Events;
@@ -8,6 +10,7 @@ public class ItemStateChangedEventArgs : EventChangeData
 
     public SavedItem? PreviousState { get; init; }
 
+    [SetsRequiredMembers]
     public ItemStateChangedEventArgs(SavedItem updatedItem, SavedItem? previousState = null, string? changeReason = null)
     {
         UpdatedItem = updatedItem;
