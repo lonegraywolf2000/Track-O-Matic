@@ -16,8 +16,7 @@ public partial class App : Application
     public App()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IUserSettingsService, UserSettingsService>();
-        services.AddSingleton<IApplicationStateService, ApplicationStateService>();
+        services.AddTrackOMaticServices();
 
         _serviceProvider = services.BuildServiceProvider();
         ServiceLocator.Initialize(_serviceProvider);
