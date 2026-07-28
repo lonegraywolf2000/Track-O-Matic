@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
+using TrackOMatic.Logic.Attributes;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 
@@ -67,5 +70,51 @@ public static class Extensions
 
         // No valid reason to keep
         return false;
+    }
+
+    /// <summary>
+    /// Gets the spoiler log label for a <see cref="RegionName"/> value.
+    /// If no label is defined, returns the enum value name (UPPER_CASE format).
+    /// </summary>
+    /// <param name="region">The region enum value.</param>
+    /// <returns>The spoiler log label string, or the enum name if no attribute is defined.</returns>
+    public static string GetSpoilerLogLabel(this RegionName region)
+    {
+        var field = region.GetType().GetField(region.ToString());
+        if (field == null)
+        {
+            return region.ToString();
+        }
+
+        var attribute = field.GetCustomAttribute<SpoilerLogLabelAttribute>();
+        return attribute?.Label ?? region.ToString();
+    }
+
+    /// <summary>
+    /// Attempts to parse a spoiler log label into a <see cref="RegionName"/> enum value.
+    /// Invalid labels return <see cref="RegionName.UNKNOWN"/>.
+    /// </summary>
+    /// <param name="label">The spoiler log label (e.g., "Angry Aztec").</param>
+    /// <returns>
+    /// The corresponding <see cref="RegionName"/> value, or <see cref="RegionName.UNKNOWN"/> if not found.
+    /// </returns>
+    public static RegionName TryParseRegionFromLabel(string label)
+    {
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return RegionName.UNKNOWN;
+        }
+
+        var fields = typeof(RegionName).GetFields(BindingFlags.Public | BindingFlags.Static);
+        foreach (var field in fields)
+        {
+            var attribute = field.GetCustomAttribute<SpoilerLogLabelAttribute>();
+            if (attribute?.Label == label)
+            {
+                return (RegionName)field.GetValue(null)!;
+            }
+        }
+
+        return RegionName.UNKNOWN;
     }
 }

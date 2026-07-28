@@ -15,12 +15,12 @@ public static class ServiceRegistryExtensions
     /// </summary>
     public static IServiceCollection AddTrackOMaticServices(this IServiceCollection services)
     {
-        // Spoiler deserialization services
-        services.AddSingleton<IRawSpoilerFileDeserializer, RawSpoilerFileDeserializer>();
-
         // Existing application services
         services.AddSingleton<IUserSettingsService, UserSettingsService>();
         services.AddSingleton<IApplicationStateService, ApplicationStateService>();
+
+        // Unified spoiler deserialization and parsing service
+        services.AddSingleton<ISpoilerService, SpoilerParserService>();
 
         // TODO: Flesh out spoiler log service, track state service, and eventual hint service.
         services.AddSingleton<ISavedProgressProvider, SavedProgressProvider>();

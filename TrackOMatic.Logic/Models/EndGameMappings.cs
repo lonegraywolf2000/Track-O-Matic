@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 using TrackOMatic.Logic.Enums;
 
 namespace TrackOMatic.Logic.Models;
@@ -57,4 +53,16 @@ public class EndGameMappings
     }
 
     public static string DoorIndexToImageResource(BarrierItems item) => DoorIndexToImageResource((int)item);
+
+    public static readonly List<RegionName> LOBBY_ORDER =
+    [
+        RegionName.JUNGLE_JAPES,
+        RegionName.ANGRY_AZTEC,
+        RegionName.FRANTIC_FACTORY,
+        RegionName.GLOOMY_GALLEON,
+        RegionName.FUNGI_FOREST,
+        RegionName.CRYSTAL_CAVES,
+        RegionName.CREEPY_CASTLE,
+        RegionName.HIDEOUT_HELM
+    ];
 }

@@ -100,31 +100,6 @@ public static class SpoilerParserMappings
         {"Chunky Kong's Cage", RegionName.FRANTIC_FACTORY }
     };
 
-    public static Dictionary<string, RegionName> SHORTENED_SHOP_TO_REGION { get; } = new()
-    {
-        {"DK", RegionName.DK_ISLES },
-        {"Japes", RegionName.JUNGLE_JAPES },
-        {"Aztec", RegionName.ANGRY_AZTEC },
-        {"Factory", RegionName.FRANTIC_FACTORY },
-        {"Galleon", RegionName.GLOOMY_GALLEON },
-        {"Forest", RegionName.FUNGI_FOREST },
-        {"Caves", RegionName.CRYSTAL_CAVES},
-        {"Castle", RegionName.CREEPY_CASTLE },
-    };
-
-    public static Dictionary<RegionName, string> REGION_NAME_TO_SHORTENED { get; } = new()
-    {
-        {RegionName.DK_ISLES, "DK ISLES" },
-        {RegionName.JUNGLE_JAPES, "JAPES" },
-        {RegionName.ANGRY_AZTEC, "AZTEC" },
-        {RegionName.FRANTIC_FACTORY, "FACTORY" },
-        {RegionName.GLOOMY_GALLEON, "GALLEON" },
-        {RegionName.FUNGI_FOREST, "FOREST" },
-        {RegionName.CRYSTAL_CAVES, "CAVES" },
-        {RegionName.CREEPY_CASTLE, "CASTLE" },
-        {RegionName.HIDEOUT_HELM, "HELM" }
-    };
-
     public static Dictionary<string, VialColor> VIAL_MAP { get; } = new()
     {
         {"Clear Vial", VialColor.CLEAR },
@@ -157,6 +132,22 @@ public static class SpoilerParserMappings
         {0xCD, Bosses.LANKY },
         {0xCE, Bosses.TINY },
         {0xCF, Bosses.CHUNKY },
+    };
+
+    public static Dictionary<string, PointCategory> POINT_NAME_TO_CATEGORY { get; } = new()
+    {
+        { "kongs", PointCategory.Kong },
+        { "keys", PointCategory.Key },
+        { "guns", PointCategory.Gun },
+        { "instruments",PointCategory.Instrument },
+        { "active_moves", PointCategory.PhysicalMove },
+        { "pad_moves", PointCategory.PadMove },
+        { "barrel_moves", PointCategory.BarrelMove },
+        { "training_moves", PointCategory.TrainingMove },
+        { "important_shared_moves",PointCategory.SharedMove },
+        { "fairy_moves", PointCategory.FairyMove },
+        { "shopkeepers", PointCategory.Shopkeeper },
+        { "bean", PointCategory.Bean }
     };
 
     public static Dictionary<string, ItemType> POINT_NAME_TO_GROUP { get; } = new()

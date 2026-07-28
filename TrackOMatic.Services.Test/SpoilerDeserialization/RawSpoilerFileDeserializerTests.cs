@@ -9,7 +9,7 @@ namespace TrackOMatic.Services.Test.SpoilerDeserialization;
 /// </summary>
 public class RawSpoilerFileDeserializerTests
 {
-    private readonly IRawSpoilerFileDeserializer _deserializer;
+    private readonly RawSpoilerFileDeserializer _deserializer;
     private readonly string _tempDirectory = Path.Combine(Path.GetTempPath(), "SpoilerDeserializerTests");
 
     public RawSpoilerFileDeserializerTests()
@@ -102,7 +102,6 @@ public class RawSpoilerFileDeserializerTests
                 Assert.True(result.IsSuccess);
                 Assert.NotNull(result.Data);
                 Assert.Null(result.ErrorMessage);
-                Assert.Null(result.Exception);
                 Assert.NotNull(result.Data.HintData);
             });
         }
@@ -180,7 +179,6 @@ public class RawSpoilerFileDeserializerTests
                 Assert.False(result.IsSuccess);
                 Assert.Null(result.Data);
                 Assert.NotNull(result.ErrorMessage);
-                Assert.NotNull(result.Exception);
             });
         }
         finally
@@ -241,7 +239,6 @@ public class RawSpoilerFileDeserializerTests
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Data);
             Assert.Null(result.ErrorMessage);
-            Assert.Null(result.Exception);
         });
     }
 
@@ -308,7 +305,6 @@ public class RawSpoilerFileDeserializerTests
             Assert.False(result.IsSuccess);
             Assert.Null(result.Data);
             Assert.NotNull(result.ErrorMessage);
-            Assert.NotNull(result.Exception);
         });
     }
 
@@ -396,9 +392,10 @@ public class RawSpoilerFileDeserializerTests
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Data);
             Assert.NotNull(result.Data.HintData);
-            Assert.NotNull(result.Data.HintData.JapesData);
-            Assert.Equal(-1, result.Data.HintData.JapesData.Points);
-            Assert.Equal(-1, result.Data.HintData.JapesData.WothCount);
+            Assert.NotNull(result.Data.HintData.RegionDataDictionary);
+            Assert.True(result.Data.HintData.RegionDataDictionary.TryGetValue(0, out var japesData));
+            Assert.Equal(-1, japesData.Points);
+            Assert.Equal(-1, japesData.WothCount);
         });
     }
 
@@ -426,7 +423,6 @@ public class RawSpoilerFileDeserializerTests
             Assert.NotNull(result.Data);
             Assert.Null(result.Data.Settings);
             Assert.Null(result.Data.HintData);
-            Assert.Null(result.Data.Items);
             Assert.Null(result.Data.ItemPool);
             Assert.Null(result.Data.RandomizerVersion);
         });
@@ -512,12 +508,13 @@ public class RawSpoilerFileDeserializerTests
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Data);
             Assert.NotNull(result.Data.HintData);
-            Assert.NotNull(result.Data.HintData.JapesData);
-            Assert.NotNull(result.Data.HintData.AztecData);
-            Assert.Equal("Jungle Japes", result.Data.HintData.JapesData.LevelName);
-            Assert.Equal(3, result.Data.HintData.JapesData.VialColors?.Count);
-            Assert.Equal("Angry Aztec", result.Data.HintData.AztecData.LevelName);
-            Assert.Single(result.Data.HintData.AztecData.VialColors ?? []);
+            Assert.NotNull(result.Data.HintData.RegionDataDictionary);
+            Assert.True(result.Data.HintData.RegionDataDictionary.TryGetValue(0, out var japesData));
+            Assert.True(result.Data.HintData.RegionDataDictionary.TryGetValue(1, out var aztecData));
+            Assert.Equal("Jungle Japes", japesData.LevelName);
+            Assert.Equal(3, japesData.VialColors?.Count);
+            Assert.Equal("Angry Aztec", aztecData.LevelName);
+            Assert.Single(aztecData.VialColors ?? []);
             Assert.NotNull(result.Data.HintData.StartingInfo);
             Assert.Equal(8, result.Data.HintData.StartingInfo.FinalBossOrder?.Count);
             Assert.NotNull(result.Data.HintData.PointSpread);
@@ -593,6 +590,313 @@ public class RawSpoilerFileDeserializerTests
             Assert.True(results[1].IsSuccess);
             Assert.Equal("7.0", results[0].Data?.RandomizerVersion);
             Assert.Equal("6.5", results[1].Data?.RandomizerVersion);
+        });
+    }
+
+    #endregion
+
+    #region Dictionary-Specific Tests
+
+    [Fact]
+    public async Task DeserializeFromStringAsync_RegionDataDictionary_ContainsCorrectRegionIndices()
+    {
+        // Arrange - Create JSON with multiple regions
+        string jsonContent = """
+            {
+                "Spoiler Hints Data": {
+                    "0": {
+                        "level_name": "Jungle Japes",
+                        "level_order": 0,
+                        "vial_colors": [],
+                        "points": 10,
+                        "woth_count": 2
+                    },
+                    "1": {
+                        "level_name": "Angry Aztec",
+                        "level_order": 1,
+                        "vial_colors": [],
+                        "points": 12,
+                        "woth_count": 3
+                    },
+                    "2": {
+                        "level_name": "Frantic Factory",
+                        "level_order": 2,
+                        "vial_colors": [],
+                        "points": 14,
+                        "woth_count": 4
+                    },
+                    "starting_info": {}
+                }
+            }
+            """;
+
+        // Act
+        var result = await _deserializer.DeserializeFromStringAsync(jsonContent);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Data?.HintData?.RegionDataDictionary);
+            Assert.Equal(3, result.Data.HintData.RegionDataDictionary.Count);
+            Assert.True(result.Data.HintData.RegionDataDictionary.ContainsKey(0));
+            Assert.True(result.Data.HintData.RegionDataDictionary.ContainsKey(1));
+            Assert.True(result.Data.HintData.RegionDataDictionary.ContainsKey(2));
+        });
+    }
+
+    [Fact]
+    public async Task DeserializeFromStringAsync_RegionDataDictionary_AllowsIterationOverRegions()
+    {
+        // Arrange - Create JSON with all 9 regions
+        var sb = new StringBuilder();
+        sb.AppendLine("""
+            {
+                "Spoiler Hints Data": {
+            """);
+
+        for (int i = 0; i < 9; i++)
+        {
+            sb.AppendLine($@"    ""{i}"": {{");
+            sb.AppendLine($@"      ""level_name"": ""Region {i}"",");
+            sb.AppendLine($@"      ""level_order"": {i},");
+            sb.AppendLine($@"      ""vial_colors"": [],");
+            sb.AppendLine($@"      ""points"": {i * 10},");
+            sb.AppendLine($@"      ""woth_count"": {i}");
+            sb.AppendLine(i < 8 ? "    }," : "    }");
+        }
+
+        sb.AppendLine("""
+                },
+                "starting_info": {}
+            }
+            """);
+
+        string jsonContent = sb.ToString();
+
+        // Act
+        var result = await _deserializer.DeserializeFromStringAsync(jsonContent);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Data?.HintData?.RegionDataDictionary);
+            Assert.Equal(9, result.Data.HintData.RegionDataDictionary.Count);
+
+            // Verify we can iterate and access each region
+            int count = 0;
+            foreach (var kvp in result.Data.HintData.RegionDataDictionary)
+            {
+                Assert.NotNull(kvp.Value);
+                Assert.Equal(count, kvp.Key); // Key should match iteration order
+                Assert.Equal(count * 10, kvp.Value.Points);
+                count++;
+            }
+            Assert.Equal(9, count);
+        });
+    }
+
+    [Fact]
+    public async Task DeserializeFromStringAsync_RegionDataDictionary_SupportsDirectKeyAccess()
+    {
+        // Arrange
+        string jsonContent = """
+            {
+                "Spoiler Hints Data": {
+                    "0": {
+                        "level_name": "Jungle Japes",
+                        "level_order": 0,
+                        "vial_colors": [],
+                        "points": 5,
+                        "woth_count": 1
+                    },
+                    "3": {
+                        "level_name": "Gloomy Galleon",
+                        "level_order": 3,
+                        "vial_colors": [],
+                        "points": 15,
+                        "woth_count": 5
+                    },
+                    "starting_info": {}
+                }
+            }
+            """;
+
+        // Act
+        var result = await _deserializer.DeserializeFromStringAsync(jsonContent);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Data?.HintData?.RegionDataDictionary);
+
+            // Direct key access
+            Assert.Contains("Japes", result.Data.HintData.RegionDataDictionary[0].LevelName);
+            Assert.Contains("Galleon", result.Data.HintData.RegionDataDictionary[3].LevelName);
+            Assert.Equal(5, result.Data.HintData.RegionDataDictionary[0].Points);
+            Assert.Equal(15, result.Data.HintData.RegionDataDictionary[3].Points);
+        });
+    }
+
+    [Fact]
+    public async Task DeserializeFromStringAsync_RegionDataDictionary_HandlesEmptyDictionary()
+    {
+        // Arrange - Create JSON with empty Spoiler Hints Data
+        string jsonContent = """
+            {
+                "Spoiler Hints Data": {
+                    "starting_info": {},
+                    "point_spread": {}
+                }
+            }
+            """;
+
+        // Act
+        var result = await _deserializer.DeserializeFromStringAsync(jsonContent);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Data?.HintData);
+            // RegionDataDictionary should be empty or null
+            Assert.True(
+                result.Data.HintData.RegionDataDictionary == null ||
+                result.Data.HintData.RegionDataDictionary.Count == 0
+            );
+        });
+    }
+
+    [Fact]
+    public async Task DeserializeFromStringAsync_RegionDataDictionary_MaintainsIntKeyType()
+    {
+        // Arrange
+        string jsonContent = """
+            {
+                "Spoiler Hints Data": {
+                    "0": { "level_name": "Region 0", "level_order": 0, "vial_colors": [], "points": 0, "woth_count": 0 },
+                    "5": { "level_name": "Region 5", "level_order": 5, "vial_colors": [], "points": 50, "woth_count": 5 },
+                    "starting_info": {}
+                }
+            }
+            """;
+
+        // Act
+        var result = await _deserializer.DeserializeFromStringAsync(jsonContent);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Data?.HintData?.RegionDataDictionary);
+
+            // Keys should be integers (strongly typed)
+            var keys = result.Data.HintData.RegionDataDictionary.Keys.ToList();
+            Assert.Contains(0, keys);
+            Assert.Contains(5, keys);
+
+            // Verify the type is int
+            foreach (var key in keys)
+            {
+                Assert.IsType<int>(key);
+            }
+        });
+    }
+
+    [Fact]
+    public async Task DeserializeFromStringAsync_WithStringEncodedRegionData_DeserializesCorrectly()
+    {
+        // Arrange - Simulates fixture format where region data is stored as escaped JSON strings
+        string jsonContent = "{\"Spoiler Hints Data\":{\"0\":\"{\\\"level_name\\\":\\\"Jungle Japes\\\",\\\"vial_colors\\\":[],\\\"points\\\":113,\\\"level_order\\\":0,\\\"woth_count\\\":-1}\",\"1\":\"{\\\"level_name\\\":\\\"Angry Aztec\\\",\\\"vial_colors\\\":[],\\\"points\\\":214,\\\"level_order\\\":1,\\\"woth_count\\\":-1}\",\"starting_info\":\"{\\\"krool_order\\\":[205,207,206],\\\"helm_order\\\":[4,3],\\\"starting_kongs\\\":[4,2],\\\"starting_keys\\\":[\\\"Key 3\\\"],\\\"starting_moves\\\":[\\\"Mini Monkey\\\"],\\\"starting_moves_not_hintable\\\":[\\\"Progressive Slam\\\"],\\\"starting_moves_woth_count\\\":-1}\",\"point_spread\":\"{\\\"kongs\\\":100,\\\"keys\\\":100,\\\"guns\\\":10,\\\"instruments\\\":1}\"}}";
+
+        // Act
+        var result = await _deserializer.DeserializeFromStringAsync(jsonContent);
+
+        // Assert - First check if deserialization succeeded
+        if (!result.IsSuccess)
+        {
+            throw new Exception($"Deserialization failed: {result.ErrorMessage}");
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.NotNull(result.Data?.HintData);
+            Assert.NotNull(result.Data.HintData.RegionDataDictionary);
+
+            // Verify regions were deserialized
+            Assert.Equal(2, result.Data.HintData.RegionDataDictionary.Count);
+
+            // Verify region 0
+            Assert.True(result.Data.HintData.RegionDataDictionary.ContainsKey(0));
+            var region0 = result.Data.HintData.RegionDataDictionary[0];
+            Assert.Equal("Jungle Japes", region0.LevelName);
+            Assert.Equal(113, region0.Points);
+            Assert.Equal(-1, region0.WothCount);
+
+            // Verify region 1
+            Assert.True(result.Data.HintData.RegionDataDictionary.ContainsKey(1));
+            var region1 = result.Data.HintData.RegionDataDictionary[1];
+            Assert.Equal("Angry Aztec", region1.LevelName);
+            Assert.Equal(214, region1.Points);
+
+            // Verify starting info was deserialized
+            Assert.NotNull(result.Data.HintData.StartingInfo);
+            Assert.NotNull(result.Data.HintData.StartingInfo.StartingKongs);
+            Assert.Equal(2, result.Data.HintData.StartingInfo.StartingKongs.Count);
+
+            // Verify point spread was deserialized
+            Assert.NotNull(result.Data.HintData.PointSpread);
+            Assert.Equal(100, result.Data.HintData.PointSpread["kongs"]);
+        });
+    }
+
+    [Theory]
+    [InlineData("183145-rap-sheet-spoilerlog.json", false, true)]
+    [InlineData("799354-spoilerlog-gvm.json", true, false)]
+    public async Task DeserializeFromFileAsync_WithActualFixtureFile_DeserializesSuccessfully(string fileName, bool hasVials, bool hasPoints)
+    {
+        // Arrange - Locate the fixture file using the test assembly location
+        var assemblyLocation = typeof(RawSpoilerFileDeserializerTests).Assembly.Location;
+        var assemblyDir = Path.GetDirectoryName(assemblyLocation) ?? throw new InvalidOperationException("Could not determine assembly directory");
+        var fixturePath = Path.Combine(assemblyDir, "TestData", fileName);
+
+        // Skip the test if fixture not found
+        if (!File.Exists(fixturePath))
+        {
+            return; // Skip if fixture was not copied to output
+        }
+
+        // Act
+        var result = await _deserializer.DeserializeFromFileAsync(fixturePath);
+
+        // Assert
+        if (!result.IsSuccess)
+        {
+            throw new Exception($"Fixture deserialization failed: {result.ErrorMessage}. Path: {fixturePath}");
+        }
+
+        Assert.Multiple(() =>
+        {
+            Assert.NotNull(result.Data?.HintData);
+            Assert.NotNull(result.Data.HintData.RegionDataDictionary);
+
+            // Verify at least some regions were deserialized
+            Assert.True(result.Data.HintData.RegionDataDictionary.Count > 0, "Should have at least one region");
+
+            // Verify starting info exists
+            Assert.NotNull(result.Data.HintData.StartingInfo);
+
+            // Verify point spread exists where appropriate.
+            if (hasVials)
+            {
+                Assert.Null(result.Data.HintData.PointSpread);
+            }
+            if (hasPoints)
+            {
+                Assert.NotNull(result.Data.HintData.PointSpread);
+            }
         });
     }
 

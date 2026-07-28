@@ -1,21 +1,14 @@
-using System.Text.Json.Serialization;
+using TrackOMatic.Logic.Enums;
 
 namespace TrackOMatic.Logic.Models.Spoilers;
 
 public class RegionSpoilerData
 {
-    [JsonPropertyName("level_name")]
-    public string? LevelName { get; init; }
+    public List<VialColor> VialColors { get; set; } = [];
 
-    [JsonPropertyName("level_order")]
-    public int? LevelOrder { get; init; }
+    public int Points { get; set; } = -1;
 
-    [JsonPropertyName("vial_colors")]
-    public List<string>? VialColors { get; init; }
+    public int WothCount { get; set; } = -1;
 
-    [JsonPropertyName("points")]
-    public int Points { get; init; }
 
-    [JsonPropertyName("woth_count")]
-    public int WothCount { get; init; }
 }

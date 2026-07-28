@@ -38,11 +38,13 @@ public partial class App : Application
         var settingsService = _serviceProvider.GetRequiredService<IUserSettingsService>();
         var appStateService = _serviceProvider.GetRequiredService<IApplicationStateService>();
         var dataPersistenceService = _serviceProvider.GetRequiredService<IDataPersistenceService>();
+        var spoilerService = _serviceProvider.GetRequiredService<ISpoilerService>();
         MainWindow mainWindow = new
         (
             settingsService,
             appStateService,
-            dataPersistenceService
+            dataPersistenceService,
+            spoilerService
         );
         mainWindow.Show();
 

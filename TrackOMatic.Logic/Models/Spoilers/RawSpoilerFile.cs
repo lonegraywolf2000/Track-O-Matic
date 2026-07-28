@@ -21,12 +21,6 @@ public class RawSpoilerFile
     public SpoilerHintData? HintData { get; init; }
 
     /// <summary>
-    /// Gets the list of items organized by category from the spoiler file.
-    /// </summary>
-    [JsonPropertyName("Items")]
-    public Dictionary<string, Dictionary<string, string>>? Items { get; init; }
-
-    /// <summary>
     /// Gets the item pool from the spoiler file.
     /// </summary>
     /// <remarks>Surprisingly, this does not list every single move that can be gotten.</remarks>

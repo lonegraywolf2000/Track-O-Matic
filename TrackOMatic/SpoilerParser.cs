@@ -1,151 +1,25 @@
-using Newtonsoft.Json;
-
-using System.IO;
-using System.Text.RegularExpressions;
 using System.Windows;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
+using TrackOMatic.Logic.Models.Spoilers;
 using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
     public class SpoilerParser
     {
-        private int slamCount = 0;
-        public int RNGSeed = 0;
         public MainWindow MainWindow { get; }
-        public Dictionary<ItemName, RegionName> StartingItems { get; private set; } = new();
-        public Dictionary<ItemName, RegionName> TrainingItems { get; private set; } = new();
+        public Dictionary<ItemName, RegionName> StartingItems { get; private set; } = [];
 
         private IUserSettingsService UserSettings { get; init; }
-        public SpoilerParser(MainWindow mainWindow, IUserSettingsService userSettings)
+        private ISpoilerService SpoilerService { get; set; }
+
+        public SpoilerParser(MainWindow mainWindow, IUserSettingsService userSettings, ISpoilerService spoilerService)
         {
             MainWindow = mainWindow;
             UserSettings = userSettings;
-        }
-
-        private string CheckForSlam(string itemString)
-        {
-            if (itemString != "Progressive Slam")
-            {
-                return itemString;
-            }
-
-            slamCount++;
-            itemString += " " + slamCount;
-            return itemString;
-        }
-        private bool ValidItemAndRegionString(string regionString, string itemString)
-        {
-            if (!SpoilerParserMappings.ITEM_MAP.ContainsKey(itemString))
-            {
-                return false;
-            }
-
-            if (!SpoilerParserMappings.REGION_MAP.ContainsKey(regionString))
-            {
-                return false;
-            }
-
-            return true;
-        }
-        private void CheckForTrainingItem(string itemString, ItemName itemName)
-        {
-            if (itemString.Contains("Training Barrel") || itemString.Contains("Pre-Given Move"))
-            {
-                TrainingItems[itemName] = RegionName.DK_ISLES;
-            }
-        }
-        private void ReadSpecialItemRegion(Dictionary<string, string> region)
-        {
-            foreach (var entry in region)
-            {
-                var itemLocation = entry.Key;
-                var itemString = entry.Value;
-                itemString = CheckForSlam(itemString);
-                if (!ValidItemAndRegionString(itemLocation, itemString))
-                {
-                    continue;
-                }
-
-                var regionName = SpoilerParserMappings.REGION_MAP[itemLocation];
-                var itemName = SpoilerParserMappings.ITEM_MAP[itemString];
-                MainWindow.ITEM_NAME_TO_REGION[itemName] = regionName;
-            }
-        }
-
-        private void ReadShops(Dictionary<string, string> shopRegion)
-        {
-            foreach (var entry in shopRegion)
-            {
-                var fullShopName = entry.Key;
-                var itemString = entry.Value;
-                itemString = CheckForSlam(itemString);
-                var pricePattern = @"^(.*)\s+\(";
-                Match match = Regex.Match(itemString, pricePattern);
-                if (!match.Success)
-                {
-                    continue;
-                }
-
-                var itemWithoutPrice = match.Groups[1].Value;
-                var shortenedShopName = fullShopName.Split(' ')[0];
-                if (!SpoilerParserMappings.ITEM_MAP.ContainsKey(itemWithoutPrice))
-                {
-                    continue;
-                }
-
-                var itemName = SpoilerParserMappings.ITEM_MAP[itemWithoutPrice];
-                MainWindow.ITEM_NAME_TO_REGION[itemName] = SpoilerParserMappings.SHORTENED_SHOP_TO_REGION[shortenedShopName];
-            }
-        }
-
-        private void ReadStandardRegion(string regionString, Dictionary<string, string> itemList)
-        {
-            foreach (var entry in itemList)
-            {
-                var itemLocation = entry.Key;
-                var itemString = entry.Value;
-                itemString = CheckForSlam(itemString);
-                if (!ValidItemAndRegionString(regionString, itemString))
-                {
-                    continue;
-                }
-
-                var regionName = SpoilerParserMappings.REGION_MAP[regionString];
-                var itemName = SpoilerParserMappings.ITEM_MAP[itemString];
-                CheckForTrainingItem(itemLocation, itemName);
-                MainWindow.ITEM_NAME_TO_REGION[itemName] = regionName;
-            }
-        }
-
-        private void ReadItems(dynamic JSONObject)
-        {
-            if (JSONObject["Items"] == null)
-            {
-                return;
-            }
-
-            var items = JSONObject["Items"].ToObject<Dictionary<string, Dictionary<string, string>>>();
-            foreach (var entry in items)
-            {
-                var itemArea = entry.Key;
-                var itemList = entry.Value;
-                switch (itemArea)
-                {
-                    case "Shops":
-                        ReadShops(itemList);
-                        break;
-                    case "Special":
-                    case "Kongs":
-                        ReadSpecialItemRegion(itemList);
-                        break;
-                    default:
-                        ReadStandardRegion(itemArea, itemList);
-                        break;
-                }
-            }
+            SpoilerService = spoilerService;
         }
 
         private void ReadStartingItemsIntoUI()
@@ -166,347 +40,146 @@ namespace TrackOMatic
                     var itemName = (ItemName)item.Tag;
                     var region = StartingItems[itemName];
                     MainWindow.Regions[region].RegionGrid.Add_Item(item);
-                    //MainWindow.DataSaver.AddSavedItem(new SavedItem(itemName,  region, item.Star.Visibility, true, 1.0));
-                    //MainWindow.DataSaver.Save();
                     item.SetResourceReference(Item.ItemImageProperty, itemName.ToString().ToLower());
                 }
             }
         }
 
-        private class RegionSpoilerInfo
-        {
-            public string level_name { get; }
-            public int level_order { get; }
-            public List<string> vial_colors { get; }
-            public int points { get; }
-            public int woth_count { get; }
-
-            public RegionSpoilerInfo(string level_name, int level_order, List<string> vial_colors, int points, int woth_count)
-            {
-                this.level_name = level_name;
-                this.level_order = level_order;
-                this.vial_colors = vial_colors;
-                this.points = points;
-                this.woth_count = woth_count;
-            }
-        }
-
-        private class StartingInfo
-        {
-            public List<int> krool_order { get; }
-            public List<int> helm_order { get; }
-            public List<int> starting_kongs { get; }
-            public List<string> starting_keys { get; }
-            public List<string> starting_moves { get; }
-            public List<string> starting_moves_not_hintable { get; }
-            public int starting_moves_woth_count { get; }
-            public List<int> level_order { get; }
-            public List<BLockerInfo> blocker_info { get; }
-
-            public StartingInfo(List<int> krool_order, List<int> helm_order, List<int> starting_kongs, List<string> starting_keys, List<int> level_order, List<string> starting_moves, List<string> starting_moves_not_hintable, int starting_moves_woth_count, List<BLockerInfo> blocker_info)
-            {
-                this.krool_order = krool_order;
-                this.helm_order = helm_order;
-                this.starting_kongs = starting_kongs;
-                this.starting_keys = starting_keys;
-                this.level_order = level_order;
-                this.starting_moves = starting_moves;
-                this.starting_moves_not_hintable = starting_moves_not_hintable;
-                this.starting_moves_woth_count = starting_moves_woth_count;
-                this.blocker_info = blocker_info;
-            }
-        }
-
-        private void ReadStartingMoves(List<string> starting_moves, RegionName regionToPlace = RegionName.START)
-        {
-            var slams = 0;
-            for (int i = 0; i < starting_moves.Count; ++i)
-            {
-                var itemString = starting_moves[i];
-                if (itemString == "Progressive Slam")
-                {
-                    slams++;
-                    itemString = itemString + " " + slams.ToString();
-                }
-                if (SpoilerParserMappings.RANDO_NAME_TO_ITEM_NAME.ContainsKey(itemString))
-                {
-                    StartingItems[SpoilerParserMappings.RANDO_NAME_TO_ITEM_NAME[itemString]] = regionToPlace;
-                }
-            }
-        }
-
-        private void ReadStartingInfo(string JSONString)
-        {
-            StartingInfo? info = System.Text.Json.JsonSerializer.Deserialize<StartingInfo>(JSONString);
-            if (info == null)
-            {
-                return;
-            }
-            ReadKongsAndKeys(info);
-            if (info.starting_moves != null)
-            {
-                ReadStartingMoves(info.starting_moves);
-            }
-
-            if (info.starting_moves_not_hintable != null)
-            {
-                ReadStartingMoves(info.starting_moves_not_hintable, RegionName.UNHINTABLE_MOVES);
-            }
-
-            MainWindow.Regions[RegionName.START].AddRequiredCheckTotal(info.starting_moves_woth_count);
-            ReadStartingItemsIntoUI();
-            ReadHelmAndKRoolOrder(info);
-            ReadLevelOrder(info);
-            MainWindow.BLockerHints.LoadBLockerInfo(info.blocker_info);
-        }
-
-        private void ReadKongsAndKeys(StartingInfo info)
-        {
-            foreach (var kongIndex in info.starting_kongs)
-            {
-                var kongItem = SpoilerParserMappings.KONGS[kongIndex];
-                StartingItems.Add(kongItem, RegionName.UNHINTABLE_MOVES);
-            }
-            foreach (var keyString in info.starting_keys)
-            {
-                var key = SpoilerParserMappings.ITEM_MAP[keyString];
-                StartingItems.Add(key, RegionName.UNHINTABLE_MOVES);
-            }
-        }
-
-        private void ReadHelmAndKRoolOrder(StartingInfo info)
-        {
-            if (UserSettings.ShowHelmOrder)
-            {
-                for (int i = 0; i < MainWindow.HelmKongs.Count; ++i)
-                {
-                    if (i < info.helm_order.Count)
-                    {
-                        //add 1 to account for unknown kong
-                        MainWindow.HelmKongs[i].SetIndex(info.helm_order[i] + 1);
-                        MainWindow.HelmKongs[i].Enabled = false;
-                        MainWindow.HelmKongs[i].Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        MainWindow.HelmKongs[i].Visibility = Visibility.Hidden;
-                    }
-                }
-            }
-            if (UserSettings.ShowKRoolOrder)
-            {
-                for (int i = 0; i < MainWindow.BossKongs.Count; ++i)
-                {
-                    if (i < info.krool_order.Count)
-                    {
-                        int kroolIndex = info.krool_order[i];
-                        var index = (int)SpoilerParserMappings.KROOL_MAP_TO_IMAGE_INDEX[kroolIndex];
-                        MainWindow.BossKongs[i].SetIndex(index);
-                        MainWindow.BossKongs[i].Enabled = false;
-                        MainWindow.BossKongs[i].Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        MainWindow.BossKongs[i].Visibility = Visibility.Hidden;
-                    }
-                }
-            }
-        }
-
-        private void ReadLevelOrder(StartingInfo info)
-        {
-            for (int i = 0; i < Region.LOBBY_ORDER.Count; ++i)
-            {
-                var levelOrderNumber = (info.level_order == null || i >= info.level_order.Count) ? 0 : info.level_order[i];
-                var newLevelOrderNumber = (info.level_order == null || i >= info.level_order.Count) ? 0 : (i + 1);
-                var toChange = (info.level_order == null || i >= info.level_order.Count) ? Region.LOBBY_ORDER[i] : Region.LOBBY_ORDER[levelOrderNumber];
-                MainWindow.Regions[toChange].SetLevelOrderNumber(newLevelOrderNumber);
-                if (info.level_order != null && info.level_order.Count == 7)
-                {
-                    MainWindow.Regions[RegionName.HIDEOUT_HELM].SetLevelOrderNumber(8);
-                }
-            }
-        }
-        private void ReadPointSpread(string JSONString)
-        {
-            var pointPairs = JsonConvert.DeserializeObject<Dictionary<string, int>>(JSONString) ?? [];
-            if (!pointPairs.ContainsKey("fairy_moves"))
-            {
-                pointPairs["fairy_moves"] = pointPairs["training_moves"];
-            }
-            foreach (var pair in pointPairs)
-            {
-                var name = pair.Key;
-                var pointValue = pair.Value;
-                if (SpoilerParserMappings.POINT_NAME_TO_GROUP.ContainsKey(name))
-                {
-                    var itemType = SpoilerParserMappings.POINT_NAME_TO_GROUP[name];
-                    PointValues.GroupedValues[itemType] = pointValue;
-                }
-                else if (SpoilerParserMappings.POINT_NAME_TO_SPECIFIC_VALUE.ContainsKey(name))
-                {
-                    var itemName = SpoilerParserMappings.POINT_NAME_TO_SPECIFIC_VALUE[name];
-                    PointValues.SpecificValues[itemName] = pointValue;
-                }
-            }
-        }
-        private void CheckIfShopkeepersAreOn(dynamic JSONObject)
-        {
-            if (JSONObject["Item Pool"] == null)
-            {
-                return;
-            }
-            //first version of randomizer with this key is 4.0 so we don't need to check if version >= 4.0
-            //if (JSONObject["Randomizer Version"] == null) return;
-            List<string> items = JSONObject["Item Pool"].ToObject<List<string>>();
-            if (items.Contains("Cranky") || items.Contains("Candy") || items.Contains("Funky") || items.Contains("Snide"))
-            {
-                return;
-            }
-
-            StartingItems.Add(ItemName.CRANKY, RegionName.START);
-            StartingItems.Add(ItemName.CANDY, RegionName.START);
-            StartingItems.Add(ItemName.FUNKY, RegionName.START);
-            StartingItems.Add(ItemName.SNIDE, RegionName.START);
-        }
-        public SpoilerSettings? ParseRegions(dynamic JSONObject)
-        {
-            var regionInfo = JSONObject["Spoiler Hints Data"].ToObject<Dictionary<string, string>>();
-            SpoilerSettings? settings = null;
-
-            List<string> Isles_Vials = new();
-
-            CheckIfShopkeepersAreOn(JSONObject);
-
-            foreach (var regionEntry in regionInfo)
-            {
-                if (regionEntry.Key == "starting_info")
-                {
-                    ReadStartingInfo(regionEntry.Value);
-                    continue;
-                }
-                else if (regionEntry.Key == "point_spread")
-                {
-                    ReadPointSpread(regionEntry.Value);
-                    continue;
-                }
-                RegionSpoilerInfo info = System.Text.Json.JsonSerializer.Deserialize<RegionSpoilerInfo>(regionEntry.Value);
-                if (!SpoilerParserMappings.REGION_MAP.ContainsKey(info.level_name))
-                {
-                    continue;
-                }
-
-                settings ??= SetUpSettings(info);
-                RegionName regionName = SpoilerParserMappings.REGION_MAP[info.level_name];
-                MainWindow.Regions[regionName].AddPoints(info.points);
-                MainWindow.Regions[regionName].AddRequiredCheckTotal(info.woth_count);
-                MainWindow.Regions[regionName].SpoilerSettings = settings;
-                var grid = MainWindow.Regions[regionName].RegionGrid;
-                if (regionName == RegionName.DK_ISLES)
-                {
-                    Isles_Vials = Isles_Vials.Concat(info.vial_colors).ToList();
-                }
-                else
-                {
-                    ProcessVials(info.vial_colors, grid);
-                }
-            }
-            MainWindow.Regions[RegionName.START].SpoilerSettings = settings;
-            //jetpac goes into isles, and we want to make sure it stays sorted so you can't metagame that an unsorted vial at the end of DK Isles is jetpac
-            ProcessVials(Isles_Vials, MainWindow.Regions[RegionName.DK_ISLES].RegionGrid);
-            return settings;
-        }
-
-        private void ProcessVials(List<string> vial_colors, RegionGrid grid)
-        {
-            vial_colors.Sort((a, b) => SpoilerParserMappings.VIAL_MAP[a] - SpoilerParserMappings.VIAL_MAP[b]);
-            foreach (var vial in vial_colors)
-            {
-                grid.AddInitialVial(SpoilerParserMappings.VIAL_MAP[vial]);
-            }
-        }
-
-        private SpoilerSettings SetUpSettings(RegionSpoilerInfo info)
-        {
-            SpoilerSettings settings;
-            bool pointsEnabled = info.points != -1;
-            bool vialsEnabled = !pointsEnabled;
-            bool WOTHEnabled = info.woth_count != -1;
-            settings = new SpoilerSettings(pointsEnabled, vialsEnabled, WOTHEnabled);
-            return settings;
-        }
-
-        private void ReadSettings(dynamic JSONObject)
-        {
-            /*
-            var settingsDict = JSONObject["Settings"].ToObject<Dictionary<string, object>>();
-            if (settingsDict["Shockwave Shuffle"] == null)
-            {
-                return;
-            }
-
-            var shockwaveShuffle = (string)settingsDict["Shockwave Shuffle"];
-            if (shockwaveShuffle == "start_with")
-            {
-                StartingItems.Add(ItemName.FAIRY_CAMERA, RegionName.START);
-                StartingItems.Add(ItemName.SHOCKWAVE, RegionName.START);
-            }
-            */
-        }
-
-        public SpoilerSettings ParseSpoiler(string fileName)
+        public async Task<SpoilerSettings> ParseSpoilerAsync(string fileName)
         {
             var spoilerSettings = new SpoilerSettings();
-            StartingItems = new();
-            TrainingItems = new();
-            slamCount = 0;
+            StartingItems = [];
+
             try
             {
-                using StreamReader reader = new(fileName);
-                string json = reader.ReadToEnd();
-
-                dynamic? JSONObject = JsonConvert.DeserializeObject(json);
-                if (JSONObject == null)
+                // Use the new service to deserialize and parse
+                var result = await SpoilerService.DeserializeAndParseAsync(fileName);
+                if (!result.IsSuccess || result.Data == null)
                 {
                     MainWindow.InitRegionsFromEmptySpoiler();
                     return spoilerSettings;
                 }
-                if (JSONObject["Settings"] != null)
+
+                var parsedData = result.Data;
+
+                // Extract settings from parsed data
+                spoilerSettings = parsedData.SpoilerSettings;
+
+                UpdateWindowsWithSpoilerData(parsedData);
+
+                // Populate starting items
+                if (parsedData.StartingItems != null && parsedData.StartingItems.Count > 0)
                 {
-                    ReadSettings(JSONObject);
+                    StartingItems = parsedData.StartingItems;
+                    ReadStartingItemsIntoUI();
                 }
 
-                if (JSONObject["Spoiler Hints Data"] != null)
-                {
-                    spoilerSettings = ParseRegions(JSONObject);
-                }
-                else
-                {
-                    MainWindow.InitRegionsFromEmptySpoiler();
-                }
-                //ReadItems(JSONObject);
+                // Set spoiler settings for START region
+                MainWindow.Regions[RegionName.START].SpoilerSettings = spoilerSettings;
+
                 foreach (var entry in ImportantCheckList.ITEMS)
                 {
                     entry.Value.InitPointValue();
                 }
             }
-            catch (FileNotFoundException)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Spoiler file not found: {fileName}");
-                MainWindow.InitRegionsFromEmptySpoiler();
-            }
-            catch (JsonException ex)
-            {
-                Console.WriteLine($"Invalid JSON in spoiler file: {ex.Message}");
-                MainWindow.InitRegionsFromEmptySpoiler();
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine($"Error reading spoiler file: {ex.Message}");
+                Console.WriteLine($"Error parsing spoiler file: {ex.Message}");
                 MainWindow.InitRegionsFromEmptySpoiler();
             }
 
             return spoilerSettings;
+        }
+
+        /// <summary>
+        /// Updates the MainWindow and its regions with the parsed spoiler data.
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="ParsedSpoilerData"/> will eventually be made available in its own standalone service
+        /// for XAML classes to consume more locally.
+        /// </remarks>
+        /// <param name="spoilerData">The parsed spoiler data.</param>
+        private void UpdateWindowsWithSpoilerData(ParsedSpoilerData spoilerData)
+        {
+            // Extract settings from parsed data
+            var spoilerSettings = spoilerData.SpoilerSettings;
+
+            // Populate regions with parsed spoiler data
+            if (spoilerData.RegionData != null && spoilerData.RegionData.Count > 0)
+            {
+                foreach (var regionEntry in spoilerData.RegionData)
+                {
+                    if (MainWindow.Regions.TryGetValue(regionEntry.Key, out var region))
+                    {
+                        region.AddPoints(regionEntry.Value.Points);
+                        region.AddRequiredCheckTotal(regionEntry.Value.WothCount);
+                        region.SpoilerSettings = spoilerSettings;
+
+                        // Process vials for this region
+                        if (regionEntry.Value.VialColors != null && regionEntry.Value.VialColors.Count > 0)
+                        {
+                            foreach (var vial in regionEntry.Value.VialColors)
+                            {
+                                region.RegionGrid.AddInitialVial(vial);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Populate level order
+            foreach (var levelEntry in spoilerData.LevelOrder)
+            {
+                if (MainWindow.Regions.TryGetValue(levelEntry.Key, out var region))
+                {
+                    region.SetLevelOrderNumber(levelEntry.Value);
+                }
+            }
+
+            // Populate Helm Kong order
+            if (spoilerData.HelmOrder != null && spoilerData.HelmOrder.Count > 0)
+            {
+                if (UserSettings.ShowHelmOrder)
+                {
+                    for (int i = 0; i < MainWindow.HelmKongs.Count; i++)
+                    {
+                        if (i < spoilerData.HelmOrder.Count)
+                        {
+                            MainWindow.HelmKongs[i].SetIndex(spoilerData.HelmOrder[i]);
+                            MainWindow.HelmKongs[i].Enabled = false;
+                            MainWindow.HelmKongs[i].Visibility = Visibility.Visible;
+                        }
+                        else
+                        {
+                            MainWindow.HelmKongs[i].Visibility = Visibility.Hidden;
+                        }
+                    }
+                }
+            }
+
+            // Populate Final Boss Kong order (KRool order)
+            if (spoilerData.FinalBossOrder != null && spoilerData.FinalBossOrder.Count > 0)
+            {
+                if (UserSettings.ShowKRoolOrder)
+                {
+                    for (int i = 0; i < MainWindow.BossKongs.Count; i++)
+                    {
+                        if (i < spoilerData.FinalBossOrder.Count)
+                        {
+                            MainWindow.BossKongs[i].SetIndex(spoilerData.FinalBossOrder[i]);
+                            MainWindow.BossKongs[i].Enabled = false;
+                            MainWindow.BossKongs[i].Visibility = Visibility.Visible;
+                        }
+                        else
+                        {
+                            MainWindow.BossKongs[i].Visibility = Visibility.Hidden;
+                        }
+                    }
+                }
+            }
+
+            // B Locker data is loaded here. Using the old records/methods for now.
+            MainWindow.BLockerHints.LoadBLockerInfo([.. spoilerData.RegionBarrierInfo.Select((b) => new BLockerInfo(b.Item, b.Cost))]);
         }
     }
 }

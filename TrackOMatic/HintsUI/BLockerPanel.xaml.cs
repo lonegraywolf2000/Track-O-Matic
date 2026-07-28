@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 
 using TrackOMatic.Logic.Enums;
+using TrackOMatic.Logic.Models;
 
 namespace TrackOMatic
 {
@@ -97,7 +98,7 @@ namespace TrackOMatic
             for (int i = 0; i < blockerInfo.Count; i++)
             {
                 var blocker = blockerInfo[i];
-                var regionName = Region.LOBBY_ORDER[i];
+                var regionName = EndGameMappings.LOBBY_ORDER[i];
                 if (!RegionToBLockerHint.TryGetValue(regionName, out var hint))
                 {
                     continue;

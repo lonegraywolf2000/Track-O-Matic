@@ -1,66 +1,33 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
+using TrackOMatic.Logic.Models.Spoilers.JsonConverters;
 
 namespace TrackOMatic.Logic.Models.Spoilers;
 
+/// <summary>
+/// Represents the "Spoiler Hints Data" section of a spoiler file.
+/// </summary>
+/// <remarks>
+/// This class uses a custom JSON converter to transform numeric string keys ("0"-"8")
+/// into a strongly-typed dictionary indexed by region number.
+///
+/// Region Index Mapping:
+/// - 0: Jungle Japes
+/// - 1: Angry Aztec
+/// - 2: Frantic Factory
+/// - 3: Gloomy Galleon
+/// - 4: Fungi Forest
+/// - 5: Crystal Caves
+/// - 6: Castle Crush
+/// - 7: Helm's Deep
+/// - 8: DK Isles
+/// </remarks>
+[JsonConverter(typeof(SpoilerHintDataJsonConverter))]
 public class SpoilerHintData
 {
     /// <summary>
-    /// Gets the spoiler data for the Jungle Japes region.
+    /// Gets a dictionary of region spoiler data indexed by region number (0-8).
     /// </summary>
-    [JsonPropertyName("0")]
-    public RegionSpoilerData? JapesData { get; init; }
-
-    /// <summary>
-    /// Gets the spoiler data for the Angry Aztec region.
-    /// </summary>
-    [JsonPropertyName("1")]
-    public RegionSpoilerData? AztecData { get; init; }
-
-    /// <summary>
-    /// Gets the spoiler data for the Frantic Factory region.
-    /// </summary>
-    [JsonPropertyName("2")]
-    public RegionSpoilerData? FactoryData { get; init; }
-
-    /// <summary>
-    /// <summary>
-    /// Gets the spoiler data for the Gloomy Galleon region.
-    /// </summary>
-    [JsonPropertyName("3")]
-    public RegionSpoilerData? GalleonData { get; init; }
-
-    /// <summary>
-    /// Gets the spoiler data for the Fungi Forest region.
-    /// </summary>
-    [JsonPropertyName("4")]
-    public RegionSpoilerData? ForestData { get; init; }
-
-    /// <summary>
-    /// Gets the spoiler data for the Crystal Caves region.
-    /// </summary>
-    [JsonPropertyName("5")]
-    public RegionSpoilerData? CavesData { get; init; }
-
-    /// <summary>
-    /// Gets the spoiler data for the Castle Crush region.
-    /// </summary>
-    [JsonPropertyName("6")]
-    public RegionSpoilerData? CastleData { get; init; }
-
-    /// <summary>
-    /// Gets the spoiler data for the Helm's Deep region.
-    /// </summary>
-    [JsonPropertyName("7")]
-    public RegionSpoilerData? HelmData { get; init; }
-
-    /// <summary>
-    /// Gets the spoiler data for the DK Isles region.
-    /// </summary>
-    [JsonPropertyName("8")]
-    public RegionSpoilerData? IslesData { get; init; }
+    public Dictionary<int, RawRegionSpoilerData>? RegionDataDictionary { get; init; }
 
     /// <summary>
     /// Gets the starting info for the game, including starting items and other relevant information.

@@ -71,6 +71,7 @@ namespace TrackOMatic
         public IUserSettingsService UserSettings { get; init; }
         public IApplicationStateService AppState { get; init; }
         public IDataPersistenceService DataPersistenceService { get; init; }
+        public ISpoilerService SpoilerService { get; init; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -384,7 +385,8 @@ namespace TrackOMatic
         public MainWindow(
             IUserSettingsService settingsSergice,
             IApplicationStateService appStateService,
-            IDataPersistenceService dataPersistenceService
+            IDataPersistenceService dataPersistenceService,
+            ISpoilerService spoilerService
         )
         {
             DataContext = this;
@@ -392,6 +394,7 @@ namespace TrackOMatic
             UserSettings = settingsSergice;
             AppState = appStateService;
             DataPersistenceService = dataPersistenceService;
+            SpoilerService = spoilerService;
 
             // Subscribe to settings changes to notify XAML bindings
             UserSettings.PropertyChanged += (s, e) =>
@@ -506,7 +509,7 @@ namespace TrackOMatic
                 progressiveItem.ImageSources = allBosses;
             }
 
-            SpoilerParser = new(this, UserSettings);
+            SpoilerParser = new(this, UserSettings, SpoilerService);
             DataSaver = new(this, DataPersistenceService);
             Reset();
             AdjustBasedOnCompactMode();
@@ -883,9 +886,9 @@ namespace TrackOMatic
             }
         }
 
-        public void ParseSpoiler(string fileName)
+        public async void ParseSpoiler(string fileName)
         {
-            SpoilerSettings = SpoilerParser.ParseSpoiler(fileName);
+            SpoilerSettings = await SpoilerParser.ParseSpoilerAsync(fileName);
             foreach (var entry in SpoilerParser.StartingItems)
             {
                 if (BroadcastView != null)
@@ -1082,12 +1085,12 @@ namespace TrackOMatic
         {
             for (int i = 0; i < order.Count; ++i)
             {
-                Regions[Region.LOBBY_ORDER[i]].SetLevelOrderNumber(order[i]);
+                Regions[EndGameMappings.LOBBY_ORDER[i]].SetLevelOrderNumber(order[i]);
             }
         }
         public List<int> GetLevelOrder()
         {
-            var list = Region.LOBBY_ORDER.Select(r => Regions[r].LevelOrderNumber!.GetNumber()).ToList();
+            var list = EndGameMappings.LOBBY_ORDER.Select(r => Regions[r].LevelOrderNumber!.GetNumber()).ToList();
             return list;
         }
         private List<int> GetProgressiveIndices(List<ProgressiveItem> items)
