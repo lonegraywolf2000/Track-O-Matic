@@ -44,7 +44,9 @@ public class ParsedSpoilerData
     /// 3) The max number of entries is allowed is 8. If there are 7 entries, then Helm
     ///    is guaranteed to be level 8.
     /// </remarks>
-    public Dictionary<RegionName, int> LevelOrder { get; init; } = [];
+    public required Dictionary<RegionName, int> LevelOrder { get; init; } = [];
+
+    public bool HasLevelOrder => LevelOrder.Count > 0;
 
     /// <summary>
     /// Gets the point spread for different categories of items in the parsed spoiler data.

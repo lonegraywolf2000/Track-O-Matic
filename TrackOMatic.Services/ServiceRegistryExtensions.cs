@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using TrackOMatic.Services.SpoilerDeserialization;
+using TrackOMatic.Logic.Models;
 using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic.Services;
@@ -22,8 +22,11 @@ public static class ServiceRegistryExtensions
         // Unified spoiler deserialization and parsing service
         services.AddSingleton<ISpoilerService, SpoilerParserService>();
 
-        // TODO: Flesh out spoiler log service, track state service, and eventual hint service.
-        services.AddSingleton<ISavedProgressProvider, SavedProgressProvider>();
+        // ISavedProgressProvider: Uses factory pattern because SavedProgress is mutable state
+        // that changes when tracker is reset or new save data is loaded. The singleton provider
+        // broadcasts state changes via ProgressChanged event, allowing subscribed services to
+        // reinitialize their caches.
+        services.AddSingleton<ISavedProgressProvider>(sp => new SavedProgressProvider(new SavedProgress()));
         services.AddSingleton<IDataPersistenceService, DataPersistenceService>();
         services.AddSingleton<ICollectiblesService, CollectiblesService>();
         services.AddSingleton<IBarrierService, BarrierService>();
@@ -31,6 +34,7 @@ public static class ServiceRegistryExtensions
         services.AddSingleton<IEndGameProgressionService, EndGameProgressionService>();
         services.AddSingleton<ILevelOrderService, LevelOrderService>();
         services.AddSingleton<ISpoilerLogService, SpoilerLogService>();
+        services.AddSingleton<IParsedSpoilerDataService, ParsedSpoilerDataService>();
 
         return services;
     }

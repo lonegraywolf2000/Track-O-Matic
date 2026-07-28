@@ -11,15 +11,16 @@ namespace TrackOMatic
     {
 
         private int currentNumber = 0;
-        private bool disabled = false;
         public RegionName RegionName { get; private set; }
         public IUserSettingsService UserSettings { get; init; }
+        public IParsedSpoilerDataService ParsedSpoilerDataService { get; init; }
 
         public LevelOrderNumber()
         {
             InitializeComponent();
             currentNumber = 0;
             UserSettings = ServiceLocator.GetService<IUserSettingsService>();
+            ParsedSpoilerDataService = ServiceLocator.GetService<IParsedSpoilerDataService>();
         }
 
         public void UpdateLabel()
@@ -56,6 +57,11 @@ namespace TrackOMatic
 
         private void LevelOrder_LeftPress(object sender, RoutedEventArgs e)
         {
+            if (ParsedSpoilerDataService.CurrentData?.HasLevelOrder ?? false)
+            {
+                return;
+            }
+
             if (RegionName == RegionName.HIDEOUT_HELM && currentNumber == 8 && !UserSettings.HelmInLevelOrder)
             {
                 return;
@@ -68,19 +74,24 @@ namespace TrackOMatic
 
         private void LevelOrder_RightPress(object sender, RoutedEventArgs e)
         {
+            if (ParsedSpoilerDataService.CurrentData?.HasLevelOrder ?? false)
+            {
+                return;
+            }
+
             if (RegionName == RegionName.HIDEOUT_HELM && currentNumber == 8 && !UserSettings.HelmInLevelOrder)
             {
                 return;
             }
 
             int max = (UserSettings.HelmInLevelOrder) ? 8 : 7;
-            currentNumber = (currentNumber + (max)) % (max + 1);
+            currentNumber = (currentNumber + max) % (max + 1);
             UpdateLabel();
         }
 
         private void LevelOrder_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (disabled)
+            if (ParsedSpoilerDataService.CurrentData?.HasLevelOrder ?? false)
             {
                 return;
             }

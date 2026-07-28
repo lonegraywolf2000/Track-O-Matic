@@ -14,12 +14,14 @@ namespace TrackOMatic
 
         private IUserSettingsService UserSettings { get; init; }
         private ISpoilerService SpoilerService { get; set; }
+        private IParsedSpoilerDataService ParsedSpoilerDataService { get; init; }
 
-        public SpoilerParser(MainWindow mainWindow, IUserSettingsService userSettings, ISpoilerService spoilerService)
+        public SpoilerParser(MainWindow mainWindow, IUserSettingsService userSettings, ISpoilerService spoilerService, IParsedSpoilerDataService parsedSpoilerDataService = null!)
         {
             MainWindow = mainWindow;
             UserSettings = userSettings;
             SpoilerService = spoilerService;
+            ParsedSpoilerDataService = parsedSpoilerDataService ?? ServiceLocator.GetService<IParsedSpoilerDataService>();
         }
 
         private void ReadStartingItemsIntoUI()
@@ -61,6 +63,9 @@ namespace TrackOMatic
                 }
 
                 var parsedData = result.Data;
+
+                // Update the parsed spoiler data service so other components can access it
+                ParsedSpoilerDataService.UpdateParsedData(parsedData);
 
                 // Extract settings from parsed data
                 spoilerSettings = parsedData.SpoilerSettings;

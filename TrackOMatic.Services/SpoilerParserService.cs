@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 using TrackOMatic.Logic;
@@ -211,11 +208,15 @@ public class SpoilerParserService : ISpoilerService
     internal static Dictionary<RegionName, int> ParseLevelOrder(StartingInfoRaw info)
     {
         Dictionary<RegionName, int> levelOrder = [];
+        if (info.LevelOrder == null)
+        {
+            return levelOrder;
+        }
         foreach (var (region, i) in EndGameMappings.LOBBY_ORDER.Select((r, i) => (r, i)))
         {
-            var hasNoLevel = info.LevelOrder == null || i >= info.LevelOrder.Count;
-            var oldOrder = (hasNoLevel) ? 0 : info.LevelOrder![i];
-            var newOrder = (hasNoLevel) ? 0 : (i + 1);
+            var hasNoLevel = i >= info.LevelOrder.Count;
+            var oldOrder = hasNoLevel ? 0 : info.LevelOrder![i];
+            var newOrder = hasNoLevel ? 0 : (i + 1);
             var toChange = hasNoLevel ? region : EndGameMappings.LOBBY_ORDER[oldOrder];
             levelOrder[toChange] = newOrder;
         }
