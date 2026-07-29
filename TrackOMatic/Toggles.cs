@@ -133,6 +133,15 @@ namespace TrackOMatic
         private void AutotrackToggle(object sender, RoutedEventArgs e)
         {
             UserSettings.Autotracking = AutotrackOption.IsChecked;
+
+            if (UserSettings.Autotracking)
+            {
+                Autotracker.Start();
+            }
+            else
+            {
+                Autotracker.Stop();
+            }
         }
 
         private void BroadcastToggle(object sender, RoutedEventArgs e)

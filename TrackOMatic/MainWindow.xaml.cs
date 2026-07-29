@@ -41,7 +41,7 @@ namespace TrackOMatic
         public List<Item> DraggableItems { get; private set; } = new();
 
         public int collected;
-        public Autotracker Autotracker { get; private set; } = null!;
+        public IAutotrackerService Autotracker { get; private set; } = null!;
         public bool SpoilerLoaded { get; private set; }
         public static Grid Items { get; private set; } = null!;
         public SpoilerParser SpoilerParser { get; private set; }
@@ -386,7 +386,8 @@ namespace TrackOMatic
             IUserSettingsService settingsSergice,
             IApplicationStateService appStateService,
             IDataPersistenceService dataPersistenceService,
-            ISpoilerService spoilerService
+            ISpoilerService spoilerService,
+            IAutotrackerService autotrackerService
         )
         {
             DataContext = this;
@@ -395,6 +396,7 @@ namespace TrackOMatic
             AppState = appStateService;
             DataPersistenceService = dataPersistenceService;
             SpoilerService = spoilerService;
+            Autotracker = autotrackerService;
 
             // Subscribe to settings changes to notify XAML bindings
             UserSettings.PropertyChanged += (s, e) =>
@@ -476,6 +478,18 @@ namespace TrackOMatic
                     OnPropertyChanged(nameof(ShowAmountForHintsSetting));
                 }
             };
+
+            Autotracker.ItemProcessed += (sender, e) => Dispatcher.Invoke(() => ProcessNewAutotrackedItem(e.ItemName, e.RegionName, e.IsHint));
+            Autotracker.CollectibleUpdated += (sender, e) => Dispatcher.Invoke(() => UpdateCollectible(e.CollectibleType, e.NewTotal));
+            Autotracker.RegionLightingChanged += (sender, e) => Dispatcher.Invoke(() => SetRegionLighting(e.Region, e.LightUp));
+            Autotracker.SongChanged += (sender, e) => Dispatcher.Invoke(() => SetSong(e.SongGame, e.SongName));
+            Autotracker.HintProgressUpdated += (sender, e) => Dispatcher.Invoke(() => UpdateUIAmountToNextHint(e.AmountToNextHint));
+            Autotracker.ProgHintItemUpdated += (sender, e) => Dispatcher.Invoke(() => UpdateProgHintImage(e.ProgHintItem));
+
+            if (UserSettings.Autotracking)
+            {
+                Autotracker.Start();
+            }
 
             HintData.Init();
             InitOptions();
@@ -624,7 +638,7 @@ namespace TrackOMatic
                 PotionCountsPanel,
                 UnhintedPanel
             ];
-            Autotracker = new Autotracker(UserSettings, ProcessNewAutotrackedItem, UpdateCollectible, SetRegionLighting, SetShopkeepers, SetSong, UpdateUIAmountToNextHint, UpdateProgHintImage);
+
             SaveTimer = new Timer(60000);
             SaveTimer.Elapsed += OnTimerSave;
             SaveTimer.Start();
@@ -967,7 +981,7 @@ namespace TrackOMatic
             Dictionary<ItemType, string> itemTypeToResourceString = new()
             {
                 {ItemType.GOLDEN_BANANA, "golden_banana" },
-                {ItemType.TOTAL_BLUEPRINTS, "total_bps" },
+                {ItemType.TOTAL_BLUEPRINTS, "total_blueprints" },
                 {ItemType.KEY, "basic_key" },
                 {ItemType.BANANA_MEDAL, "medal" },
                 {ItemType.BATTLE_CROWN, "crown" },
@@ -1037,7 +1051,7 @@ namespace TrackOMatic
             }
 
             UpdateUIAmountToNextHint(0);
-            HintHelper.GenerateThresholds();
+            HintHelper.GenerateThresholds(AppState.ProgressiveHintCap);
             SetSong("", "");
             Autotracker.Reset();
             DataSaver.Reset();

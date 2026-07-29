@@ -2,6 +2,7 @@ using System.Windows;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using TrackOMatic.AutoTracking.Windows;
 using TrackOMatic.Services;
 
 namespace TrackOMatic;
@@ -17,6 +18,7 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
         services.AddTrackOMaticServices();
+        services.AddWindowsAutotracking();
 
         _serviceProvider = services.BuildServiceProvider();
         ServiceLocator.Initialize(_serviceProvider);
@@ -39,12 +41,14 @@ public partial class App : Application
         var appStateService = _serviceProvider.GetRequiredService<IApplicationStateService>();
         var dataPersistenceService = _serviceProvider.GetRequiredService<IDataPersistenceService>();
         var spoilerService = _serviceProvider.GetRequiredService<ISpoilerService>();
+        var autotrackingService = _serviceProvider.GetRequiredService<IAutotrackerService>();
         MainWindow mainWindow = new
         (
             settingsService,
             appStateService,
             dataPersistenceService,
-            spoilerService
+            spoilerService,
+            autotrackingService
         );
         mainWindow.Show();
 

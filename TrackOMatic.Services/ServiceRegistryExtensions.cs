@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using TrackOMatic.Logic.Models;
+using TrackOMatic.Logic.Models.Autotracking;
 using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic.Services;
@@ -35,6 +36,11 @@ public static class ServiceRegistryExtensions
         services.AddSingleton<ILevelOrderService, LevelOrderService>();
         services.AddSingleton<ISpoilerLogService, SpoilerLogService>();
         services.AddSingleton<IParsedSpoilerDataService, ParsedSpoilerDataService>();
+
+        // Autotracking service: requires platform-specific implementations (IProcessMemoryReader, IEmulatorAttacher)
+        // to be registered via platform registration (e.g., AddWindowsAutotracking())
+        services.AddSingleton<ITimerFactory, SystemTimerFactory>();
+        services.AddSingleton<IAutotrackerService, AutotrackerService>();
 
         return services;
     }

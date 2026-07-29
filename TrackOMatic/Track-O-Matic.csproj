@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- Target Framework -->
@@ -72,5 +72,7 @@
     <ProjectReference Include="..\TrackOMatic.Logic\TrackOMatic.Logic.csproj" />
     <ProjectReference Include="..\TrackOMatic.Services\TrackOMatic.Services.csproj" />
     <ProjectReference Include="..\TrackOMatic.ViewModels\TrackOMatic.ViewModels.csproj" />
+    <ProjectReference Include="..\TrackOMatic.AutoTracking.Windows\TrackOMatic.AutoTracking.Windows.csproj" />
   </ItemGroup>
 </Project>
+

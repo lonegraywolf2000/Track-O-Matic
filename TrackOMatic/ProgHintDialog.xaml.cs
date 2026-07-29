@@ -148,7 +148,7 @@ namespace TrackOMatic
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            HintHelper.GenerateThresholds();
+            HintHelper.GenerateThresholds(AppState.ProgressiveHintCap);
         }
     }
 }
