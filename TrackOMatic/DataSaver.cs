@@ -5,12 +5,13 @@ using System.IO;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic
 {
     public class DataSaver
     {
-        private SavedProgress savedProgress;
+        private SavedProgress CurrentSavedProgress { get; set; }
         public MainWindow MainWindow { get; }
 
         private readonly IDataPersistenceService _dataPersistenceService;
@@ -21,42 +22,49 @@ namespace TrackOMatic
         {
             MainWindow = mainWindow;
             _dataPersistenceService = dataPersistenceService;
-            savedProgress = new SavedProgress();
+            CurrentSavedProgress = new SavedProgress();
         }
 
         public void Reset()
         {
-            savedProgress = new SavedProgress();
+            CurrentSavedProgress = new SavedProgress();
+
+            // Sync fresh SavedProgress with provider
+            var provider = ServiceLocator.GetService<ISavedProgressProvider>();
+            if (provider != null && CurrentSavedProgress != null)
+            {
+                provider.UpdateProgress(CurrentSavedProgress);
+            }
         }
 
         private void FindSavedHints()
         {
-            savedProgress.SavedHints.Clear();
+            CurrentSavedProgress.SavedHints.Clear();
             foreach (var hintPanel in MainWindow.HintPanels)
             {
                 foreach (var hint in hintPanel.GetSavedHints())
                 {
-                    savedProgress.SavedHints.Add(hint);
+                    CurrentSavedProgress.SavedHints.Add(hint);
                 }
             }
         }
 
         public void Save(string filePath = "autosave.json", bool writeToFile = true)
         {
-            if (savedProgress == null)
+            if (CurrentSavedProgress == null)
             {
                 return;
             }
 
             FindSavedHints();
-            savedProgress.SavedGBCounts = MainWindow.BLockerHints.GetGBCounts();
-            savedProgress.BLockerImageIndexes = MainWindow.BLockerHints.GetImageIndexes();
-            savedProgress.HelmDoorImageIndexes = MainWindow.HelmDoorHints.GetImageIndexes();
-            savedProgress.HelmDoorCounts = MainWindow.HelmDoorHints.GetItemCounts();
-            savedProgress.HelmKongs = MainWindow.GetHelmKongs();
-            savedProgress.BossKongs = MainWindow.GetBossKongs();
-            savedProgress.LevelOrder = MainWindow.GetLevelOrder();
-            var JSONString = JsonConvert.SerializeObject(savedProgress);
+            CurrentSavedProgress.SavedGBCounts = MainWindow.BLockerHints.GetGBCounts();
+            CurrentSavedProgress.BLockerImageIndexes = MainWindow.BLockerHints.GetImageIndexes();
+            CurrentSavedProgress.HelmDoorImageIndexes = MainWindow.HelmDoorHints.GetImageIndexes();
+            CurrentSavedProgress.HelmDoorCounts = MainWindow.HelmDoorHints.GetItemCounts();
+            CurrentSavedProgress.HelmKongs = MainWindow.GetHelmKongs();
+            CurrentSavedProgress.BossKongs = MainWindow.GetBossKongs();
+            CurrentSavedProgress.LevelOrder = MainWindow.GetLevelOrder();
+            var JSONString = JsonConvert.SerializeObject(CurrentSavedProgress);
             if (writeToFile)
             {
                 File.WriteAllText(filePath, JSONString);
@@ -79,12 +87,12 @@ namespace TrackOMatic
         //if the user turns autotracking off we need to remark the items as not autotracked in the saved data
         public void TurnOffAutotrackingField()
         {
-            if (savedProgress == null)
+            if (CurrentSavedProgress == null)
             {
                 return;
             }
 
-            foreach (var savedItemEntry in savedProgress.SavedItems)
+            foreach (var savedItemEntry in CurrentSavedProgress.SavedItems)
             {
                 savedItemEntry.Value.Autotracked = false;
             }
@@ -92,16 +100,16 @@ namespace TrackOMatic
 
         private void ReadSavedProgress()
         {
-            if (savedProgress == null)
+            if (CurrentSavedProgress == null)
             {
                 return;
             }
 
-            if (savedProgress.spoilerPath != "" && File.Exists(savedProgress.spoilerPath))
+            if (CurrentSavedProgress.spoilerPath != "" && File.Exists(CurrentSavedProgress.spoilerPath))
             {
-                MainWindow.ParseSpoiler(savedProgress.spoilerPath);
+                MainWindow.ParseSpoiler(CurrentSavedProgress.spoilerPath);
             }
-            foreach (var savedItemEntry in savedProgress.SavedItems)
+            foreach (var savedItemEntry in CurrentSavedProgress.SavedItems)
             {
                 var savedItem = savedItemEntry.Value;
                 var region = savedItem.Region;
@@ -128,46 +136,46 @@ namespace TrackOMatic
                 }
                 matchingItem.ChangeOpacity(savedItem.Opacity);
             }
-            foreach (var savedHint in savedProgress.SavedHints.ToList())
+            foreach (var savedHint in CurrentSavedProgress.SavedHints.ToList())
             {
                 var hintPanel = (HintPanel)MainWindow.FindName(savedHint.HintPanelKey);
                 hintPanel.AddSavedHint(savedHint);
             }
-            MainWindow.BLockerHints.LoadSavedGBCounts(savedProgress.SavedGBCounts);
-            MainWindow.BLockerHints.LoadSavedImageIndexes(savedProgress.BLockerImageIndexes);
-            MainWindow.HelmDoorHints.LoadSavedHelmDoorCounts(savedProgress.HelmDoorCounts);
-            MainWindow.HelmDoorHints.LoadSavedImageIndexes(savedProgress.HelmDoorImageIndexes);
-            if (savedProgress.HelmKongs != null)
+            MainWindow.BLockerHints.LoadSavedGBCounts(CurrentSavedProgress.SavedGBCounts);
+            MainWindow.BLockerHints.LoadSavedImageIndexes(CurrentSavedProgress.BLockerImageIndexes);
+            MainWindow.HelmDoorHints.LoadSavedHelmDoorCounts(CurrentSavedProgress.HelmDoorCounts);
+            MainWindow.HelmDoorHints.LoadSavedImageIndexes(CurrentSavedProgress.HelmDoorImageIndexes);
+            if (CurrentSavedProgress.HelmKongs != null)
             {
-                MainWindow.LoadHelmKongs(savedProgress.HelmKongs);
+                MainWindow.LoadHelmKongs(CurrentSavedProgress.HelmKongs);
             }
 
-            if (savedProgress.BossKongs != null)
+            if (CurrentSavedProgress.BossKongs != null)
             {
-                MainWindow.LoadBossKongs(savedProgress.BossKongs);
+                MainWindow.LoadBossKongs(CurrentSavedProgress.BossKongs);
             }
 
-            if (savedProgress.LevelOrder != null)
+            if (CurrentSavedProgress.LevelOrder != null)
             {
-                MainWindow.LoadLevelOrder(savedProgress.LevelOrder);
+                MainWindow.LoadLevelOrder(CurrentSavedProgress.LevelOrder);
             }
         }
 
         public void AddSavedItem(SavedItem savedItem)
         {
-            if (savedItem == null || savedProgress == null)
+            if (savedItem == null || CurrentSavedProgress == null)
             {
                 return;
             }
 
             var itemName = savedItem.ItemName;
-            if (savedProgress.SavedItems.ContainsKey(itemName))
+            if (CurrentSavedProgress.SavedItems.ContainsKey(itemName))
             {
-                savedProgress.SavedItems[itemName] = savedItem;
+                CurrentSavedProgress.SavedItems[itemName] = savedItem;
             }
             else
             {
-                savedProgress.SavedItems.Add(itemName, savedItem);
+                CurrentSavedProgress.SavedItems.Add(itemName, savedItem);
             }
         }
 
@@ -186,8 +194,15 @@ namespace TrackOMatic
                 {
                     return;
                 }
-                savedProgress = savedData;
+                CurrentSavedProgress = savedData;
                 ReadSavedProgress();
+
+                // Sync SavedProgress with provider after loading from file
+                var provider = ServiceLocator.GetService<ISavedProgressProvider>();
+                if (provider != null && CurrentSavedProgress != null)
+                {
+                    provider.UpdateProgress(CurrentSavedProgress);
+                }
             }
             catch (Exception e)
             {
@@ -197,12 +212,12 @@ namespace TrackOMatic
 
         public void setSpoilerPath(string newSpoilerPath)
         {
-            if (savedProgress == null)
+            if (CurrentSavedProgress == null)
             {
                 return;
             }
 
-            savedProgress.spoilerPath = newSpoilerPath;
+            CurrentSavedProgress.spoilerPath = newSpoilerPath;
         }
 
         /*
