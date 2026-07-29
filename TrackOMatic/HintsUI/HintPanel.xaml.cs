@@ -57,8 +57,8 @@ namespace TrackOMatic
         public HintPanel()
         {
             Console.WriteLine(HintType);
-            InitializeComponent();
             UserSettings = ServiceLocator.GetService<IUserSettingsService>();
+            InitializeComponent();
             Loaded += OnLoaded;
         }
 

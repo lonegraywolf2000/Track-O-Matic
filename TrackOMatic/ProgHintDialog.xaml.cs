@@ -66,11 +66,11 @@ namespace TrackOMatic
 
         public ProgHintDialog()
         {
-            InitializeComponent();
-
             // Get the injected services via ServiceLocator
             UserSettings = ServiceLocator.GetService<IUserSettingsService>();
             AppState = ServiceLocator.GetService<IApplicationStateService>();
+
+            InitializeComponent();
 
             // Set TopMost from user settings
             Topmost = UserSettings.TopMost;

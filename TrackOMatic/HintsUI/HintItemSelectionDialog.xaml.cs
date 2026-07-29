@@ -40,9 +40,9 @@ namespace TrackOMatic
         public Dictionary<ItemName, bool> SelectedItems { get; private set; } = new();
         public HintItemSelectionDialog(List<ItemName> itemsToTurnOn)
         {
-            InitializeComponent();
             // Get the injected user settings service via ServiceLocator
             UserSettings = ServiceLocator.GetService<IUserSettingsService>();
+            InitializeComponent();
             UserSettings.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(IUserSettingsService.TopMost))

@@ -140,8 +140,8 @@ namespace TrackOMatic
 
         public CollectibleItem()
         {
-            InitializeComponent();
             UserSettings = ServiceLocator.GetService<IUserSettingsService>();
+            InitializeComponent();
         }
 
         private void Image_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

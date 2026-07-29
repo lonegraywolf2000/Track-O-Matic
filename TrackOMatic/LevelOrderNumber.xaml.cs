@@ -17,10 +17,10 @@ namespace TrackOMatic
 
         public LevelOrderNumber()
         {
-            InitializeComponent();
-            currentNumber = 0;
             UserSettings = ServiceLocator.GetService<IUserSettingsService>();
             ParsedSpoilerDataService = ServiceLocator.GetService<IParsedSpoilerDataService>();
+            InitializeComponent();
+            currentNumber = 0;
         }
 
         public void UpdateLabel()

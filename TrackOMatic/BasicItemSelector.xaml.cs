@@ -41,12 +41,12 @@ namespace TrackOMatic
 
         public BasicItemSelector(List<List<BitmapImage>> toAdd)
         {
+            // Get the injected user settings service via ServiceLocator
+            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
             SelectedImageIndex = -1;
             images = new();
             InitializeComponent();
 
-            // Get the injected user settings service via ServiceLocator
-            UserSettings = ServiceLocator.GetService<IUserSettingsService>();
             UserSettings.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(IUserSettingsService.TopMost))
