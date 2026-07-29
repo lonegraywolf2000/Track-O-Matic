@@ -112,7 +112,7 @@
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky"  BackgroundItemImage="{DynamicResource lanky_bw}"   Grid.Row="2" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.LANKY}"/>
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_gun"  BackgroundItemImage="{DynamicResource grape_shooter_bw}" Grid.Row="2" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.GRAPE_SHOOTER}"/>
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_inst"  BackgroundItemImage="{DynamicResource trombone_tremor_bw}" Grid.Row="2" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.TROMBONE_TREMOR}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_move"   BackgroundItemImage="{DynamicResource orangstand_bw}" Grid.Row="2" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.ORANGSTAND}"/>
+                    <broadcast:Item Margin="1" Grid.Row="2" Grid.Column="3" Panel.ZIndex="0" ItemName="{x:Static enums:ItemName.ORANGSTAND}" />
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_barrel"  BackgroundItemImage="{DynamicResource orangstand_sprint_bw}" Grid.Row="2" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.ORANGSTAND_SPRINT}"/>
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_pad"  BackgroundItemImage="{DynamicResource baboon_balloon_bw}" Grid.Row="2" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BABOON_BALLOON}"/>
 

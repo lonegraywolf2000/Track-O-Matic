@@ -15,13 +15,17 @@ namespace TrackOMatic
         public MainWindow MainWindow { get; }
 
         private readonly IDataPersistenceService _dataPersistenceService;
+        private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
+        private readonly ISpoilerService _spoilerService;
 
         public bool WriteToFile { get; set; }
 
-        public DataSaver(MainWindow mainWindow, IDataPersistenceService dataPersistenceService)
+        public DataSaver(MainWindow mainWindow, IDataPersistenceService dataPersistenceService, IParsedSpoilerDataService parsedSpoilerDataService, ISpoilerService spoilerService)
         {
             MainWindow = mainWindow;
             _dataPersistenceService = dataPersistenceService;
+            _parsedSpoilerDataService = parsedSpoilerDataService;
+            _spoilerService = spoilerService;
             CurrentSavedProgress = new SavedProgress();
         }
 
@@ -98,16 +102,30 @@ namespace TrackOMatic
             }
         }
 
-        private void ReadSavedProgress()
+        private async void ReadSavedProgress()
         {
             if (CurrentSavedProgress == null)
             {
                 return;
             }
 
+            // Load spoiler log if it exists in the saved progress
             if (CurrentSavedProgress.spoilerPath != "" && File.Exists(CurrentSavedProgress.spoilerPath))
             {
                 MainWindow.ParseSpoiler(CurrentSavedProgress.spoilerPath);
+                // Also parse into ParsedSpoilerDataService for access throughout the app
+                try
+                {
+                    var result = await _spoilerService.DeserializeAndParseAsync(CurrentSavedProgress.spoilerPath);
+                    if (result.IsSuccess && result.Data != null)
+                    {
+                        _parsedSpoilerDataService.UpdateParsedData(result.Data);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error parsing spoiler log for ParsedSpoilerDataService: {e}");
+                }
             }
             foreach (var savedItemEntry in CurrentSavedProgress.SavedItems)
             {

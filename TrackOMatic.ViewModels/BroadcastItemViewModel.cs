@@ -11,7 +11,7 @@ namespace TrackOMatic.ViewModels;
 public class BroadcastItemViewModel : INotifyPropertyChanged
 {
     private readonly IItemTrackingService _itemTrackingService;
-    private readonly ISpoilerService _spoilerService;
+    private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
     private readonly ItemName _itemName;
 
     // List of regions to show the full color icon for this item.
@@ -26,13 +26,14 @@ public class BroadcastItemViewModel : INotifyPropertyChanged
     public BroadcastItemViewModel(
         ItemName itemName,
         IItemTrackingService itemTrackingService,
-        ISpoilerService spoilerService
+        IParsedSpoilerDataService parsedSpoilerDataService
     )
     {
         _itemName = itemName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
-        _spoilerService = spoilerService ?? throw new ArgumentNullException(nameof(spoilerService));
+        _parsedSpoilerDataService = parsedSpoilerDataService ?? throw new ArgumentNullException(nameof(parsedSpoilerDataService));
         _itemTrackingService.ItemStateChanged += OnItemStateChanged;
+        _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnParsedSpoilerDataChanged;
 
         // Initialize state from service (if item exists)
         InitializeState();
@@ -120,6 +121,7 @@ public class BroadcastItemViewModel : INotifyPropertyChanged
     public void Dispose()
     {
         _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
+        _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnParsedSpoilerDataChanged;
     }
 
     #endregion
@@ -138,6 +140,16 @@ public class BroadcastItemViewModel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Handles changes to the parsed spoiler data (load, reload, or clear).
+    /// Reinitializes the image based on the new spoiler data.
+    /// </summary>
+    private void OnParsedSpoilerDataChanged(object? sender, ParsedSpoilerDataChangedEventArgs e)
+    {
+        // When parsed spoiler data changes, reinitialize to reflect the new spoiler state
+        InitializeState();
+    }
+
     private void UpdateHoverText()
     {
         // Query spoiler service for item information (currently just placeholder)
@@ -148,23 +160,29 @@ public class BroadcastItemViewModel : INotifyPropertyChanged
     private void UpdateImageResourceKey(SavedItem? item)
     {
         string baseKey = _itemName.ToString().ToLower();
+        RegionName spoiledRegion = RegionName.UNKNOWN;
+        if (_parsedSpoilerDataService.CurrentData?.StartingItems.ContainsKey(_itemName) == true)
+        {
+            spoiledRegion = _parsedSpoilerDataService.CurrentData.StartingItems[_itemName];
+        }
 
         // If no item state, show default B&W variant
-        if (item == null)
+        if (item == null && spoiledRegion == RegionName.UNKNOWN)
         {
             ImageResourceKey = $"{baseKey}_bw";
             return;
         }
 
         // If item is hinted, always show B&W
-        if (item.Hinted)
+        // This logic may need to be revised.
+        if (item?.Hinted == true)
         {
             ImageResourceKey = $"{baseKey}_bw";
             return;
         }
 
         // If item is in a valid region, show full-color
-        if (_validRegions.Contains(item.Region))
+        if (spoiledRegion != RegionName.UNKNOWN || _validRegions.Contains(item?.Region ?? RegionName.UNKNOWN))
         {
             ImageResourceKey = baseKey;
             return;

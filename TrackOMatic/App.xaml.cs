@@ -41,6 +41,7 @@ public partial class App : Application
         var appStateService = _serviceProvider.GetRequiredService<IApplicationStateService>();
         var dataPersistenceService = _serviceProvider.GetRequiredService<IDataPersistenceService>();
         var spoilerService = _serviceProvider.GetRequiredService<ISpoilerService>();
+        var parsedSpoilerDataService = _serviceProvider.GetRequiredService<IParsedSpoilerDataService>();
         var autotrackingService = _serviceProvider.GetRequiredService<IAutotrackerService>();
         MainWindow mainWindow = new
         (
@@ -48,6 +49,7 @@ public partial class App : Application
             appStateService,
             dataPersistenceService,
             spoilerService,
+            parsedSpoilerDataService,
             autotrackingService
         );
         mainWindow.Show();

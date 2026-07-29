@@ -13,6 +13,8 @@ public class ParsedSpoilerDataService : IParsedSpoilerDataService
     private readonly ISavedProgressProvider _progressProvider;
     private ParsedSpoilerData? _currentData;
 
+    public event EventHandler<ParsedSpoilerDataChangedEventArgs>? ParsedSpoilerDataChanged;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ParsedSpoilerDataService"/> class.
     /// </summary>
@@ -33,7 +35,7 @@ public class ParsedSpoilerDataService : IParsedSpoilerDataService
     private void OnProgressChanged(object? sender, ProgressReplacedEventArgs e)
     {
         // Clear the parsed data when progress changes (reset or load from file)
-        _currentData = null;
+        UpdateParsedData(null);
     }
 
     #region IParsedSpoilerDataService Implementation
@@ -42,7 +44,11 @@ public class ParsedSpoilerDataService : IParsedSpoilerDataService
 
     public void UpdateParsedData(ParsedSpoilerData? data)
     {
+        var oldData = _currentData;
         _currentData = data;
+
+        // Notify subscribers that the data has changed
+        ParsedSpoilerDataChanged?.Invoke(this, new ParsedSpoilerDataChangedEventArgs(oldData, data));
     }
 
     #endregion

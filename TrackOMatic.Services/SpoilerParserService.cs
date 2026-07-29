@@ -324,10 +324,14 @@ public class SpoilerParserService : ISpoilerService
         string[] shopkeepers = ["Cranky", "Funky", "Candy", "Wrinkly"];
         if (shopkeepers.All((s) => !pool.Contains(s)))
         {
-            startingMoves.Add(ItemName.CRANKY, RegionName.START);
-            startingMoves.Add(ItemName.CANDY, RegionName.START);
-            startingMoves.Add(ItemName.FUNKY, RegionName.START);
-            startingMoves.Add(ItemName.SNIDE, RegionName.START);
+            ItemName[] localShopkeepers = [ItemName.CRANKY, ItemName.FUNKY, ItemName.CANDY, ItemName.SNIDE];
+            foreach (var shopkeeper in localShopkeepers)
+            {
+                if (!startingMoves.ContainsKey(shopkeeper))
+                {
+                    startingMoves[shopkeeper] = RegionName.START;
+                }
+            }
         }
 
         return startingMoves;

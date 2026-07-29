@@ -35,11 +35,11 @@ public partial class Item : UserControl
         {
             // Create ViewModel with injected services
             var itemTrackingService = ServiceLocator.GetService<IItemTrackingService>();
-            var spoilerService = ServiceLocator.GetService<ISpoilerService>();
+            var parsedSpoilerDataService = ServiceLocator.GetService<IParsedSpoilerDataService>();
 
-            if (itemTrackingService != null && spoilerService != null)
+            if (itemTrackingService != null && parsedSpoilerDataService != null)
             {
-                control.DataContext = new BroadcastItemViewModel(itemName, itemTrackingService, spoilerService);
+                control.DataContext = new BroadcastItemViewModel(itemName, itemTrackingService, parsedSpoilerDataService);
             }
         }
     }

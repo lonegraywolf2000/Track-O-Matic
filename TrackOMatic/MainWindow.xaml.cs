@@ -72,6 +72,7 @@ namespace TrackOMatic
         public IApplicationStateService AppState { get; init; }
         public IDataPersistenceService DataPersistenceService { get; init; }
         public ISpoilerService SpoilerService { get; init; }
+        public IParsedSpoilerDataService ParsedSpoilerDataService { get; init; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -387,6 +388,7 @@ namespace TrackOMatic
             IApplicationStateService appStateService,
             IDataPersistenceService dataPersistenceService,
             ISpoilerService spoilerService,
+            IParsedSpoilerDataService parsedSpoilerDataService,
             IAutotrackerService autotrackerService
         )
         {
@@ -396,6 +398,7 @@ namespace TrackOMatic
             AppState = appStateService;
             DataPersistenceService = dataPersistenceService;
             SpoilerService = spoilerService;
+            ParsedSpoilerDataService = parsedSpoilerDataService;
             Autotracker = autotrackerService;
 
             // Subscribe to settings changes to notify XAML bindings
@@ -524,7 +527,7 @@ namespace TrackOMatic
             }
 
             SpoilerParser = new(this, UserSettings, SpoilerService);
-            DataSaver = new(this, DataPersistenceService);
+            DataSaver = new(this, DataPersistenceService, ParsedSpoilerDataService, SpoilerService);
             Reset();
             AdjustBasedOnCompactMode();
         }
