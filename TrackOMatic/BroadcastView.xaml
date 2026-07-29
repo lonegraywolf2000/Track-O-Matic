@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TrackOMatic"
+             xmlns:broadcast="clr-namespace:TrackOMatic.Broadcast"
              xmlns:enums="clr-namespace:TrackOMatic.Logic.Enums;assembly=TrackOMatic.Logic"
              mc:Ignorable="d"
              Height="392"
@@ -100,7 +101,7 @@
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="dk_pad"  BackgroundItemImage="{DynamicResource baboon_blast_bw}" Grid.Row="0" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BABOON_BLAST}"/>
 
                     <!-- Kong 2 -->
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy"  BackgroundItemImage="{DynamicResource diddy_bw}"   Grid.Row="1" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.DIDDY}"/>
+                    <broadcast:Item Margin="1" Grid.Row="1" Grid.Column="0" Panel.ZIndex="0" ItemName="{x:Static enums:ItemName.DIDDY}" />
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_gun"  BackgroundItemImage="{DynamicResource peanut_popguns_bw}" Grid.Row="1" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PEANUT_POPGUNS}"/>
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_inst"  BackgroundItemImage="{DynamicResource guitar_gazump_bw}" Grid.Row="1" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.GUITAR_GAZUMP}"/>
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_move"   BackgroundItemImage="{DynamicResource chimpy_charge_bw}" Grid.Row="1" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CHIMPY_CHARGE}"/>

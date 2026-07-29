@@ -1,0 +1,46 @@
+using System.Windows;
+using System.Windows.Controls;
+
+using TrackOMatic.Logic.Enums;
+using TrackOMatic.Services;
+using TrackOMatic.ViewModels;
+
+namespace TrackOMatic.Broadcast;
+
+/// <summary>
+/// Interaction logic for Broadcast Item display (read-only).
+/// </summary>
+public partial class Item : UserControl
+{
+    public static readonly DependencyProperty ItemNameProperty = DependencyProperty.Register(
+        nameof(ItemName),
+        typeof(ItemName),
+        typeof(Item),
+        new PropertyMetadata(ItemName.DONKEY, OnItemNameChanged));
+
+    public ItemName ItemName
+    {
+        get => (ItemName)GetValue(ItemNameProperty);
+        set => SetValue(ItemNameProperty, value);
+    }
+
+    public Item()
+    {
+        InitializeComponent();
+    }
+
+    private static void OnItemNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is Item control && e.NewValue is ItemName itemName)
+        {
+            // Create ViewModel with injected services
+            var itemTrackingService = ServiceLocator.GetService<IItemTrackingService>();
+            var spoilerService = ServiceLocator.GetService<ISpoilerService>();
+
+            if (itemTrackingService != null && spoilerService != null)
+            {
+                control.DataContext = new BroadcastItemViewModel(itemName, itemTrackingService, spoilerService);
+            }
+        }
+    }
+}

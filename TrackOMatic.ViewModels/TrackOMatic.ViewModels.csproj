@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TrackOMatic.Logic\TrackOMatic.Logic.csproj" />
     <ProjectReference Include="..\TrackOMatic.Services\TrackOMatic.Services.csproj" />
   </ItemGroup>

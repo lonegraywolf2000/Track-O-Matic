@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using TrackOMatic.Logic.Models;
-using TrackOMatic.Logic.Models.Autotracking;
 using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic.Services;
@@ -29,6 +28,7 @@ public static class ServiceRegistryExtensions
         // reinitialize their caches.
         services.AddSingleton<ISavedProgressProvider>(sp => new SavedProgressProvider(new SavedProgress()));
         services.AddSingleton<IDataPersistenceService, DataPersistenceService>();
+        services.AddSingleton<IItemTrackingService, ItemTrackingService>();
         services.AddSingleton<ICollectiblesService, CollectiblesService>();
         services.AddSingleton<IBarrierService, BarrierService>();
         services.AddSingleton<ITrackerStateService, TrackerStateService>();
