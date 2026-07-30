@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
@@ -8,24 +11,23 @@ using TrackOMatic.Services;
 
 namespace TrackOMatic.ViewModels;
 
-public class BroadcastItemViewModel : INotifyPropertyChanged
+public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
 {
     private readonly IItemTrackingService _itemTrackingService;
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
     private readonly ItemName _itemName;
 
-    public BroadcastItemViewModel(
+    public UiItemViewModel(
         ItemName itemName,
         IItemTrackingService itemTrackingService,
         IParsedSpoilerDataService parsedSpoilerDataService
-    )
+    ): base(itemName, itemTrackingService, parsedSpoilerDataService)
     {
         _itemName = itemName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
         _parsedSpoilerDataService = parsedSpoilerDataService ?? throw new ArgumentNullException(nameof(parsedSpoilerDataService));
         _itemTrackingService.ItemStateChanged += OnItemStateChanged;
         _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnParsedSpoilerDataChanged;
-
         // Initialize state from service (if item exists)
         InitializeState();
     }
@@ -97,25 +99,48 @@ public class BroadcastItemViewModel : INotifyPropertyChanged
         }
     }
 
-    #endregion
-
-    #region INotifyPropertyChanged Implementation
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    private double _opacity = 1.0;
+    public double Opacity
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        get => _opacity;
+        private set
+        {
+            if (_opacity != value)
+            {
+                _opacity = value;
+                OnPropertyChanged();
+            }
+        }
     }
 
-    // Cleanup
-    public void Dispose()
+    private RegionName _regionName = RegionName.UNKNOWN;
+    public RegionName RegionName
     {
-        _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
-        _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnParsedSpoilerDataChanged;
+        get => _regionName;
+        private set
+        {
+            if (_regionName != value)
+            {
+                _regionName = value;
+                OnPropertyChanged();
+            }
+        }
     }
 
     #endregion
+
+    public void ToggleStar()
+    {
+        var oldItem = _itemTrackingService.GetItemState(_itemName)
+            ?? new SavedItem(_itemName, RegionName.UNKNOWN, ItemVisibilityState.Visible, false, 1.0);
+
+        var newStarred = oldItem.Starred == ItemVisibilityState.Visible
+            ? ItemVisibilityState.Hidden
+            : ItemVisibilityState.Visible;
+
+        SavedItem updatedItem = new(oldItem.ItemName, oldItem.Region, newStarred, oldItem.Autotracked, oldItem.Opacity);
+        _itemTrackingService.SetItemState(_itemName, updatedItem);
+    }
 
     private void OnItemStateChanged(object? sender, ItemStateChangedEventArgs e)
     {

@@ -684,14 +684,13 @@
 
 
                     <!-- Kong 2 -->
-                    <local:Item x:Name="diddy"  ItemImage="{DynamicResource diddy_bw}"   Grid.Row="1" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.DIDDY}"/>
+                    <local:UiItem Grid.Row="1" Grid.Column="0" ItemName="DIDDY" />
                     <local:Item x:Name="diddy_gun"  ItemImage="{DynamicResource peanut_popguns_bw}" Grid.Row="1" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PEANUT_POPGUNS}"/>
                     <local:Item x:Name="diddy_inst"  ItemImage="{DynamicResource guitar_gazump_bw}" Grid.Row="1" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.GUITAR_GAZUMP}"/>
                     <local:Item x:Name="diddy_move"   ItemImage="{DynamicResource chimpy_charge_bw}" Grid.Row="1" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CHIMPY_CHARGE}"/>
                     <local:Item x:Name="diddy_barrel"  ItemImage="{DynamicResource rocketbarrel_boost_bw}" Grid.Row="1" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.ROCKETBARREL_BOOST}"/>
                     <local:Item x:Name="diddy_pad"  ItemImage="{DynamicResource simian_spring_bw}" Grid.Row="1" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.SIMIAN_SPRING}"/>
 
-                    <local:ItemBackground BackgroundItemImage="{DynamicResource diddy}"    Grid.Row="1" Grid.Column="0" Visibility="Hidden" Panel.ZIndex="-1" Tag="{x:Static enums:ItemName.DIDDY}"/>
                     <local:ItemBackground BackgroundItemImage="{DynamicResource peanut_popguns}"    Grid.Row="1" Grid.Column="1" Visibility="Hidden" Panel.ZIndex="-1" Tag="{x:Static enums:ItemName.PEANUT_POPGUNS}"/>
                     <local:ItemBackground BackgroundItemImage="{DynamicResource guitar_gazump}"    Grid.Row="1" Grid.Column="2" Visibility="Hidden" Panel.ZIndex="-1" Tag="{x:Static enums:ItemName.GUITAR_GAZUMP}"/>
                     <local:ItemBackground BackgroundItemImage="{DynamicResource chimpy_charge}"    Grid.Row="1" Grid.Column="3" Visibility="Hidden" Panel.ZIndex="-1" Tag="{x:Static enums:ItemName.CHIMPY_CHARGE}"/>

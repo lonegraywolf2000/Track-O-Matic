@@ -105,7 +105,7 @@ namespace TrackOMatic
             }
         }
 
-        private bool pressed = false;
+        private bool pressed { get; set; } = false;
 
         public Item()
         {
@@ -240,13 +240,6 @@ namespace TrackOMatic
 
         private ItemAdorner? myAdornment;
         private PInPoint pointRef = new PInPoint();
-
-        private void ResetImage()
-        {
-            ItemName itemName = (ItemName)Tag;
-            var resourceName = itemName.ToString().ToLower();
-            ItemImage = (ImageSource)FindResource(resourceName);
-        }
 
         public void ChangeOpacity(double newOpacity)
         {
