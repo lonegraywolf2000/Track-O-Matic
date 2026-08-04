@@ -20,8 +20,9 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
     public UiItemViewModel(
         ItemName itemName,
         IItemTrackingService itemTrackingService,
-        IParsedSpoilerDataService parsedSpoilerDataService
-    ): base(itemName, itemTrackingService, parsedSpoilerDataService)
+        IParsedSpoilerDataService parsedSpoilerDataService,
+        IThemeService themeService
+    ) : base(itemName, itemTrackingService, parsedSpoilerDataService, themeService)
     {
         _itemName = itemName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));

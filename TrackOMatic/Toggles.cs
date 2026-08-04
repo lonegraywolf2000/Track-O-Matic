@@ -3,6 +3,7 @@ using System.Windows.Controls;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic;
+using TrackOMatic.Services;
 
 namespace TrackOMatic
 {
@@ -209,7 +210,8 @@ namespace TrackOMatic
 
         private void ColoredBarrelPadMoves_Click(object sender, RoutedEventArgs e)
         {
-            UserSettings.ColoredBarrelPadMoves = ColorBarrelPadMoves.IsChecked;
+            var themeService = ServiceLocator.GetService<IThemeService>();
+            themeService.SetBarrelPadTheme(ColorBarrelPadMoves.IsChecked);
         }
 
         private void HelmDoors_Click(object sender, RoutedEventArgs e)

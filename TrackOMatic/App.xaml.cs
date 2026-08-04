@@ -13,6 +13,7 @@ namespace TrackOMatic;
 public partial class App : Application
 {
     private readonly IServiceProvider _serviceProvider;
+    private IResourceDictionaryProvider? _resourceDictionaryProvider;
 
     public App()
     {
@@ -43,6 +44,13 @@ public partial class App : Application
         var spoilerService = _serviceProvider.GetRequiredService<ISpoilerService>();
         var parsedSpoilerDataService = _serviceProvider.GetRequiredService<IParsedSpoilerDataService>();
         var autotrackingService = _serviceProvider.GetRequiredService<IAutotrackerService>();
+        var themeService = _serviceProvider.GetRequiredService<IThemeService>();
+
+        _resourceDictionaryProvider = new WpfResourceDictionaryProvider(themeService);
+        _resourceDictionaryProvider.UpdateResourceDictionaries();
+
+        themeService.BarrelPadThemeChanged += (s, e) => _resourceDictionaryProvider.UpdateResourceDictionaries();
+
         MainWindow mainWindow = new
         (
             settingsService,
@@ -53,30 +61,5 @@ public partial class App : Application
             autotrackingService
         );
         mainWindow.Show();
-
-        UpdatePadBarrelImages();
-        settingsService.PropertyChanged += (s, args) =>
-        {
-            if (args.PropertyName == nameof(IUserSettingsService.ColoredBarrelPadMoves))
-            {
-                UpdatePadBarrelImages();
-            }
-        };
-    }
-
-    public void UpdatePadBarrelImages()
-    {
-        var settingsService = _serviceProvider.GetRequiredService<IUserSettingsService>();
-        var dicts = Resources.MergedDictionaries;
-        dicts.Clear();
-        dicts.Add(new ResourceDictionary
-        {
-            Source = new Uri("Dictionary1.xaml", UriKind.Relative)
-        });
-        var path = settingsService.ColoredBarrelPadMoves ? "ColoredBarrelPadImages.xaml" : "BaseBarrelPadImages.xaml";
-        dicts.Add(new ResourceDictionary
-        {
-            Source = new Uri(path, UriKind.Relative)
-        });
     }
 }

@@ -18,6 +18,7 @@ public static class ServiceRegistryExtensions
         // Existing application services
         services.AddSingleton<IUserSettingsService, UserSettingsService>();
         services.AddSingleton<IApplicationStateService, ApplicationStateService>();
+        services.AddSingleton<IThemeService, BarrelPadThemeService>();
 
         // Unified spoiler deserialization and parsing service
         services.AddSingleton<ISpoilerService, SpoilerParserService>();

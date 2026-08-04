@@ -19,6 +19,12 @@
         </Style>
     </Window.Resources>
     <Grid Name="MainGrid">
+        <Grid.Resources>
+            <Style TargetType="broadcast:Item">
+                <Setter Property="Margin" Value="1"/>
+                <Setter Property="Panel.ZIndex" Value="0"/>
+            </Style>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Name="MainItemsRow" Height="290"/>
             <RowDefinition Name="HelmKRool">
@@ -93,44 +99,44 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Kong 1 -->
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="dk" BackgroundItemImage="{DynamicResource donkey_bw}" Grid.Row="0" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.DONKEY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="dk_gun"  BackgroundItemImage="{DynamicResource coconut_gun_bw}" Grid.Row="0" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.COCONUT_GUN}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="dk_inst"  BackgroundItemImage="{DynamicResource bongo_blast_bw}" Grid.Row="0" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BONGO_BLAST}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="dk_move"   BackgroundItemImage="{DynamicResource gorilla_grab_bw}" Grid.Row="0" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.GORILLA_GRAB}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="dk_barrel"  BackgroundItemImage="{DynamicResource strong_kong_bw}" Grid.Row="0" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.STRONG_KONG}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="dk_pad"  BackgroundItemImage="{DynamicResource baboon_blast_bw}" Grid.Row="0" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BABOON_BLAST}"/>
+                    <broadcast:Item Grid.Row="0" Grid.Column="0" ItemName="DONKEY" />
+                    <broadcast:Item Grid.Row="0" Grid.Column="1" ItemName="COCONUT_GUN" />
+                    <broadcast:Item Grid.Row="0" Grid.Column="2" ItemName="BONGO_BLAST" />
+                    <broadcast:Item Grid.Row="0" Grid.Column="3" ItemName="GORILLA_GRAB" />
+                    <broadcast:Item Grid.Row="0" Grid.Column="4" ItemName="STRONG_KONG" />
+                    <broadcast:Item Grid.Row="0" Grid.Column="5" ItemName="BABOON_BLAST" />
 
                     <!-- Kong 2 -->
-                    <broadcast:Item Margin="1" Grid.Row="1" Grid.Column="0" Panel.ZIndex="0" ItemName="{x:Static enums:ItemName.DIDDY}" />
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_gun"  BackgroundItemImage="{DynamicResource peanut_popguns_bw}" Grid.Row="1" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PEANUT_POPGUNS}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_inst"  BackgroundItemImage="{DynamicResource guitar_gazump_bw}" Grid.Row="1" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.GUITAR_GAZUMP}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_move"   BackgroundItemImage="{DynamicResource chimpy_charge_bw}" Grid.Row="1" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CHIMPY_CHARGE}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_barrel"  BackgroundItemImage="{DynamicResource rocketbarrel_boost_bw}" Grid.Row="1" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.ROCKETBARREL_BOOST}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="diddy_pad"  BackgroundItemImage="{DynamicResource simian_spring_bw}" Grid.Row="1" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.SIMIAN_SPRING}"/>
+                    <broadcast:Item Grid.Row="1" Grid.Column="0" ItemName="DIDDY" />
+                    <broadcast:Item Grid.Row="1" Grid.Column="1" ItemName="PEANUT_POPGUNS" />
+                    <broadcast:Item Grid.Row="1" Grid.Column="2" ItemName="GUITAR_GAZUMP" />
+                    <broadcast:Item Grid.Row="1" Grid.Column="3" ItemName="CHIMPY_CHARGE" />
+                    <broadcast:Item Grid.Row="1" Grid.Column="4" ItemName="ROCKETBARREL_BOOST" />
+                    <broadcast:Item Grid.Row="1" Grid.Column="5" ItemName="SIMIAN_SPRING" />
 
                     <!-- Kong 3 -->
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky"  BackgroundItemImage="{DynamicResource lanky_bw}"   Grid.Row="2" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.LANKY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_gun"  BackgroundItemImage="{DynamicResource grape_shooter_bw}" Grid.Row="2" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.GRAPE_SHOOTER}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_inst"  BackgroundItemImage="{DynamicResource trombone_tremor_bw}" Grid.Row="2" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.TROMBONE_TREMOR}"/>
-                    <broadcast:Item Margin="1" Grid.Row="2" Grid.Column="3" Panel.ZIndex="0" ItemName="{x:Static enums:ItemName.ORANGSTAND}" />
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_barrel"  BackgroundItemImage="{DynamicResource orangstand_sprint_bw}" Grid.Row="2" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.ORANGSTAND_SPRINT}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="lanky_pad"  BackgroundItemImage="{DynamicResource baboon_balloon_bw}" Grid.Row="2" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BABOON_BALLOON}"/>
+                    <broadcast:Item Grid.Row="2" Grid.Column="0" ItemName="LANKY" />
+                    <broadcast:Item Grid.Row="2" Grid.Column="1" ItemName="GRAPE_SHOOTER" />
+                    <broadcast:Item Grid.Row="2" Grid.Column="2" ItemName="TROMBONE_TREMOR" />
+                    <broadcast:Item Grid.Row="2" Grid.Column="3" ItemName="ORANGSTAND" />
+                    <broadcast:Item Grid.Row="2" Grid.Column="4" ItemName="ORANGSTAND_SPRINT" />
+                    <broadcast:Item Grid.Row="2" Grid.Column="5" ItemName="BABOON_BALLOON" />
 
                     <!-- Kong 4 -->
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="tiny"  BackgroundItemImage="{DynamicResource tiny_bw}"   Grid.Row="3" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.TINY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="tiny_gun"  BackgroundItemImage="{DynamicResource feather_bow_bw}" Grid.Row="3" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.FEATHER_BOW}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="tiny_inst"  BackgroundItemImage="{DynamicResource saxophone_slam_bw}" Grid.Row="3" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.SAXOPHONE_SLAM}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="tiny_move"   BackgroundItemImage="{DynamicResource ponytail_twirl_bw}" Grid.Row="3" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PONYTAIL_TWIRL}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="tiny_barrel"  BackgroundItemImage="{DynamicResource mini_monkey_bw}" Grid.Row="3" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.MINI_MONKEY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="tiny_pad"  BackgroundItemImage="{DynamicResource monkeyport_bw}" Grid.Row="3" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.MONKEYPORT}"/>
+                    <broadcast:Item Grid.Row="3" Grid.Column="0" ItemName="TINY" />
+                    <broadcast:Item Grid.Row="3" Grid.Column="1" ItemName="FEATHER_BOW" />
+                    <broadcast:Item Grid.Row="3" Grid.Column="2" ItemName="SAXOPHONE_SLAM" />
+                    <broadcast:Item Grid.Row="3" Grid.Column="3" ItemName="PONYTAIL_TWIRL" />
+                    <broadcast:Item Grid.Row="3" Grid.Column="4" ItemName="MINI_MONKEY" />
+                    <broadcast:Item Grid.Row="3" Grid.Column="5" ItemName="MONKEYPORT" />
 
                     <!-- Kong 5 -->
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="chunky"  BackgroundItemImage="{DynamicResource chunky_bw}"   Grid.Row="4" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CHUNKY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="chunky_gun"  BackgroundItemImage="{DynamicResource pineapple_launcher_bw}" Grid.Row="4" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PINEAPPLE_LAUNCHER}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="chunky_inst"  BackgroundItemImage="{DynamicResource triangle_trample_bw}" Grid.Row="4" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.TRIANGLE_TRAMPLE}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="chunky_move"   BackgroundItemImage="{DynamicResource primate_punch_bw}" Grid.Row="4" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PRIMATE_PUNCH}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="chunky_barrel"  BackgroundItemImage="{DynamicResource hunky_chunky_bw}" Grid.Row="4" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.HUNKY_CHUNKY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="chunky_pad"  BackgroundItemImage="{DynamicResource gorilla_gone_bw}" Grid.Row="4" Grid.Column="5" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.GORILLA_GONE}"/>
+                    <broadcast:Item Grid.Row="4" Grid.Column="0" ItemName="CHUNKY" />
+                    <broadcast:Item Grid.Row="4" Grid.Column="1" ItemName="PINEAPPLE_LAUNCHER" />
+                    <broadcast:Item Grid.Row="4" Grid.Column="2" ItemName="TRIANGLE_TRAMPLE" />
+                    <broadcast:Item Grid.Row="4" Grid.Column="3" ItemName="PRIMATE_PUNCH" />
+                    <broadcast:Item Grid.Row="4" Grid.Column="4" ItemName="HUNKY_CHUNKY" />
+                    <broadcast:Item Grid.Row="4" Grid.Column="5" ItemName="GORILLA_GONE" />
 
                     <!--Blueprints-->
                     <local:CollectibleItem Margin="1" RowHeight=".9*" BGColor="Black" Interactible="False" x:Name="DonkeyBPs" ImageSource="Images/bw/dk_bp.png" Text="0" Grid.Row="0" Grid.Column="6" />
@@ -153,10 +159,10 @@
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="slam" BackgroundItemImage="{DynamicResource progressive_slam_1_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PROGRESSIVE_SLAM_1}"/>
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="homingscope" BackgroundItemImage="{DynamicResource homing_scope_bw}" Grid.Column="7" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.HOMING_SCOPE}"/>
                     <local:ItemBackground Margin="1" Interactible="False" x:Name="camerashockwave" BackgroundItemImage="{DynamicResource camera_shockwave_bw}" Grid.Column="6" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CAMERA_SHOCKWAVE}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="diving" BackgroundItemImage="{DynamicResource diving_bw}" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.DIVING}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="orange_throwing" BackgroundItemImage="{DynamicResource orange_throwing_bw}" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.ORANGE_THROWING}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="barrel_throwing" BackgroundItemImage="{DynamicResource barrel_throwing_bw}" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BARREL_THROWING}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="vine_swinging" BackgroundItemImage="{DynamicResource vine_swinging_bw}" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.VINE_SWINGING}"/>
+                    <broadcast:Item Grid.Column="1" ItemName="DIVING" />
+                    <broadcast:Item Grid.Column="2" ItemName="ORANGE_THROWING" />
+                    <broadcast:Item Grid.Column="3" ItemName="BARREL_THROWING" />
+                    <broadcast:Item Grid.Column="4" ItemName="VINE_SWINGING" />
                 </Grid>
                 <Grid Name="ShopkeepersGrid" Grid.Row="3" Margin="0,0,0,0">
                     <Grid.ColumnDefinitions>
@@ -168,14 +174,14 @@
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="cranky" BackgroundItemImage="{DynamicResource cranky_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CRANKY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="funky" BackgroundItemImage="{DynamicResource funky_bw}" Grid.Column="1" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.FUNKY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="candy" BackgroundItemImage="{DynamicResource candy_bw}" Grid.Column="2" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CANDY}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="snide" BackgroundItemImage="{DynamicResource snide_bw}" Grid.Column="3" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.SNIDE}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="climbing" BackgroundItemImage="{DynamicResource climbing_bw}" Grid.Column="4" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CLIMBING}"/>
-
+                    <broadcast:Item Grid.Column="0" ItemName="CRANKY" />
+                    <broadcast:Item Grid.Column="1" ItemName="FUNKY" />
+                    <broadcast:Item Grid.Column="2" ItemName="CANDY" />
+                    <broadcast:Item Grid.Column="3" ItemName="SNIDE" />
+                    <broadcast:Item Grid.Column="4" ItemName="CLIMBING" />
                 </Grid>
             </Grid>
+            <!-- Broadcast Levels here. -->
             <Grid Grid.Column="1" Margin="-6,3,3,3" Height="284" VerticalAlignment="Top">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
@@ -359,7 +365,7 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <local:ItemBackground Margin="1" Interactible="False" x:Name="bean"  BackgroundItemImage="{DynamicResource bean_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BEAN}"/>
+            <broadcast:Item Grid.Column="0" ItemName="BEAN" />
             <local:CollectibleItem BGColor="Black" Interactible="False" x:Name="pearls" ImageSource="Images/bw/pearl.png" Text="0" Grid.Row="0" Grid.Column="1"/>
             <local:CollectibleItem BGColor="Black" Interactible="False" x:Name="battle_crowns" ImageSource="Images/bw/crown.png" Text="0" Grid.Row="0" Grid.Column="2"/>
             <local:CollectibleItem BGColor="Black" Interactible="False" x:Name="banana_medals" ImageSource="Images/bw/bananamedal.png" Text="0" Grid.Row="0" Grid.Column="3"/>

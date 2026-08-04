@@ -16,7 +16,7 @@ public partial class Item : UserControl
         nameof(ItemName),
         typeof(ItemName),
         typeof(Item),
-        new PropertyMetadata(ItemName.DONKEY, OnItemNameChanged));
+        new PropertyMetadata(ItemName.BASIC_KEY, OnItemNameChanged));
 
     public ItemName ItemName
     {
@@ -36,10 +36,11 @@ public partial class Item : UserControl
             // Create ViewModel with injected services
             var itemTrackingService = ServiceLocator.GetService<IItemTrackingService>();
             var parsedSpoilerDataService = ServiceLocator.GetService<IParsedSpoilerDataService>();
+            var themeService = ServiceLocator.GetService<IThemeService>();
 
             if (itemTrackingService != null && parsedSpoilerDataService != null)
             {
-                control.DataContext = new BroadcastItemViewModel(itemName, itemTrackingService, parsedSpoilerDataService);
+                control.DataContext = new BroadcastItemViewModel(itemName, itemTrackingService, parsedSpoilerDataService, themeService);
             }
         }
     }

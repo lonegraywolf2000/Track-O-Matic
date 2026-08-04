@@ -8,23 +8,51 @@ using TrackOMatic.Services;
 
 namespace TrackOMatic.ViewModels;
 
-public class BroadcastItemViewModel : INotifyPropertyChanged
+/// <summary>
+/// A view model for an item that users can see with the dedicated broadcast view.
+/// </summary>
+/// <remarks>
+/// This is meant to be a base class version.
+///Additional view models can extend this for write functionality.
+/// </remarks>
+public class BroadcastItemViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly IItemTrackingService _itemTrackingService;
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
+    private readonly IThemeService _themeService;
     private readonly ItemName _itemName;
+
+    private static readonly HashSet<ItemName> BarrelPadItems = new()
+    {
+        ItemName.STRONG_KONG,
+        ItemName.ROCKETBARREL_BOOST,
+        ItemName.ORANGSTAND,
+        ItemName.MINI_MONKEY,
+        ItemName.HUNKY_CHUNKY,
+        ItemName.BABOON_BLAST,
+        ItemName.SIMIAN_SPRING,
+        ItemName.MONKEYPORT,
+        ItemName.GORILLA_GONE
+    };
 
     public BroadcastItemViewModel(
         ItemName itemName,
         IItemTrackingService itemTrackingService,
-        IParsedSpoilerDataService parsedSpoilerDataService
+        IParsedSpoilerDataService parsedSpoilerDataService,
+        IThemeService themeService
     )
     {
         _itemName = itemName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
         _parsedSpoilerDataService = parsedSpoilerDataService ?? throw new ArgumentNullException(nameof(parsedSpoilerDataService));
+        _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _itemTrackingService.ItemStateChanged += OnItemStateChanged;
         _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnParsedSpoilerDataChanged;
+
+        if (BarrelPadItems.Contains(_itemName))
+        {
+            _themeService.BarrelPadThemeChanged += OnBarrelPadThemeChanged;
+        }
 
         // Initialize state from service (if item exists)
         InitializeState();
@@ -108,11 +136,33 @@ public class BroadcastItemViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    // Cleanup
+    #endregion
+
+    #region IDisposable
+
     public void Dispose()
     {
-        _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
-        _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnParsedSpoilerDataChanged;
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            // Unsubscribe from events to prevent memory leaks
+            _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
+            _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnParsedSpoilerDataChanged;
+            if (BarrelPadItems.Contains(_itemName))
+            {
+                _themeService.BarrelPadThemeChanged -= OnBarrelPadThemeChanged;
+            }
+        }
+    }
+
+    ~BroadcastItemViewModel()
+    {
+        Dispose(false);
     }
 
     #endregion
@@ -135,10 +185,18 @@ public class BroadcastItemViewModel : INotifyPropertyChanged
     /// Handles changes to the parsed spoiler data (load, reload, or clear).
     /// Reinitializes the image based on the new spoiler data.
     /// </summary>
-    private void OnParsedSpoilerDataChanged(object? sender, ParsedSpoilerDataChangedEventArgs e)
+    protected virtual void OnParsedSpoilerDataChanged(object? sender, ParsedSpoilerDataChangedEventArgs e)
     {
         // When parsed spoiler data changes, reinitialize to reflect the new spoiler state
         InitializeState();
+    }
+
+    private void OnBarrelPadThemeChanged(object? sender, EventArgs e)
+    {
+        // Force an update of the image resource key to reflect the new theme setting
+        var itemState = _itemTrackingService.GetItemState(_itemName);
+        ImageResourceKey = string.Empty;
+        UpdateImageResourceKey(itemState);
     }
 
     private void UpdateHoverText()
