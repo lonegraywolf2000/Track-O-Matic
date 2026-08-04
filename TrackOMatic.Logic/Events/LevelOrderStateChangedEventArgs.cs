@@ -1,3 +1,5 @@
+using TrackOMatic.Logic.Enums;
+
 namespace TrackOMatic.Logic.Events;
 
 /// <summary>
@@ -6,6 +8,6 @@ namespace TrackOMatic.Logic.Events;
 /// <param name="oldValue"></param>
 /// <param name="newValue"></param>
 /// <param name="changeReason"></param>
-public class LevelOrderStateChangedEventArgs(List<int> oldValue, List<int> newValue, string? changeReason = null) : ValueChangedEventArgs<List<int>>(oldValue, newValue, changeReason)
+public class LevelOrderStateChangedEventArgs(List<int> oldValue, List<int> newValue, ChangeReason changeReason = ChangeReason.Unknown) : ValueChangedEventArgs<List<int>>(oldValue, newValue, changeReason)
 {
 }

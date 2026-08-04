@@ -1,3 +1,4 @@
+using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 
 namespace TrackOMatic.Logic.Events;
@@ -12,7 +13,7 @@ public class HintStateChangedEventArgs : EventChangeData
 
     public SavedHint? PreviousState { get; init; }
 
-    public HintStateChangedEventArgs(SavedHint updatedHint, SavedHint? previousState = null, string? changeReason = null)
+    public HintStateChangedEventArgs(SavedHint updatedHint, SavedHint? previousState = null, ChangeReason changeReason = ChangeReason.Unknown)
     {
         UpdatedHint = updatedHint;
         PreviousState = previousState;

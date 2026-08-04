@@ -108,7 +108,7 @@ public class SavedProgressProviderTests
         Assert.Multiple(() =>
         {
             Assert.NotNull(eventArgs);
-            Assert.Equal("Reset", eventArgs.ChangeReason);
+            Assert.Equal(ChangeReason.Reset, eventArgs.ChangeReason);
         });
     }
 
@@ -134,7 +134,7 @@ public class SavedProgressProviderTests
         Assert.Multiple(() =>
         {
             Assert.NotNull(eventArgs);
-            Assert.Equal("LoadedFromFile", eventArgs.ChangeReason);
+            Assert.Equal(ChangeReason.LoadedFromFile, eventArgs.ChangeReason);
         });
     }
 

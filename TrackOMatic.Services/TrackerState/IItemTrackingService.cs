@@ -25,11 +25,6 @@ public interface IItemTrackingService
     void ClearItemState(ItemName itemName);
 
     /// <summary>
-    /// Update a specific property of an item without replacing the entire entry.
-    /// </summary>
-    void UpdateItemProperty(ItemName itemName, Action<SavedItem> updateAction);
-
-    /// <summary>
     /// Update the region of an item and evaluate whether it should still exist.
     /// Returns true if item remains, false if it was removed.
     /// </summary>
@@ -49,4 +44,19 @@ public interface IItemTrackingService
     /// Fired when any item state changes.
     /// </summary>
     event EventHandler<ItemStateChangedEventArgs>? ItemStateChanged;
+
+    /// <summary>
+    /// Begins a batch update scope where multiple item changes are deferred.
+    /// When the returned scope is disposed, all collected changes fire ItemStateChanged events.
+    /// Use with a 'using' statement for automatic cleanup.
+    /// </summary>
+    /// <example>
+    /// using (itemService.BeginBatchUpdate())
+    /// {
+    ///     itemService.SetItemState(item1, state1);
+    ///     itemService.SetItemState(item2, state2);
+    ///     itemService.ClearItemState(item3);
+    /// } // Events fire here
+    /// </example>
+    IDisposable BeginBatchUpdate();
 }

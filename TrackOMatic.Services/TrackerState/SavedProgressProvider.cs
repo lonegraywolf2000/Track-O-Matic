@@ -1,3 +1,4 @@
+using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 
@@ -22,7 +23,7 @@ public class SavedProgressProvider(SavedProgress initialProgress) : ISavedProgre
         _currentProgress = newProgress;
 
         // Determine reason based on whether old had data
-        var reason = oldProgress?.SavedItems.Count > 0 ? "LoadedFromFile" : "Reset";
+        var reason = oldProgress?.SavedItems.Count > 0 ? ChangeReason.LoadedFromFile : ChangeReason.Reset;
 
         ProgressChanged?.Invoke(this, new ProgressReplacedEventArgs
         {

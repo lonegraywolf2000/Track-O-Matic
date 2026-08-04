@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 
@@ -49,7 +50,7 @@ public class LevelOrderService: ILevelOrderService
         var previous = GetLevelOrder();
         var newList = levelOrder.ToList();
         _savedProgress.LevelOrder = newList;
-        LevelOrderChanged?.Invoke(this, new LevelOrderStateChangedEventArgs([.. previous], newList, "UserModified"));
+        LevelOrderChanged?.Invoke(this, new LevelOrderStateChangedEventArgs([.. previous], newList, ChangeReason.UserModified));
     }
 
     #endregion

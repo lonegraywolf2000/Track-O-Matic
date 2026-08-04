@@ -1,11 +1,13 @@
+using TrackOMatic.Logic.Enums;
+
 namespace TrackOMatic.Logic.Events;
 
 public abstract class EventChangeData : EventArgs
 {
     /// <summary>
-    /// Gets the reason for the change, or null if not specified.
+    /// Gets the reason for the change.
     /// </summary>
-    public string? ChangeReason { get; init; }
+    public ChangeReason ChangeReason { get; init; }
 
     /// <summary>
     /// Gets the timestamp when the value change occurred.

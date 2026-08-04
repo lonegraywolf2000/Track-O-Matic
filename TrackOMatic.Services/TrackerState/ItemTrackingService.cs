@@ -6,6 +6,11 @@ using TrackOMatic.Logic;
 namespace TrackOMatic.Services.TrackerState;
 
 /// <summary>
+/// Represents a deferred item state change during batch operations.
+/// </summary>
+internal record DeferredItemChange(ItemName ItemName, SavedItem? CurrentState, SavedItem? PreviousState);
+
+/// <summary>
 /// Service for managing item tracking state across regions.
 /// Backed by SavedProgress and fires events when item state changes.
 /// </summary>
@@ -13,6 +18,8 @@ public class ItemTrackingService : IItemTrackingService
 {
     private readonly ISavedProgressProvider _progressProvider;
     private readonly Dictionary<ItemName, SavedItem> _itemCache;
+    private bool _isBatchingUpdates;
+    private readonly List<DeferredItemChange> _deferredUpdates;
 
     public event EventHandler<ItemStateChangedEventArgs>? ItemStateChanged;
 
@@ -21,6 +28,8 @@ public class ItemTrackingService : IItemTrackingService
         _progressProvider = progressProvider ?? throw new ArgumentNullException(nameof(progressProvider));
 
         _itemCache = [];
+        _isBatchingUpdates = false;
+        _deferredUpdates = [];
         InitializeCache();
 
         // Subscribe to progress changes (Reset/Load operations)
@@ -67,8 +76,15 @@ public class ItemTrackingService : IItemTrackingService
         // Update SavedProgress
         _progressProvider.CurrentProgress.SavedItems[itemName] = state;
 
-        // Fire event to notify subscribers
-        ItemStateChanged?.Invoke(this, new(state, previousState, "ItemUpdated"));
+        // If batching, defer the event; otherwise fire immediately
+        if (_isBatchingUpdates)
+        {
+            _deferredUpdates.Add(new DeferredItemChange(itemName, state, previousState));
+        }
+        else
+        {
+            ItemStateChanged?.Invoke(this, new(state, previousState, ChangeReason.UserModified));
+        }
     }
 
     public void ClearItemState(ItemName itemName)
@@ -90,31 +106,23 @@ public class ItemTrackingService : IItemTrackingService
         // Remove from SavedProgress
         _progressProvider.CurrentProgress.SavedItems.Remove(itemName);
 
-        // Fire event to notify subscribers that the item was removed
-        // Broadcast controls need to know to update their display
-        if (removedState != null)
+        // If batching, defer the event; otherwise fire immediately
+        if (_isBatchingUpdates)
         {
-            ItemStateChanged?.Invoke(this, new(removedState, removedState, "ItemCleared"));
+            if (removedState != null)
+            {
+                _deferredUpdates.Add(new DeferredItemChange(itemName, null, removedState));
+            }
         }
-    }
-
-    /// <summary>
-    /// Updates a specific property of an item without replacing the entire entry.
-    /// Useful for region changes, opacity updates, etc.
-    /// </summary>
-    public void UpdateItemProperty(ItemName itemName, Action<SavedItem> updateAction)
-    {
-        if (!_itemCache.TryGetValue(itemName, out var item))
+        else
         {
-            return;
+            // Fire event to notify subscribers that the item was removed
+            // Broadcast controls need to know to update their display
+            if (removedState != null)
+            {
+                ItemStateChanged?.Invoke(this, new(removedState, removedState, ChangeReason.UserModified));
+            }
         }
-
-        var previousState = new SavedItem(item.ItemName, item.Region, item.Starred, item.Autotracked, item.Opacity, item.Hinted);
-
-        updateAction(item);
-
-        // Item already in both cache and SavedProgress; just notify
-        ItemStateChanged?.Invoke(this, new(item, previousState, "ItemPropertyUpdated"));
     }
 
     /// <summary>
@@ -152,7 +160,16 @@ public class ItemTrackingService : IItemTrackingService
         }
 
         SavedItem previous = new(item.ItemName, previousRegion, item.Starred, item.Autotracked, item.Opacity, item.Hinted);
-        ItemStateChanged?.Invoke(this, new(item, previous, "ItemRegionUpdated"));
+
+        // If batching, defer the event; otherwise fire immediately
+        if (_isBatchingUpdates)
+        {
+            _deferredUpdates.Add(new DeferredItemChange(itemName, item, previous));
+        }
+        else
+        {
+            ItemStateChanged?.Invoke(this, new(item, previous, ChangeReason.UserModified));
+        }
 
         return true;
     }
@@ -165,5 +182,60 @@ public class ItemTrackingService : IItemTrackingService
     public IEnumerable<SavedItem> GetItemsByVisibility(ItemVisibilityState state)
     {
         return _itemCache.Values.Where(item => item.Starred == state);
+    }
+
+    /// <summary>
+    /// Begins a batch update scope where multiple item changes are deferred.
+    /// When the returned scope is disposed, all collected changes fire a single ItemStateChanged event.
+    /// </summary>
+    public IDisposable BeginBatchUpdate()
+    {
+        return new BatchUpdateScope(this);
+    }
+
+    /// <summary>
+    /// Private helper class that manages the batch update scope lifecycle.
+    /// </summary>
+    private class BatchUpdateScope : IDisposable
+    {
+        private readonly ItemTrackingService _service;
+        private bool _disposed;
+
+        public BatchUpdateScope(ItemTrackingService service)
+        {
+            _service = service;
+            _service._isBatchingUpdates = true;
+            _service._deferredUpdates.Clear();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            // Exit batch mode and process all deferred updates
+            _service._isBatchingUpdates = false;
+            var deferredUpdates = _service._deferredUpdates.ToList();
+            _service._deferredUpdates.Clear();
+
+            // Fire a composite event for all collected changes
+            if (deferredUpdates.Count > 0)
+            {
+                foreach (var change in deferredUpdates)
+                {
+                    // For each deferred change, fire an event
+                    // Note: CurrentState is null only for cleared items; PreviousState is always present
+                    // because we only defer changes that actually occurred.
+                    var itemToReport = change.CurrentState ?? change.PreviousState;
+                    ArgumentNullException.ThrowIfNull(itemToReport, nameof(itemToReport));
+
+                    _service.ItemStateChanged?.Invoke(_service, new(itemToReport, change.PreviousState, ChangeReason.Batched));
+                }
+            }
+        }
     }
 }

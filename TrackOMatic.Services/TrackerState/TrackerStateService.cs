@@ -2,8 +2,6 @@ using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Services.TrackerState;
 
-using TrackOMatic.Logic.Models;
-
 namespace TrackOMatic.Services;
 
 /// <summary>
@@ -84,7 +82,7 @@ public class TrackerStateService : ITrackerStateService
             CurrentState = GetCurrentState(),
             DomainChanged = domainChanged,
             SpecificChange = null,
-            ChangeReason = "DomainUpdate"
+            ChangeReason = Logic.Enums.ChangeReason.DomainUpdate,
         }
         ;
         StateChanged?.Invoke(this, args);

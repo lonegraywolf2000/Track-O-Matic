@@ -1,3 +1,5 @@
+using TrackOMatic.Logic.Enums;
+
 namespace TrackOMatic.Logic.Events;
 
 /// <summary>
@@ -16,7 +18,7 @@ public class ValueChangedEventArgs<T> : EventChangeData
     /// </summary>
     public T NewValue { get; init; }
 
-    public ValueChangedEventArgs(T oldValue, T newValue, string? changeReason = null)
+    public ValueChangedEventArgs(T oldValue, T newValue, ChangeReason changeReason = ChangeReason.Unknown)
     {
         OldValue = oldValue;
         NewValue = newValue;

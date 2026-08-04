@@ -1,3 +1,4 @@
+using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 
@@ -47,7 +48,7 @@ public class EndGameProgressionService: IEndGameProgressionService
         var previous = GetHelmKongs();
         var newList = kongs.ToList();
         _savedProgress.HelmKongs = newList;
-        BlastStateChanged?.Invoke(this, new BlastStateChangedEventArgs([.. previous], newList, "UserModified"));
+        BlastStateChanged?.Invoke(this, new BlastStateChangedEventArgs([.. previous], newList, ChangeReason.UserModified));
     }
 
     public IReadOnlyList<int> GetBossKongs()
@@ -60,7 +61,7 @@ public class EndGameProgressionService: IEndGameProgressionService
         var previous = GetBossKongs();
         var newList = kongs.ToList();
         _savedProgress.BossKongs = newList;
-        GauntletStateChanged?.Invoke(this, new GauntletStateChangedEventArgs([.. previous], newList, "UserModified"));
+        GauntletStateChanged?.Invoke(this, new GauntletStateChangedEventArgs([.. previous], newList, ChangeReason.UserModified));
     }
 
     #endregion

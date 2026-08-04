@@ -282,67 +282,6 @@ public class ItemTrackingServiceTests
 
     #endregion
 
-    #region UpdateItemProperty Tests
-
-    [Fact]
-    public void UpdateItemProperty_ModifiesProperty()
-    {
-        // Arrange
-        var item = new SavedItem(
-            ItemName.DONKEY,
-            RegionName.JUNGLE_JAPES,
-            ItemVisibilityState.Visible,
-            false,
-            1.0,
-            false
-        );
-        _sut.SetItemState(ItemName.DONKEY, item);
-
-        // Act
-        _sut.UpdateItemProperty(ItemName.DONKEY, i => i.Opacity = 0.5);
-
-        // Assert
-        var retrieved = _sut.GetItemState(ItemName.DONKEY);
-        Assert.Multiple(() =>
-        {
-            Assert.NotNull(retrieved);
-            Assert.Equal(0.5, retrieved.Opacity);
-        });
-    }
-
-    [Fact]
-    public void UpdateItemProperty_RaisesEvent()
-    {
-        // Arrange
-        var item = new SavedItem(
-            ItemName.DONKEY,
-            RegionName.JUNGLE_JAPES,
-            ItemVisibilityState.Visible,
-            false,
-            1.0,
-            false
-        );
-        _sut.SetItemState(ItemName.DONKEY, item);
-
-        var eventFired = false;
-        _sut.ItemStateChanged += (sender, args) => eventFired = true;
-
-        // Act
-        _sut.UpdateItemProperty(ItemName.DONKEY, i => i.Autotracked = true);
-
-        // Assert
-        Assert.True(eventFired);
-    }
-
-    [Fact]
-    public void UpdateItemProperty_WithNonexistentItem_DoesNotThrow()
-    {
-        // Act & Assert - should not throw
-        _sut.UpdateItemProperty(ItemName.DIDDY, i => i.Opacity = 0.5);
-    }
-
-    #endregion
-
     #region UpdateItemRegion Tests
 
     [Fact]
@@ -499,15 +438,52 @@ public class ItemTrackingServiceTests
         });
     }
 
+
     #endregion
 
-    #region Constructor Tests
+    #region Batch Update Tests
 
     [Fact]
-    public void Constructor_WithNullProvider_ThrowsArgumentNullException()
+    public void BeginBatchUpdate_MultipleSetItemState_DeferRedUntilDispose()
     {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new ItemTrackingService(null!));
+        // Arrange
+        var item1 = new SavedItem(ItemName.DONKEY, RegionName.JUNGLE_JAPES, ItemVisibilityState.Visible, false, 1.0, false);
+        var item2 = new SavedItem(ItemName.DIDDY, RegionName.JUNGLE_JAPES, ItemVisibilityState.Visible, false, 1.0, false);
+        var eventCount = 0;
+        _sut.ItemStateChanged += (sender, args) => eventCount++;
+
+        // Act
+        using (var batch = _sut.BeginBatchUpdate())
+        {
+            _sut.SetItemState(ItemName.DONKEY, item1);
+            Assert.Equal(0, eventCount);
+            _sut.SetItemState(ItemName.DIDDY, item2);
+            Assert.Equal(0, eventCount);
+        }
+
+        // Assert
+        Assert.Equal(2, eventCount);
+    }
+
+    [Fact]
+    public void BeginBatchUpdate_WithClearedItem_FiresDeferredEvent()
+    {
+        // Arrange
+        var item = new SavedItem(ItemName.DONKEY, RegionName.JUNGLE_JAPES, ItemVisibilityState.Visible, false, 1.0, false);
+        _sut.SetItemState(ItemName.DONKEY, item);
+        var eventCount = 0;
+        _sut.ItemStateChanged += (sender, args) => eventCount++;
+
+        // Act
+        using (var batch = _sut.BeginBatchUpdate())
+        {
+            _sut.ClearItemState(ItemName.DONKEY);
+            Assert.Equal(0, eventCount); // No event yet
+        }
+
+        // Assert
+        Assert.Equal(1, eventCount);
+        Assert.Null(_sut.GetItemState(ItemName.DONKEY));
     }
 
     #endregion

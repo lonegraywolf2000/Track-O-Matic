@@ -62,7 +62,7 @@ public class BarrierService : IBarrierService
         _savedProgress.SavedGBCounts[region] = count;
         BlockerBarrierAmountChanged?.Invoke(this, new(region, oldCount, count)
         {
-            ChangeReason = "UserModified"
+            ChangeReason = ChangeReason.UserModified
         });
     }
 
@@ -81,7 +81,7 @@ public class BarrierService : IBarrierService
         _savedProgress.BLockerImageIndexes[region] = (int)itemType;
         BlockerBarrierTypeChanged?.Invoke(this, new(region, oldItemType, itemType)
         {
-            ChangeReason = "UserModified"
+            ChangeReason = ChangeReason.UserModified
         });
     }
     // Helm Door domain
@@ -104,7 +104,7 @@ public class BarrierService : IBarrierService
         _savedProgress.HelmDoorCounts[doorIndex] = count;
         HelmBarrierAmountChanged?.Invoke(this, new(helmDoor, oldCount, count)
         {
-            ChangeReason = "UserModified"
+            ChangeReason = ChangeReason.UserModified
         });
     }
 
@@ -127,7 +127,7 @@ public class BarrierService : IBarrierService
         _savedProgress.HelmDoorImageIndexes[doorIndex] = (int)itemType;
         HelmBarrierTypeChanged?.Invoke(this, new(helmDoor, oldItemType, itemType)
         {
-            ChangeReason = "UserModified"
+            ChangeReason = ChangeReason.UserModified
         });
     }
 }
