@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
@@ -58,53 +54,11 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
 
     #region Proxy Properties
 
-    private string _imageResourceKey = "";
-    public string ImageResourceKey
-    {
-        get => _imageResourceKey;
-        private set
-        {
-            if (_imageResourceKey != value)
-            {
-                _imageResourceKey = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    private bool _isStarred = false;
-    public bool IsStarred
-    {
-        get => _isStarred;
-        private set
-        {
-            if (_isStarred != value)
-            {
-                _isStarred = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    private string _hoverText = "";
-    public string HoverText
-    {
-        get => _hoverText;
-        private set
-        {
-            if (_hoverText != value)
-            {
-                _hoverText = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
     private double _opacity = 1.0;
     public double Opacity
     {
         get => _opacity;
-        private set
+        protected set
         {
             if (_opacity != value)
             {
@@ -118,7 +72,7 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
     public RegionName RegionName
     {
         get => _regionName;
-        private set
+        protected set
         {
             if (_regionName != value)
             {
@@ -132,15 +86,7 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
 
     public void ToggleStar()
     {
-        var oldItem = _itemTrackingService.GetItemState(_itemName)
-            ?? new SavedItem(_itemName, RegionName.UNKNOWN, ItemVisibilityState.Visible, false, 1.0);
-
-        var newStarred = oldItem.Starred == ItemVisibilityState.Visible
-            ? ItemVisibilityState.Hidden
-            : ItemVisibilityState.Visible;
-
-        SavedItem updatedItem = new(oldItem.ItemName, oldItem.Region, newStarred, oldItem.Autotracked, oldItem.Opacity);
-        _itemTrackingService.SetItemState(_itemName, updatedItem);
+        _itemTrackingService.ToggleStar(_itemName);
     }
 
     private void OnItemStateChanged(object? sender, ItemStateChangedEventArgs e)
@@ -155,16 +101,6 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
             // Update hover text from spoiler service if available
             UpdateHoverText();
         }
-    }
-
-    /// <summary>
-    /// Handles changes to the parsed spoiler data (load, reload, or clear).
-    /// Reinitializes the image based on the new spoiler data.
-    /// </summary>
-    private void OnParsedSpoilerDataChanged(object? sender, ParsedSpoilerDataChangedEventArgs e)
-    {
-        // When parsed spoiler data changes, reinitialize to reflect the new spoiler state
-        InitializeState();
     }
 
     private void UpdateHoverText()

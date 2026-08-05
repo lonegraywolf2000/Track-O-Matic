@@ -1,0 +1,164 @@
+<UserControl x:Class="TrackOMatic.UiRegion"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:TrackOMatic"
+             xmlns:converters="clr-namespace:TrackOMatic.Converters"
+             xmlns:viewmodels="clr-namespace:TrackOMatic.ViewModels;assembly=TrackOMatic.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewmodels:RegionViewModel}"
+             d:DesignHeight="200"
+             d:DesignWidth="400"
+>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Dictionary1.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:AllAndToBoolConverter x:Key="AllAndToBoolConverter" />
+            <converters:BooleanToVisibilityConverter x:Key="BooleanToHiddenVisibilityConverter" FalseVisibility="Hidden" />
+            <converters:PlayableRegionConverter x:Key="PlayableRegionConverter" />
+            <converters:ResourceKeyConverter x:Key="ResourceKeyConverter" />
+            <converters:LobbyRegionConverter x:Key="LobbyRegionConverter" />
+            <converters:MultiToSingleConverter x:Key="PlayableRegionPointsToVisibilityConverter" StartConverter="{StaticResource AllAndToBoolConverter}">
+                <converters:MultiToSingleConverter.TrailingConverters>
+                    <converters:BooleanToVisibilityConverter FalseVisibility="Hidden" />
+                </converters:MultiToSingleConverter.TrailingConverters>
+            </converters:MultiToSingleConverter>
+            <converters:ChainedConverter x:Key="ItemPointsToColorConverter">
+                <converters:ChainedConverter.Converters>
+                    <converters:ItemPointCountToColorConverter />
+                    <converters:ResourceKeyConverter />
+                </converters:ChainedConverter.Converters>
+            </converters:ChainedConverter>
+            <converters:MultiToSingleConverter x:Key="LobbyRegionPointsToVisibilityConverter" StartConverter="{StaticResource AllAndToBoolConverter}">
+                <converters:MultiToSingleConverter.TrailingConverters>
+                    <converters:BooleanToVisibilityConverter FalseVisibility="Hidden" />
+                </converters:MultiToSingleConverter.TrailingConverters>
+            </converters:MultiToSingleConverter>
+            <converters:ChainedConverter x:Key="LobbyRegionToVisibilityConverter">
+                <converters:ChainedConverter.Converters>
+                    <converters:LobbyRegionConverter />
+                    <converters:BooleanToVisibilityConverter FalseVisibility="Hidden" />
+                </converters:ChainedConverter.Converters>
+            </converters:ChainedConverter>
+            <Style TargetType="Viewbox">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+            </Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource BigFontSize}" />
+                <Setter Property="FontFamily" Value="{DynamicResource DK64Font}" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- This background can actually change in auto tracking mode. -->
+    <Grid Background="{StaticResource RegionBG}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.5*" />
+            <ColumnDefinition Width="3.3*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- The points/level grid portion. -->
+        <Grid Grid.Column="0" Background="{StaticResource RegionImageBG}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height=".1*"/>
+                <RowDefinition Height=".75*"/>
+                <RowDefinition Height=".25*"/>
+                <RowDefinition Height=".75*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height=".1*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3.5*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width=".1*"/>
+                <ColumnDefinition Width=".3*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- The picture associated with the region. -->
+            <Image
+                Grid.RowSpan="6"
+                Grid.ColumnSpan="4"
+                Source="{Binding RegionResourceKey, Converter={StaticResource ResourceKeyConverter}}"
+                Margin="{StaticResource RegionPictureMargin}" />
+
+            <!-- Level order number is set here. ...may consider rewriting this as well. -->
+            <local:RegionLevel
+                Grid.RowSpan="6"
+                Grid.ColumnSpan="5"
+                RegionName="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}}"
+                Visibility="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}, Converter={StaticResource LobbyRegionToVisibilityConverter}}"
+            />
+
+            <!-- If playing with WOTH point totals, the amount of items is shown here. -->
+            <Viewbox Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3">
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.RowSpan="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    HorizontalAlignment="Right"
+                    Text="{Binding WothPoints}"
+                    Foreground="{StaticResource RequiredChecksColor}"
+                >
+                    <TextBlock.Visibility>
+                        <MultiBinding Converter="{StaticResource PlayableRegionPointsToVisibilityConverter}">
+                            <Binding Path="HasWothPoints" />
+                        </MultiBinding>
+                    </TextBlock.Visibility>
+                </TextBlock>
+            </Viewbox>
+
+            <!-- If playing with any point item values, the total found in a region is shown here. -->
+            <!-- The color can change if no more points are available. (That is, all items claimed.) -->
+            <!-- Obviously the text & visibility can change as well. -->
+            <Viewbox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
+                <TextBlock
+                    Text="{Binding ItemPoints}"
+                    Foreground="{Binding ItemPoints, Converter={StaticResource ItemPointsToColorConverter}}"
+                >
+                    <TextBlock.Visibility>
+                        <MultiBinding Converter="{StaticResource LobbyRegionPointsToVisibilityConverter}">
+                            <Binding Path="HasItemPoints" />
+                            <Binding Path="RegionName"
+                                     Converter="{StaticResource PlayableRegionConverter}"
+                                     RelativeSource="{RelativeSource AncestorType=local:UiRegion}"
+                            />
+                        </MultiBinding>
+                    </TextBlock.Visibility>
+                </TextBlock>
+            </Viewbox>
+        </Grid>
+        <ItemsControl
+            Grid.Column="1"
+            Margin="3"
+            ItemsSource="{Binding PlacedItems}"
+        >
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <local:RegionItems
+                        IsItemsHost="True"
+                        RegionName="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}}"
+                    />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplateSelector>
+                <local:RegionItemTemplateSelector>
+                    <local:RegionItemTemplateSelector.SpoilerItemTemplate>
+                        <DataTemplate DataType="{x:Type viewmodels:SpoilerItemViewModel}">
+                            <local:SpoilerRegionItem />
+                        </DataTemplate>
+                    </local:RegionItemTemplateSelector.SpoilerItemTemplate>
+                    <local:RegionItemTemplateSelector.SimpleItemTemplate>
+                        <DataTemplate DataType="{x:Type viewmodels:RegionItemViewModel}">
+                            <local:RegionItem />
+                        </DataTemplate>
+                    </local:RegionItemTemplateSelector.SimpleItemTemplate>
+                </local:RegionItemTemplateSelector>
+            </ItemsControl.ItemTemplateSelector>
+        </ItemsControl>
+    </Grid>
+</UserControl>

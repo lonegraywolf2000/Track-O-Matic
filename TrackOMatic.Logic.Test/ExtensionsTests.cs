@@ -153,8 +153,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.JUNGLE_JAPES,
             ItemVisibilityState.Visible,
-            autotracked: false,
-            opacity: 0.0
+            false,
+            0.0
         );
 
         // Act
@@ -172,8 +172,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.JUNGLE_JAPES,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.0
+            false,
+            0.0
         );
 
         // Act
@@ -191,8 +191,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.JUNGLE_JAPES,
             ItemVisibilityState.Collapsed,
-            autotracked: false,
-            opacity: 0.0
+            false,
+            0.0
         );
 
         // Act
@@ -210,8 +210,8 @@ public class ExtensionsTests
             ItemName.DIDDY,
             RegionName.ANGRY_AZTEC,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.375
+            false,
+            0.375
         );
 
         // Act
@@ -229,8 +229,8 @@ public class ExtensionsTests
             ItemName.DIDDY,
             RegionName.UNKNOWN,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.375
+            false,
+            0.375
         );
 
         // Act
@@ -248,8 +248,8 @@ public class ExtensionsTests
             ItemName.LANKY,
             RegionName.GLOOMY_GALLEON,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 1.0
+            false,
+            1.0
         );
 
         // Act
@@ -267,8 +267,8 @@ public class ExtensionsTests
             ItemName.TINY,
             RegionName.CRYSTAL_CAVES,
             ItemVisibilityState.Hidden,
-            autotracked: true,
-            opacity: 1.0
+            true,
+            1.0
         );
 
         // Act
@@ -286,8 +286,8 @@ public class ExtensionsTests
             ItemName.CHUNKY,
             RegionName.FRANTIC_FACTORY,
             ItemVisibilityState.Hidden,
-            autotracked: true,
-            opacity: 1.5
+            true,
+            1.5
         );
 
         // Act
@@ -305,8 +305,8 @@ public class ExtensionsTests
             ItemName.LANKY,
             RegionName.UNKNOWN,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 1.0
+            false,
+            1.0
         );
 
         // Act
@@ -324,8 +324,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.JUNGLE_JAPES,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.5
+            false,
+            0.5
         );
 
         // Act
@@ -343,8 +343,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.SHOPS,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.380  // Within 0.01 of 0.375
+            false,
+            0.380  // Within 0.01 of 0.375
         );
 
         // Act
@@ -362,8 +362,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.SHOPS,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.370
+            false,
+            0.370
         );
 
         // Act
@@ -381,8 +381,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.SHOPS,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.36
+            false,
+            0.36
         );
 
         // Act
@@ -404,8 +404,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.SHOPS,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: opacity
+            false,
+            opacity
         );
 
         // Act
@@ -423,8 +423,8 @@ public class ExtensionsTests
             ItemName.DONKEY,
             RegionName.DK_ISLES,
             ItemVisibilityState.Visible,
-            autotracked: false,
-            opacity: 0.1  // Low opacity, but starred
+            false,
+            0.1  // Low opacity, but starred
         );
 
         // Act

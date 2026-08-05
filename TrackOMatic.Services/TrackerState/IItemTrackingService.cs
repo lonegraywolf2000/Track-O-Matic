@@ -41,6 +41,14 @@ public interface IItemTrackingService
     IEnumerable<SavedItem> GetItemsByVisibility(ItemVisibilityState state);
 
     /// <summary>
+    /// Toggles the star visibility state of an item.
+    /// If no SavedItem exists for the item, creates one with the star toggled to Visible.
+    /// This method centralizes star toggle logic to ensure consistent behavior across all view models.
+    /// </summary>
+    /// <param name="itemName">The name of the item whose star should be toggled.</param>
+    void ToggleStar(ItemName itemName);
+
+    /// <summary>
     /// Fired when any item state changes.
     /// </summary>
     event EventHandler<ItemStateChangedEventArgs>? ItemStateChanged;

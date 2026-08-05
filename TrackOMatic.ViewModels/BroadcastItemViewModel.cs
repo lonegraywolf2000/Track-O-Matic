@@ -87,7 +87,7 @@ public class BroadcastItemViewModel : INotifyPropertyChanged, IDisposable
     public string ImageResourceKey
     {
         get => _imageResourceKey;
-        private set
+        protected set
         {
             if (_imageResourceKey != value)
             {
@@ -101,7 +101,7 @@ public class BroadcastItemViewModel : INotifyPropertyChanged, IDisposable
     public bool IsStarred
     {
         get => _isStarred;
-        private set
+        protected set
         {
             if (_isStarred != value)
             {
@@ -115,7 +115,7 @@ public class BroadcastItemViewModel : INotifyPropertyChanged, IDisposable
     public string HoverText
     {
         get => _hoverText;
-        private set
+        protected set
         {
             if (_hoverText != value)
             {

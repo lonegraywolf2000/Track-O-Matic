@@ -49,8 +49,8 @@ public class SavedProgressTests
             ItemName.DONKEY,
             RegionName.JUNGLE_JAPES,
             ItemVisibilityState.Visible,
-            autotracked: false,
-            opacity: 1.0
+            false,
+            1.0
         );
 
         // Act
@@ -292,15 +292,15 @@ public class SavedProgressTests
             ItemName.DONKEY,
             RegionName.JUNGLE_JAPES,
             ItemVisibilityState.Visible,
-            autotracked: true,
-            opacity: 0.8
+            true,
+            0.8
         );
         original.SavedItems[ItemName.TINY] = new SavedItem(
             ItemName.TINY,
             RegionName.SHOPS,
             ItemVisibilityState.Hidden,
-            autotracked: false,
-            opacity: 0.5
+            false,
+            0.5
         );
 
         // Act

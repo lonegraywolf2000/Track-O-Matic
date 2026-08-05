@@ -1,3 +1,4 @@
+using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models.Spoilers;
 
 namespace TrackOMatic.Services;
@@ -23,6 +24,13 @@ public interface IParsedSpoilerDataService
     /// </summary>
     /// <param name="data">The new parsed spoiler data, or null to clear.</param>
     void UpdateParsedData(ParsedSpoilerData? data);
+
+    /// <summary>
+    /// Gets the point value for a specific item based on the current parsed spoiler data.
+    /// </summary>
+    /// <param name="itemName">The name of the item.</param>
+    /// <returns>The point value for the specified item.</returns>
+    int GetPointsForItem(ItemName itemName);
 }
 
 /// <summary>

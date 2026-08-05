@@ -117,4 +117,76 @@ public static class Extensions
 
         return RegionName.UNKNOWN;
     }
+
+    public static PointCategory ToPointCategory(this ItemName itemName) => itemName switch
+    {
+        ItemName.KEY_1 => PointCategory.Key,
+        ItemName.KEY_2 => PointCategory.Key,
+        ItemName.KEY_3 => PointCategory.Key,
+        ItemName.KEY_4 => PointCategory.Key,
+        ItemName.KEY_5 => PointCategory.Key,
+        ItemName.KEY_6 => PointCategory.Key,
+        ItemName.KEY_7 => PointCategory.Key,
+        ItemName.KEY_8 => PointCategory.Key,
+
+        ItemName.DONKEY => PointCategory.Kong,
+        ItemName.DIDDY => PointCategory.Kong,
+        ItemName.LANKY => PointCategory.Kong,
+        ItemName.TINY => PointCategory.Kong,
+        ItemName.CHUNKY => PointCategory.Kong,
+
+        ItemName.BONGO_BLAST => PointCategory.Instrument,
+        ItemName.GUITAR_GAZUMP => PointCategory.Instrument,
+        ItemName.TROMBONE_TREMOR => PointCategory.Instrument,
+        ItemName.SAXOPHONE_SLAM => PointCategory.Instrument,
+        ItemName.TRIANGLE_TRAMPLE => PointCategory.Instrument,
+
+        ItemName.COCONUT_GUN => PointCategory.Gun,
+        ItemName.PEANUT_POPGUNS => PointCategory.Gun,
+        ItemName.GRAPE_SHOOTER => PointCategory.Gun,
+        ItemName.FEATHER_BOW => PointCategory.Gun,
+        ItemName.PINEAPPLE_LAUNCHER => PointCategory.Gun,
+
+        ItemName.GORILLA_GRAB => PointCategory.PhysicalMove,
+        ItemName.CHIMPY_CHARGE => PointCategory.PhysicalMove,
+        ItemName.ORANGSTAND => PointCategory.PhysicalMove,
+        ItemName.PONYTAIL_TWIRL => PointCategory.PhysicalMove,
+        ItemName.PRIMATE_PUNCH => PointCategory.PhysicalMove,
+
+        ItemName.STRONG_KONG => PointCategory.BarrelMove,
+        ItemName.ROCKETBARREL_BOOST => PointCategory.BarrelMove,
+        ItemName.ORANGSTAND_SPRINT => PointCategory.BarrelMove,
+        ItemName.MINI_MONKEY => PointCategory.BarrelMove,
+        ItemName.HUNKY_CHUNKY => PointCategory.BarrelMove,
+
+        ItemName.BABOON_BLAST => PointCategory.PadMove,
+        ItemName.SIMIAN_SPRING => PointCategory.PadMove,
+        ItemName.BABOON_BALLOON => PointCategory.PadMove,
+        ItemName.MONKEYPORT => PointCategory.PadMove,
+        ItemName.GORILLA_GONE => PointCategory.PadMove,
+
+        ItemName.SHOCKWAVE => PointCategory.FairyMove,
+        ItemName.FAIRY_CAMERA => PointCategory.FairyMove,
+
+        ItemName.CLIMBING => PointCategory.TrainingMove,
+        ItemName.DIVING => PointCategory.TrainingMove,
+        ItemName.BARREL_THROWING => PointCategory.TrainingMove,
+        ItemName.VINE_SWINGING => PointCategory.TrainingMove,
+        ItemName.ORANGE_THROWING => PointCategory.TrainingMove,
+
+        ItemName.SNIPER_SCOPE => PointCategory.SharedMove,
+        ItemName.HOMING_AMMO => PointCategory.SharedMove,
+        ItemName.PROGRESSIVE_SLAM_1 => PointCategory.SharedMove,
+        ItemName.PROGRESSIVE_SLAM_2 => PointCategory.SharedMove,
+        ItemName.PROGRESSIVE_SLAM_3 => PointCategory.SharedMove,
+
+        ItemName.CRANKY => PointCategory.Shopkeeper,
+        ItemName.FUNKY => PointCategory.Shopkeeper,
+        ItemName.CANDY => PointCategory.Shopkeeper,
+        ItemName.SNIDE => PointCategory.Shopkeeper,
+
+        ItemName.BEAN => PointCategory.Bean,
+
+        _ => PointCategory.Unknown,
+    };
 }

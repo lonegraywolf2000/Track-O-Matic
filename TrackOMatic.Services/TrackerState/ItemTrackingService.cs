@@ -185,6 +185,24 @@ public class ItemTrackingService : IItemTrackingService
     }
 
     /// <summary>
+    /// Toggles the star visibility state of an item.
+    /// If no SavedItem exists for the item, creates one with the star toggled to Visible.
+    /// This method centralizes star toggle logic to ensure consistent behavior across all view models.
+    /// </summary>
+    /// <param name="itemName">The name of the item whose star should be toggled.</param>
+    public void ToggleStar(ItemName itemName)
+    {
+        var currentItem = GetItemState(itemName) ?? SavedItem.CreateEmpty(itemName);
+
+        var newStarred = currentItem.Starred == ItemVisibilityState.Visible
+            ? ItemVisibilityState.Hidden
+            : ItemVisibilityState.Visible;
+
+        SavedItem updatedItem = new(currentItem.ItemName, currentItem.Region, newStarred, currentItem.Autotracked, currentItem.Opacity, currentItem.Hinted);
+        SetItemState(itemName, updatedItem);
+    }
+
+    /// <summary>
     /// Begins a batch update scope where multiple item changes are deferred.
     /// When the returned scope is disposed, all collected changes fire a single ItemStateChanged event.
     /// </summary>

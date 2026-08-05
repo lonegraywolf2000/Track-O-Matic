@@ -1,3 +1,5 @@
+using TrackOMatic.Logic;
+using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Logic.Models.Spoilers;
@@ -49,6 +51,17 @@ public class ParsedSpoilerDataService : IParsedSpoilerDataService
 
         // Notify subscribers that the data has changed
         ParsedSpoilerDataChanged?.Invoke(this, new ParsedSpoilerDataChangedEventArgs(oldData, data));
+    }
+
+    public int GetPointsForItem(ItemName itemName)
+    {
+        var pointSpread = _currentData?.PointSpread ?? [];
+        if (pointSpread is null || pointSpread.Count == 0)
+        {
+            return 0; // No data available, return 0 points
+        }
+        var pointCategory = itemName.ToPointCategory();
+        return pointSpread.TryGetValue(pointCategory, out var points) ? points : 0;
     }
 
     #endregion
