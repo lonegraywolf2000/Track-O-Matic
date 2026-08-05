@@ -88,20 +88,6 @@ namespace TrackOMatic
             return null;
         }
 
-        //if the user turns autotracking off we need to remark the items as not autotracked in the saved data
-        public void TurnOffAutotrackingField()
-        {
-            if (CurrentSavedProgress == null)
-            {
-                return;
-            }
-
-            foreach (var savedItemEntry in CurrentSavedProgress.SavedItems)
-            {
-                savedItemEntry.Value.Autotracked = false;
-            }
-        }
-
         private async void ReadSavedProgress()
         {
             if (CurrentSavedProgress == null)

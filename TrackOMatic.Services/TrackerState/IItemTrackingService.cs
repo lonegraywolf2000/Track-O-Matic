@@ -25,12 +25,6 @@ public interface IItemTrackingService
     void ClearItemState(ItemName itemName);
 
     /// <summary>
-    /// Update the region of an item and evaluate whether it should still exist.
-    /// Returns true if item remains, false if it was removed.
-    /// </summary>
-    bool UpdateItemRegion(ItemName itemName, RegionName newRegion);
-
-    /// <summary>
     /// Get all items in a specific region.
     /// </summary>
     IEnumerable<SavedItem> GetItemsInRegion(RegionName region);

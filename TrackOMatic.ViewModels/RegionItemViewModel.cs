@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
@@ -11,15 +8,31 @@ using TrackOMatic.Services;
 
 namespace TrackOMatic.ViewModels;
 
+/// <summary>
+/// A view model representing an item in a specific region, providing properties and methods for UI binding and interaction.
+/// </summary>
 public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
 {
-    private readonly ItemName _itemName;
-    private readonly RegionName _regionName;
+    protected ItemName? _itemName;
+    protected readonly RegionName _regionName;
     private readonly IItemTrackingService _itemTrackingService;
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
     private readonly IThemeService _themeService;
 
-    public ItemName? CurrentItemName => _itemName;
+    public virtual ItemName? CurrentItemName
+    {
+        get => _itemName;
+        protected set
+        {
+            if (_itemName != value)
+            {
+                _itemName = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    protected internal IItemTrackingService ItemTrackingService => _itemTrackingService;
+    protected internal RegionName RegionName => _regionName;
 
     #region Proxy Properties
 
@@ -27,7 +40,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
     public string ImageResourceKey
     {
         get => _imageResourceKey;
-        private set
+        protected set
         {
             if (_imageResourceKey != value)
             {
@@ -41,7 +54,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
     public bool IsStarred
     {
         get => _isStarred;
-        private set
+        protected set
         {
             if (_isStarred != value)
             {
@@ -54,8 +67,8 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
     #endregion
 
     // TODO: Maybe move this out of the view model specifically?
-    private static readonly HashSet<ItemName> BarrelPadItems = new()
-    {
+    private static readonly HashSet<ItemName> BarrelPadItems =
+    [
         ItemName.STRONG_KONG,
         ItemName.ROCKETBARREL_BOOST,
         ItemName.ORANGSTAND_SPRINT,
@@ -65,10 +78,10 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         ItemName.SIMIAN_SPRING,
         ItemName.MONKEYPORT,
         ItemName.GORILLA_GONE
-    };
+    ];
 
     public RegionItemViewModel(
-        ItemName itemName,
+        ItemName? itemName,
         RegionName regionName,
         IItemTrackingService itemTrackingService,
         IParsedSpoilerDataService parsedSpoilerDataService,
@@ -82,7 +95,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         // Subscribe to events
         _itemTrackingService.ItemStateChanged += OnItemStateChanged;
-        if (BarrelPadItems.Contains(_itemName))
+        if (_itemName.HasValue && BarrelPadItems.Contains(_itemName.Value))
         {
             _themeService.BarrelPadThemeChanged += OnBarrelPadThemeChanged;
         }
@@ -92,7 +105,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
 
     private void InitializeState()
     {
-        var itemState = _itemTrackingService.GetItemState(_itemName);
+        var itemState = _itemName.HasValue ? _itemTrackingService.GetItemState(_itemName.Value) : null;
         UpdateProperties(itemState);
     }
 
@@ -102,7 +115,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
     /// <param name="itemToPlace"></param>
     /// <param name="dragType"></param>
     /// <returns></returns>
-    public bool CanAcceptDrop(ItemName itemToPlace, MouseDragType dragType) => false;
+    public virtual bool CanAcceptDrop(ItemName itemToPlace, MouseDragType dragType) => false;
 
     /// <summary>
     /// A no-op implementation since this slot is already occupied with an item and cannot accept any drops.
@@ -110,14 +123,17 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
     /// <param name="itemToPlace"></param>
     /// <param name="dragType"></param>
     /// <returns></returns>
-    public bool AcceptDropAndMutate(ItemName itemToPlace, MouseDragType dragType) => false;
+    public virtual bool AcceptDropAndMutate(ItemName itemToPlace, MouseDragType dragType) => false;
 
-    public void RemoveFromRegion()
+    public virtual void RemoveFromRegion()
     {
-        var current = _itemTrackingService.GetItemState(_itemName);
+        var current = _itemName.HasValue ? _itemTrackingService.GetItemState(_itemName.Value) : null;
         if (current is not null)
         {
-            _itemTrackingService.SetItemState(_itemName, current with { Region = RegionName.UNKNOWN });
+            _itemTrackingService.SetItemState(_itemName!.Value, current with {
+                Region = RegionName.UNKNOWN,
+                Opacity= 1,
+            });
         }
     }
 
@@ -154,7 +170,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         _itemTrackingService.ToggleStar(CurrentItemName.Value);
     }
 
-    private void OnItemStateChanged(object? sender, ItemStateChangedEventArgs e)
+    protected virtual void OnItemStateChanged(object? sender, ItemStateChangedEventArgs e)
     {
         if (e.UpdatedItem.ItemName == _itemName)
         {
@@ -162,21 +178,21 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         }
     }
 
-    private void OnBarrelPadThemeChanged(object? sender, EventArgs e)
+    protected virtual void OnBarrelPadThemeChanged(object? sender, EventArgs e)
     {
         // If the item is a barrel pad, we need to update the image resource key to reflect the new theme.
-        if (BarrelPadItems.Contains(_itemName))
+        if (_itemName.HasValue && BarrelPadItems.Contains(_itemName.Value))
         {
-            var itemState = _itemTrackingService.GetItemState(_itemName);
+            var itemState = _itemTrackingService.GetItemState(_itemName.Value);
             // Force the frontend to re-evaluate the binding via temporary property change.
             ImageResourceKey = "";
             UpdateProperties(itemState);
         }
     }
 
-    private void UpdateProperties(SavedItem? itemState)
+    protected virtual void UpdateProperties(SavedItem? itemState)
     {
-        if (itemState == null)
+        if (itemState == null || !_itemName.HasValue)
         {
             ImageResourceKey = "";
             IsStarred = false;
@@ -184,7 +200,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         else
         {
             // Set image based on item state
-            string baseKey = _itemName.ToString().ToLower();
+            string baseKey = _itemName.Value.ToString().ToLower();
             ImageResourceKey = itemState.Hinted ? $"{baseKey}_bw" : baseKey;
             IsStarred = itemState.Starred != ItemVisibilityState.Hidden;
         }
@@ -215,7 +231,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
             _disposed = true;
 
             _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
-            if (BarrelPadItems.Contains(_itemName))
+            if (_itemName.HasValue && BarrelPadItems.Contains(_itemName.Value))
             {
                 _themeService.BarrelPadThemeChanged -= OnBarrelPadThemeChanged;
             }

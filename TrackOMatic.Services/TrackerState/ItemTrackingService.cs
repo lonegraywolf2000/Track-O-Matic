@@ -125,55 +125,6 @@ public class ItemTrackingService : IItemTrackingService
         }
     }
 
-    /// <summary>
-    /// Updates the region of an item entry and evaluates whether it should still exist.
-    /// Checks validity first before making any changes.
-    /// Returns true if the item still exists after the update, false if it was removed.
-    /// </summary>
-    public bool UpdateItemRegion(ItemName itemName, RegionName newRegion)
-    {
-        if (!_itemCache.TryGetValue(itemName, out var item))
-        {
-            return false;
-        }
-
-        // Create a temporary item with the new region to check if it would be valid
-        var tempItem = new SavedItem(item.ItemName, newRegion, item.Starred, item.Autotracked, item.Opacity, item.Hinted);
-
-        var previousRegion = item.Region;
-
-        // Check if item should be kept with the new region
-        if (!tempItem.ShouldKeepSavedItem())
-        {
-            // Item should be cleared - do that instead
-            ClearItemState(itemName);
-            return false;
-        }
-
-        // Item is valid - update the region and notify
-        item.Region = newRegion;
-
-        // Also update in SavedProgress to keep in sync
-        if (_progressProvider.CurrentProgress.SavedItems.TryGetValue(itemName, out var savedItem))
-        {
-            savedItem.Region = newRegion;
-        }
-
-        SavedItem previous = new(item.ItemName, previousRegion, item.Starred, item.Autotracked, item.Opacity, item.Hinted);
-
-        // If batching, defer the event; otherwise fire immediately
-        if (_isBatchingUpdates)
-        {
-            _deferredUpdates.Add(new DeferredItemChange(itemName, item, previous));
-        }
-        else
-        {
-            ItemStateChanged?.Invoke(this, new(item, previous, ChangeReason.UserModified));
-        }
-
-        return true;
-    }
-
     public IEnumerable<SavedItem> GetItemsInRegion(RegionName region)
     {
         return _itemCache.Values.Where(item => item.Region == region);

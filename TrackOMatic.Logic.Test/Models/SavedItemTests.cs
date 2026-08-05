@@ -100,7 +100,7 @@ public class SavedItemTests
         );
 
         // Act
-        savedItem.Autotracked = true;
+        savedItem = savedItem with { Autotracked = true };
 
         // Assert
         Assert.True(savedItem.Autotracked);
@@ -135,7 +135,7 @@ public class SavedItemTests
         );
 
         // Act
-        savedItem.Region = RegionName.SHOPS;
+        savedItem = savedItem with { Region = RegionName.SHOPS };
 
         // Assert
         Assert.Equal(RegionName.SHOPS, savedItem.Region);
@@ -154,7 +154,7 @@ public class SavedItemTests
         );
 
         // Act
-        savedItem.Starred = ItemVisibilityState.Hidden;
+        savedItem = savedItem with { Starred = ItemVisibilityState.Hidden };
 
         // Assert
         Assert.Equal(ItemVisibilityState.Hidden, savedItem.Starred);
@@ -173,7 +173,7 @@ public class SavedItemTests
         );
 
         // Act
-        savedItem.Opacity = 0.3;
+        savedItem = savedItem with { Opacity = 0.3 };
 
         // Assert
         Assert.Equal(0.3, savedItem.Opacity);
@@ -193,7 +193,7 @@ public class SavedItemTests
         );
 
         // Act
-        savedItem.Hinted = false;
+        savedItem = savedItem with { Hinted = false };
 
         // Assert
         Assert.False(savedItem.Hinted);
@@ -285,8 +285,8 @@ public class SavedItemTests
         var item2 = new SavedItem(ItemName.TINY, RegionName.SHOPS, ItemVisibilityState.Hidden, false, 0.5);
 
         // Act
-        item1.Autotracked = true;
-        item2.Autotracked = false;
+        item1 = item1 with { Autotracked = true };
+        item2 = item2 with { Autotracked = false };
 
         // Assert
         Assert.Multiple(() =>
@@ -359,11 +359,14 @@ public class SavedItemTests
         var savedItem = SavedItem.CreateEmpty(ItemName.DONKEY);
 
         // Act
-        savedItem.Region = RegionName.JUNGLE_JAPES;
-        savedItem.Starred = ItemVisibilityState.Visible;
-        savedItem.Autotracked = true;
-        savedItem.Opacity = 0.5;
-        savedItem.Hinted = true;
+        savedItem = savedItem with
+        {
+            Region = RegionName.JUNGLE_JAPES,
+            Starred = ItemVisibilityState.Visible,
+            Autotracked = true,
+            Opacity = 0.5,
+            Hinted = true
+        };
 
         // Assert
         Assert.Multiple(() =>
@@ -384,8 +387,7 @@ public class SavedItemTests
         var item2 = SavedItem.CreateEmpty(ItemName.TINY);
 
         // Modify item1
-        item1.Autotracked = true;
-        item1.Region = RegionName.JUNGLE_JAPES;
+        item1 = item1 with { Autotracked = true, Region = RegionName.JUNGLE_JAPES };
 
         // Assert - item2 should remain unchanged
         Assert.Multiple(() =>
