@@ -4,6 +4,7 @@ using System.Windows.Data;
 
 namespace TrackOMatic.Converters;
 
+[ValueConversion(typeof(bool), typeof(Visibility))]
 public class BooleanToVisibilityConverter : IValueConverter
 {
     public Visibility FalseVisibility { get; set; } = Visibility.Collapsed;
