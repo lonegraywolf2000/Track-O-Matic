@@ -43,12 +43,14 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
         {
             UpdateImageResourceKey(itemState);
             IsStarred = itemState.Starred != ItemVisibilityState.Hidden;
+            Opacity = itemState.Opacity;
         }
         else
         {
             // No saved state yet - show default B&W variant
             UpdateImageResourceKey(null);
             IsStarred = false;
+            Opacity = 1;
         }
 
         UpdateHoverText();
@@ -170,24 +172,35 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
     {
         IsDragging = false;
         MouseDragType = MouseDragType.None;
-        UpdateImageResourceKey(null);
+        // Restore opacity from the saved item state
+        var savedItem = _itemTrackingService.GetItemState(_itemName);
+        if (savedItem != null)
+        {
+            Opacity = savedItem.Opacity;
+        }
+        else
+        {
+            Opacity = 1.0;
+        }
+        UpdateImageResourceKey(savedItem);
     }
 
     public void CompleteDrag(RegionName foundRegion)
     {
         IsDragging = false;
 
-        Opacity = MouseDragType ==MouseDragType.Right ? 0.375 : 1.0;
+        Opacity = MouseDragType == MouseDragType.Right ? 0.375 : 1.0;
         var previousItem = _itemTrackingService.GetItemState(_itemName) ?? SavedItem.CreateEmpty(_itemName);
         _itemTrackingService.SetItemState(_itemName, previousItem with
         {
             Region = foundRegion,
-            Opacity = previousItem.Opacity,
+            Opacity = Opacity,
             Starred = previousItem.Starred,
             Autotracked = previousItem.Autotracked,
         });
         MouseDragType = MouseDragType.None;
-        UpdateImageResourceKey(null);
+        // Don't call UpdateImageResourceKey here - let the ItemStateChanged event fire naturally
+        // to update the image based on the new region
     }
 
     public void ToggleStar()
@@ -218,6 +231,7 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
             // Update the ImageResourceKey based on the new state of the item.
             UpdateImageResourceKey(e.UpdatedItem);
             IsStarred = e.UpdatedItem.Starred != ItemVisibilityState.Hidden;
+            Opacity = e.UpdatedItem.Opacity;
 
             // Update hover text from spoiler service if available
             UpdateHoverText();
@@ -260,14 +274,22 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
             return;
         }
 
-        // If item is in a valid region, show full-color
-        if (spoiledRegion != RegionName.UNKNOWN || EndGameMappings.ValidMoveRegions.Contains(item?.Region ?? RegionName.UNKNOWN))
+        // If item is in a spoiled region, show full-color
+        if (spoiledRegion != RegionName.UNKNOWN)
         {
             ImageResourceKey = baseKey;
             return;
         }
 
-        // Otherwise, item is in ItemGrid or unknown region, show B&W
+        // If item is in a valid region (but not ItemGrid/UNKNOWN), show full-color
+        var itemRegion = item?.Region ?? RegionName.UNKNOWN;
+        if (itemRegion != RegionName.UNKNOWN && EndGameMappings.ValidMoveRegions.Contains(itemRegion))
+        {
+            ImageResourceKey = baseKey;
+            return;
+        }
+
+        // Otherwise, item is in ItemGrid (UNKNOWN) or not placed, show B&W
         ImageResourceKey = $"{baseKey}_bw";
     }
 }

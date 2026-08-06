@@ -143,12 +143,24 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             spoilerSlot.VialColor == targetColor &&
             !spoilerSlot.CurrentItemName.HasValue);
 
-            return emptySlot?.CanAcceptDrop(itemToPlace, dragType) ?? false;
+            if (emptySlot == null)
+            {
+                return false;
+            }
+
+            // Check if the slot can accept the drop
+            if (!emptySlot.CanAcceptDrop(itemToPlace, dragType))
+            {
+                return false;
+            }
+
+            // Actually mutate the slot state - this updates CurrentItemName and fires UpdateProperties
+            return emptySlot.AcceptDropAndMutate(itemToPlace, dragType);
         }
         else
         {
             // In no-spoiler mode: always accept the drop
-            // The tracking service will handle the actual state change (replace or add)
+            // The tracking service will handle the actual state change (replace or add) via UiItemViewModel.CompleteDrag
             return true;
         }
     }

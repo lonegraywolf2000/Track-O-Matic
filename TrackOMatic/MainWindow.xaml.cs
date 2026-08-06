@@ -567,14 +567,9 @@ namespace TrackOMatic
             UpdateBroadcastNumberDisplayToggles();
             Regions = new()
             {
-                { RegionName.DK_ISLES, new Region(RegionName.DK_ISLES, DKIslesRegion, DKIslesImagePointsGrid, DKIslesPicture, DKIslesRegionGrid, DKIslesPoints, DKIslesTopLabel) },
-                { RegionName.START, new Region(RegionName.START, StartRegion, StartImagePointsGrid, StartPicture, StartRegionGrid, StartPoints, StartTopLabel) },
-
-                { RegionName.JUNGLE_JAPES, new Region(RegionName.JUNGLE_JAPES, Level1, Level1ImagePointsGrid, Level1Picture, Level1RegionGrid, Level1Points, Level1TopLabel, Level1Order) },
                 { RegionName.ANGRY_AZTEC, new Region(RegionName.ANGRY_AZTEC, Level2, Level2ImagePointsGrid, Level2Picture, Level2RegionGrid, Level2Points,Level2TopLabel, Level2Order) },
                 { RegionName.FRANTIC_FACTORY, new Region(RegionName.FRANTIC_FACTORY, Level3, Level3ImagePointsGrid, Level3Picture, Level3RegionGrid, Level3Points,Level3TopLabel, Level3Order) },
                 { RegionName.GLOOMY_GALLEON, new Region(RegionName.GLOOMY_GALLEON, Level4, Level4ImagePointsGrid, Level4Picture, Level4RegionGrid, Level4Points,Level4TopLabel, Level4Order) },
-                { RegionName.FUNGI_FOREST, new Region(RegionName.FUNGI_FOREST, Level5, Level5ImagePointsGrid, Level5Picture, Level5RegionGrid, Level5Points, Level5TopLabel, Level5Order) },
                 { RegionName.CRYSTAL_CAVES, new Region(RegionName.CRYSTAL_CAVES, Level6, Level6ImagePointsGrid, Level6Picture, Level6RegionGrid, Level6Points,Level6TopLabel, Level6Order) },
                 { RegionName.CREEPY_CASTLE, new Region(RegionName.CREEPY_CASTLE, Level7, Level7ImagePointsGrid, Level7Picture, Level7RegionGrid, Level7Points,Level7TopLabel, Level7Order) },
 
@@ -1106,6 +1101,8 @@ namespace TrackOMatic
         }
         public List<int> GetLevelOrder()
         {
+            // Temporary until we remove the need for this call.
+            return [0, 0, 0, 0, 0, 0, 0, 0];
             var list = EndGameMappings.LOBBY_ORDER.Select(r => Regions[r].LevelOrderNumber!.GetNumber()).ToList();
             return list;
         }

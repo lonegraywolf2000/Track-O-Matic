@@ -40,8 +40,6 @@ public partial class UiItem : UserControl, INotifyPropertyChanged
         set => SetValue(HoverTextProperty, value);
     }
 
-    private bool Pressed { get; set; } = false;
-
     private bool PressedLeft { get; set; } = false;
 
     private bool PressedRight { get; set; } = false;

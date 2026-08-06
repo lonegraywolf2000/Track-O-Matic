@@ -4,9 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:TrackOMatic"
+             xmlns:viewmodels="clr-namespace:TrackOMatic.ViewModels;assembly=TrackOMatic.ViewModels"
              xmlns:converters="clr-namespace:TrackOMatic.Converters"
-             mc:Ignorable="d"
              Background="Transparent"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewmodels:UiItemViewModel}"
              d:DesignHeight="64"
              d:DesignWidth="64"
              MouseWheel="UiItem_MouseWheel"
@@ -31,6 +33,7 @@
             RenderOptions.ClearTypeHint="Enabled"
             ToolTipService.InitialShowDelay="500"
             ToolTipService.HasDropShadow="True"
+            Opacity="{Binding Opacity}"
         >
             <Border.ToolTip>
                 <ToolTip Content="{Binding HoverText}" Placement="Mouse" Visibility="Collapsed" />
@@ -46,5 +49,22 @@
             HorizontalAlignment="Left"
             IsHitTestVisible="False"
             Visibility="{Binding IsStarred, Converter={StaticResource BooleanToHiddenVisibilityConverter}}" />
+
+        <!-- Floating Canvas Overlay for drag feedback -->
+        <Canvas
+            Panel.ZIndex="10000"
+            Visibility="{Binding IsDragging, Converter={StaticResource BooleanToHiddenVisibilityConverter}}"
+            IsHitTestVisible="False"
+        >
+            <Image
+                Canvas.Left="{Binding DragX}"
+                Canvas.Top="{Binding DragY}"
+                Width="{Binding DragWidth}"
+                Height="{Binding DragHeight}"
+                Stretch="Fill"
+                Opacity="{Binding Opacity}"
+                Source="{Binding ImageResourceKey, Converter={StaticResource ResourceKeyConverter}}"
+            />
+        </Canvas>
     </Grid>
 </UserControl>
