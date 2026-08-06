@@ -64,5 +64,28 @@ public class ParsedSpoilerDataService : IParsedSpoilerDataService
         return pointSpread.TryGetValue(pointCategory, out var points) ? points : 0;
     }
 
+    public int GetPointsForRegion(RegionName regionName)
+    {
+        if (CurrentData is null)
+        {
+            return int.MinValue; // Any negative value will do since 0 may mean no points.
+        }
+        var kvp = CurrentData.RegionData.FirstOrDefault(kvp => kvp.Key == regionName);
+        return kvp.Value?.Points ?? 0;
+    }
+
+    public IDictionary<PointCategory, int> GetPointSpread() => _currentData?.PointSpread ?? [];
+
+    public int GetWothPointsForRegion(RegionName regionName)
+    {
+        if (CurrentData is null)
+        {
+            return int.MinValue; // Any negative value will do since 0 may mean no WOTH items.
+        }
+        var kvp = CurrentData.RegionData.FirstOrDefault(kvp => kvp.Key == regionName);
+        var wothPoints = kvp.Value?.WothCount ?? int.MinValue;
+        return wothPoints;
+    }
+
     #endregion
 }

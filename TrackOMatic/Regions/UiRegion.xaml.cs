@@ -4,20 +4,21 @@ using System.Windows.Controls;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Services;
 using TrackOMatic.Services.TrackerState;
+using TrackOMatic.ViewModels;
 
-namespace TrackOMatic;
+namespace TrackOMatic.Regions;
 /// <summary>
 /// Interaction logic for UiRegion.xaml
 /// </summary>
 public partial class UiRegion : UserControl
 {
     public static readonly DependencyProperty RegionNameProperty =
-DependencyProperty.Register(
-nameof(RegionName),
-typeof(RegionName),
-typeof(UiRegion),
-new PropertyMetadata(RegionName.UNKNOWN, OnRegionNameChanged)
-        );
+        DependencyProperty.Register(
+        nameof(RegionName),
+        typeof(RegionName),
+        typeof(UiRegion),
+        new PropertyMetadata(RegionName.UNKNOWN, OnRegionNameChanged)
+    );
 
     public RegionName RegionName
     {
@@ -63,11 +64,10 @@ new PropertyMetadata(RegionName.UNKNOWN, OnRegionNameChanged)
             // Update the DataContext or any other properties based on the new RegionName
             var itemTrackingService = ServiceLocator.GetService<IItemTrackingService>();
             var themeService = ServiceLocator.GetService<IThemeService>();
-            var autotrackingRegistry = ServiceLocator.GetService<IAutotrackingHandoffRegistry>();
 
-            if (itemTrackingService != null && control.ParsedSpoilerDataService != null && control.SavedProgressProvider != null && autotrackingRegistry != null)
+            if (itemTrackingService != null && control.ParsedSpoilerDataService != null && control.SavedProgressProvider != null && themeService != null)
             {
-                control.DataContext = new RegionViewModel(regionName, itemTrackingService, control.ParsedSpoilerDataService, control.SavedProgressProvider, autotrackingRegistry, themeService);
+                control.DataContext = new RegionViewModel(regionName, itemTrackingService, control.ParsedSpoilerDataService, control.SavedProgressProvider, themeService);
             }
         }
     }

@@ -1,9 +1,9 @@
-<UserControl x:Class="TrackOMatic.UiRegion"
+<UserControl x:Class="TrackOMatic.Regions.UiRegion"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:TrackOMatic"
+             xmlns:local="clr-namespace:TrackOMatic.Regions"
              xmlns:converters="clr-namespace:TrackOMatic.Converters"
              xmlns:viewmodels="clr-namespace:TrackOMatic.ViewModels;assembly=TrackOMatic.ViewModels"
              mc:Ignorable="d"
@@ -14,7 +14,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Dictionary1.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Dictionary1.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:AllAndToBoolConverter x:Key="AllAndToBoolConverter" />
             <converters:BooleanToVisibilityConverter x:Key="BooleanToHiddenVisibilityConverter" FalseVisibility="Hidden" />
@@ -86,14 +86,16 @@
                 Margin="{StaticResource RegionPictureMargin}" />
 
             <!-- Level order number is set here. ...may consider rewriting this as well. -->
+            <!--
             <local:RegionLevel
                 Grid.RowSpan="6"
                 Grid.ColumnSpan="5"
                 RegionName="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}}"
                 Visibility="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}, Converter={StaticResource LobbyRegionToVisibilityConverter}}"
             />
-
+            -->
             <!-- If playing with WOTH point totals, the amount of items is shown here. -->
+            <!--
             <Viewbox Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3">
                 <TextBlock
                     Grid.Row="0"
@@ -111,10 +113,11 @@
                     </TextBlock.Visibility>
                 </TextBlock>
             </Viewbox>
-
+            -->
             <!-- If playing with any point item values, the total found in a region is shown here. -->
             <!-- The color can change if no more points are available. (That is, all items claimed.) -->
             <!-- Obviously the text & visibility can change as well. -->
+            <!--
             <Viewbox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
                 <TextBlock
                     Text="{Binding ItemPoints}"
@@ -131,6 +134,7 @@
                     </TextBlock.Visibility>
                 </TextBlock>
             </Viewbox>
+            -->
         </Grid>
         <ItemsControl
             Grid.Column="1"
@@ -141,17 +145,16 @@
                 <ItemsPanelTemplate>
                     <local:RegionItems
                         IsItemsHost="True"
-                        RegionName="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}}"
                     />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplateSelector>
                 <local:RegionItemTemplateSelector>
-                    <local:RegionItemTemplateSelector.SpoilerItemTemplate>
-                        <DataTemplate DataType="{x:Type viewmodels:SpoilerItemViewModel}">
-                            <local:SpoilerRegionItem />
+                    <local:RegionItemTemplateSelector.VialItemTemplate>
+                        <DataTemplate DataType="{x:Type viewmodels:VialItemViewModel}">
+                            <local:VialItem />
                         </DataTemplate>
-                    </local:RegionItemTemplateSelector.SpoilerItemTemplate>
+                    </local:RegionItemTemplateSelector.VialItemTemplate>
                     <local:RegionItemTemplateSelector.SimpleItemTemplate>
                         <DataTemplate DataType="{x:Type viewmodels:RegionItemViewModel}">
                             <local:RegionItem />

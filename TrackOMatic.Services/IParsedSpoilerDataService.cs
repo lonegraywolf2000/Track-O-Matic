@@ -31,6 +31,26 @@ public interface IParsedSpoilerDataService
     /// <param name="itemName">The name of the item.</param>
     /// <returns>The point value for the specified item.</returns>
     int GetPointsForItem(ItemName itemName);
+
+    /// <summary>
+    /// Gets the point value for all items in a specific region based on the current parsed spoiler data.
+    /// </summary>
+    /// <param name="regionName">The name of the region.</param>
+    /// <returns>The point value for all items in the specified region.</returns>
+    int GetPointsForRegion(RegionName regionName);
+
+    /// <summary>
+    /// Gets the point spread for all items in the current parsed spoiler data, categorized by PointCategory.
+    /// </summary>
+    /// <returns>The point spread for all items, categorized by PointCategory.</returns>
+    IDictionary<PointCategory, int> GetPointSpread();
+
+    /// <summary>
+    /// Gets the WOTH point value for all items in a specific region based on the current parsed spoiler data.
+    /// </summary>
+    /// <param name="regionName">The name of the region.</param>
+    /// <returns>The WOTH point value for all items in the specified region.</returns>
+    int GetWothPointsForRegion(RegionName regionName);
 }
 
 /// <summary>

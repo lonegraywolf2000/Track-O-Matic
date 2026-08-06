@@ -13,6 +13,8 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
     private readonly ItemName _itemName;
 
+    public MouseDragType MouseDragType { get; private set; }
+
     public UiItemViewModel(
         ItemName itemName,
         IItemTrackingService itemTrackingService,
@@ -54,6 +56,76 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
 
     #region Proxy Properties
 
+    private bool _isDragging = false;
+    public bool IsDragging
+    {
+        get => _isDragging;
+        set
+        {
+            if (_isDragging != value)
+            {
+                _isDragging = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private double _dragX = 0;
+    public double DragX
+    {
+        get => _dragX;
+        set
+        {
+            if (_dragX != value)
+            {
+                _dragX = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private double _dragY = 0;
+    public double DragY
+    {
+        get => _dragY;
+        set
+        {
+            if (_dragY != value)
+            {
+                _dragY = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private double _dragWidth = 0;
+    public double DragWidth
+    {
+        get => _dragWidth;
+        set
+        {
+            if (_dragWidth != value)
+            {
+                _dragWidth = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private double _dragHeight = 0;
+    public double DragHeight
+    {
+        get => _dragHeight;
+        set
+        {
+            if (_dragHeight != value)
+            {
+                _dragHeight = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     private double _opacity = 1.0;
     public double Opacity
     {
@@ -84,9 +156,58 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
 
     #endregion
 
+    public void BeginDrag(MouseDragType dragType, double width, double height)
+    {
+        Opacity = dragType == MouseDragType.Right ? 0.375 : 1.0;
+        MouseDragType = dragType;
+        DragWidth = width;
+        DragHeight = height;
+        IsDragging = true;
+        UpdateImageResourceKey(null);
+    }
+
+    public void EndDrag()
+    {
+        IsDragging = false;
+        MouseDragType = MouseDragType.None;
+        UpdateImageResourceKey(null);
+    }
+
+    public void CompleteDrag(RegionName foundRegion)
+    {
+        IsDragging = false;
+
+        Opacity = MouseDragType ==MouseDragType.Right ? 0.375 : 1.0;
+        var previousItem = _itemTrackingService.GetItemState(_itemName) ?? SavedItem.CreateEmpty(_itemName);
+        _itemTrackingService.SetItemState(_itemName, previousItem with
+        {
+            Region = foundRegion,
+            Opacity = previousItem.Opacity,
+            Starred = previousItem.Starred,
+            Autotracked = previousItem.Autotracked,
+        });
+        MouseDragType = MouseDragType.None;
+        UpdateImageResourceKey(null);
+    }
+
     public void ToggleStar()
     {
         _itemTrackingService.ToggleStar(_itemName);
+    }
+
+    public void RemoveFromRegion()
+    {
+        var item = _itemTrackingService.GetItemState(_itemName);
+        if (item is not null)
+        {
+            _itemTrackingService.SetItemState(_itemName, item with
+            {
+                Region = RegionName.UNKNOWN,
+                Opacity = 1,
+                Starred = item.Starred,
+                Autotracked = item.Autotracked,
+            });
+        }
     }
 
     private void OnItemStateChanged(object? sender, ItemStateChangedEventArgs e)
@@ -105,8 +226,6 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
 
     private void UpdateHoverText()
     {
-        // Query spoiler service for item information (currently just placeholder)
-        HoverText = $"{_itemName}";
         // TODO: Query _spoilerService for detailed hint/point information when available
     }
 
@@ -117,6 +236,13 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
         if (_parsedSpoilerDataService.CurrentData?.StartingItems.ContainsKey(_itemName) == true)
         {
             spoiledRegion = _parsedSpoilerDataService.CurrentData.StartingItems[_itemName];
+        }
+
+        // If dragging and dropping, always use the full color variant.
+        if (IsDragging)
+        {
+            ImageResourceKey = baseKey;
+            return;
         }
 
         // If no item state, show default B&W variant

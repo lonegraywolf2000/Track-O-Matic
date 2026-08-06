@@ -192,6 +192,7 @@ public class VialItemViewModel : RegionItemViewModel
         {
             IsStarred = IsVialStarred;
             ImageResourceKey = "vial_" + _vialColor.ToString().ToLower();
+            Opacity = 1;
         }
         else
         {
@@ -199,6 +200,7 @@ public class VialItemViewModel : RegionItemViewModel
             string baseKey = CurrentItemName.Value.ToString().ToLower();
             ImageResourceKey = itemState.Hinted ? $"{baseKey}_bw" : baseKey;
             IsStarred = itemState.Starred != ItemVisibilityState.Hidden;
+            Opacity = itemState.Opacity;
         }
     }
 

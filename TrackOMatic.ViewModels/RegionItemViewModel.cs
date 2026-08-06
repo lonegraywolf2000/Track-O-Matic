@@ -64,6 +64,20 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         }
     }
 
+    private double _opacity = 1.0;
+    public double Opacity
+    {
+        get => _opacity;
+        protected set
+        {
+            if (_opacity != value)
+            {
+                _opacity = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     #endregion
 
     // TODO: Maybe move this out of the view model specifically?
@@ -196,6 +210,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         {
             ImageResourceKey = "";
             IsStarred = false;
+            Opacity = 1.0;
         }
         else
         {
@@ -203,6 +218,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
             string baseKey = _itemName.Value.ToString().ToLower();
             ImageResourceKey = itemState.Hinted ? $"{baseKey}_bw" : baseKey;
             IsStarred = itemState.Starred != ItemVisibilityState.Hidden;
+            Opacity = itemState.Opacity;
         }
     }
 

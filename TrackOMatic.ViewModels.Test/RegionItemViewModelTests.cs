@@ -1312,4 +1312,179 @@ public class RegionItemViewModelTests
     }
 
     #endregion
+
+    #region Opacity Tests
+
+    [Fact]
+    public void Opacity_InitializesToOne_WhenNoItemState()
+    {
+        // Arrange
+        _mockItemTrackingService
+            .Setup(s => s.GetItemState(ItemName.DONKEY))
+            .Returns((SavedItem?)null);
+
+        // Act
+        var vm = new RegionItemViewModel(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            _mockItemTrackingService.Object,
+            _mockParsedSpoilerDataService.Object,
+            _mockThemeService.Object
+        );
+
+        // Assert
+        Assert.Equal(1.0, vm.Opacity);
+    }
+
+    [Fact]
+    public void Opacity_InitializesFromItemState_WhenItemExists()
+    {
+        // Arrange
+        var itemState = new SavedItem(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            ItemVisibilityState.Visible,
+            false,
+            0.375,  // Hinted opacity
+            false
+        );
+        _mockItemTrackingService
+            .Setup(s => s.GetItemState(ItemName.DONKEY))
+            .Returns(itemState);
+
+        // Act
+        var vm = new RegionItemViewModel(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            _mockItemTrackingService.Object,
+            _mockParsedSpoilerDataService.Object,
+            _mockThemeService.Object
+        );
+
+        // Assert
+        Assert.Equal(0.375, vm.Opacity);
+    }
+
+    [Fact]
+    public void Opacity_UpdatesWhenItemStateChanges()
+    {
+        // Arrange
+        _mockItemTrackingService
+            .Setup(s => s.GetItemState(ItemName.DONKEY))
+            .Returns((SavedItem?)null);
+
+        var vm = new RegionItemViewModel(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            _mockItemTrackingService.Object,
+            _mockParsedSpoilerDataService.Object,
+            _mockThemeService.Object
+        );
+        Assert.Equal(1.0, vm.Opacity);
+
+        var newItemState = new SavedItem(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            ItemVisibilityState.Visible,
+            false,
+            1.5,  // Found item opacity
+            false
+        );
+
+        // Act
+        _mockItemTrackingService.Raise(
+            s => s.ItemStateChanged += null,
+            new ItemStateChangedEventArgs(newItemState)
+        );
+
+        // Assert
+        Assert.Equal(1.5, vm.Opacity);
+    }
+
+    [Fact]
+    public void Opacity_ResetsToOne_WhenItemRemoved()
+    {
+        // Arrange
+        var initialItemState = new SavedItem(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            ItemVisibilityState.Visible,
+            false,
+            0.375,
+            false
+        );
+        _mockItemTrackingService
+            .Setup(s => s.GetItemState(ItemName.DONKEY))
+            .Returns(initialItemState);
+
+        var vm = new RegionItemViewModel(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            _mockItemTrackingService.Object,
+            _mockParsedSpoilerDataService.Object,
+            _mockThemeService.Object
+        );
+        Assert.Equal(0.375, vm.Opacity);
+
+        // Act - Simulate item state being cleared
+        var removedItemState = new SavedItem(
+            ItemName.DONKEY,
+            RegionName.UNKNOWN,
+            ItemVisibilityState.Hidden,
+            false,
+            1.0,  // Reset opacity when removed
+            false
+        );
+        _mockItemTrackingService.Raise(
+            s => s.ItemStateChanged += null,
+            new ItemStateChangedEventArgs(removedItemState)
+        );
+
+        // Assert
+        Assert.Equal(1.0, vm.Opacity);
+    }
+
+    [Fact]
+    public void Opacity_RaisesPropertyChanged()
+    {
+        // Arrange
+        _mockItemTrackingService
+            .Setup(s => s.GetItemState(ItemName.DONKEY))
+            .Returns((SavedItem?)null);
+
+        var vm = new RegionItemViewModel(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            _mockItemTrackingService.Object,
+            _mockParsedSpoilerDataService.Object,
+            _mockThemeService.Object
+        );
+
+        var propertyChangedRaised = false;
+        vm.PropertyChanged += (sender, e) =>
+        {
+            if (e.PropertyName == nameof(RegionItemViewModel.Opacity))
+                propertyChangedRaised = true;
+        };
+
+        var newItemState = new SavedItem(
+            ItemName.DONKEY,
+            RegionName.JUNGLE_JAPES,
+            ItemVisibilityState.Visible,
+            false,
+            0.5,
+            false
+        );
+
+        // Act
+        _mockItemTrackingService.Raise(
+            s => s.ItemStateChanged += null,
+            new ItemStateChangedEventArgs(newItemState)
+        );
+
+        // Assert
+        Assert.True(propertyChangedRaised);
+    }
+
+    #endregion
 }

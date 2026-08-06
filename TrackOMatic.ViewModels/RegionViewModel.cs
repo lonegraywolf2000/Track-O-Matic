@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+using TrackOMatic.Logic;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
@@ -15,13 +16,13 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
     private readonly IItemTrackingService _itemTrackingService;
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
     private readonly ISavedProgressProvider _savedProgressProvider;
-    private readonly IThemeService? _themeService;
-    private readonly IAutotrackingHandoffRegistry _autotrackingRegistry;
+    private readonly IThemeService _themeService;
+    // private readonly IAutotrackingHandoffRegistry _autotrackingRegistry;
     private readonly RegionName _regionName;
 
     // Placed items in the grid
-    private ObservableCollection<IPotentialRegionItemViewModel> _placedItems = new();
-    public ObservableCollection<IPotentialRegionItemViewModel> PlacedItems
+    private ObservableCollection<IRegionItemViewModel> _placedItems = [];
+    public ObservableCollection<IRegionItemViewModel> PlacedItems
     {
         get => _placedItems;
         private set
@@ -40,21 +41,21 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         IItemTrackingService itemTrackingService,
         IParsedSpoilerDataService parsedSpoilerDataService,
         ISavedProgressProvider savedProgressProvider,
-        IAutotrackingHandoffRegistry autotrackingRegistry,
-        IThemeService? themeService = null
+        // IAutotrackingHandoffRegistry autotrackingRegistry,
+        IThemeService themeService
     )
     {
         _regionName = regionName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
         _parsedSpoilerDataService = parsedSpoilerDataService ?? throw new ArgumentNullException(nameof(parsedSpoilerDataService));
         _savedProgressProvider = savedProgressProvider ?? throw new ArgumentNullException(nameof(savedProgressProvider));
-        _autotrackingRegistry = autotrackingRegistry ?? throw new ArgumentNullException(nameof(autotrackingRegistry));
-        _themeService = themeService;
+        // _autotrackingRegistry = autotrackingRegistry ?? throw new ArgumentNullException(nameof(autotrackingRegistry));
+        _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
         _itemTrackingService.ItemStateChanged += OnItemStateChanged;
         _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnParsedSpoilerDataChanged;
         _savedProgressProvider.ProgressChanged += OnProgressChanged;
-        _autotrackingRegistry.RegisterRegionHandler(_regionName, TryAutoPlaceItem);
+        // _autotrackingRegistry.RegisterRegionHandler(_regionName, TryAutoPlaceItem);
 
         InitializeState();
     }
@@ -89,14 +90,12 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
                 var itemName = startingItemsForDisplay[slotIndex].Key;
                 var vialColor = itemName.ToVialColor();
 
-                PlacedItems.Add(new SpoilerStartItemViewModel(
-                vialColor,
-                RegionName.START,
-                slotIndex,
+                PlacedItems.Add(new VialItemViewModel(
                 itemName, // Fixed item name for START slots
+                RegionName.START,
+                vialColor,
                 _itemTrackingService,
                 _parsedSpoilerDataService,
-                _savedProgressProvider,
                 _themeService));
             }
         }
@@ -105,15 +104,14 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             for (int slotIndex = 0; slotIndex < regionData.VialColors.Count; slotIndex++)
             {
                 var vialColor = regionData.VialColors[slotIndex];
-                PlacedItems.Add(new SpoilerItemViewModel(
-                vialColor,
-                _regionName,
-                slotIndex,
-                _itemTrackingService,
-                _parsedSpoilerDataService,
-                _savedProgressProvider,
-                _themeService)
-                                );
+                PlacedItems.Add(new VialItemViewModel(
+                    null,
+                    _regionName,
+                    vialColor,
+                    _itemTrackingService,
+                    _parsedSpoilerDataService,
+                    _themeService)
+                );
             }
         }
         else
@@ -121,7 +119,7 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             var itemsInRegion = _itemTrackingService.GetItemsInRegion(_regionName);
             foreach (var item in itemsInRegion)
             {
-                PlacedItems.Add(new RegionItemViewModel(item.ItemName, _itemTrackingService, _parsedSpoilerDataService, _savedProgressProvider, _themeService));
+                PlacedItems.Add(new RegionItemViewModel(item.ItemName, _regionName, _itemTrackingService, _parsedSpoilerDataService, _themeService));
             }
         }
     }
@@ -141,26 +139,17 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             // In spoiler mode: find the first empty slot that matches the vial color
             var targetColor = itemToPlace.ToVialColor();
             var emptySlot = PlacedItems.FirstOrDefault(slot =>
-            slot is SpoilerStartItemViewModel spoilerSlot &&
+            slot is VialItemViewModel spoilerSlot &&
             spoilerSlot.VialColor == targetColor &&
             !spoilerSlot.CurrentItemName.HasValue);
 
-            return emptySlot?.TryAcceptDrop(itemToPlace, dragType) ?? false;
+            return emptySlot?.CanAcceptDrop(itemToPlace, dragType) ?? false;
         }
         else
         {
-            // In no-spoiler mode: if there are existing items, try them
-            // Otherwise, accept the drop directly (it will create a new RegionItemViewModel)
-            if (PlacedItems.Count > 0)
-            {
-                return PlacedItems.Any(slot => slot.TryAcceptDrop(itemToPlace, dragType));
-            }
-            else
-            {
-                // Empty region in no-spoiler mode: accept the drop
-                // The tracking service will handle the actual state change
-                return true;
-            }
+            // In no-spoiler mode: always accept the drop
+            // The tracking service will handle the actual state change (replace or add)
+            return true;
         }
     }
 
@@ -194,8 +183,8 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private string _wothPoints = "N/A";
-    public string WothPoints
+    private int _wothPoints = -1;
+    public int WothPoints
     {
         get => _wothPoints;
         set
@@ -222,8 +211,8 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private string _itemPoints = "N/A";
-    public string ItemPoints
+    private int _itemPoints = -1;
+    public int ItemPoints
     {
         get => _itemPoints;
         set
@@ -267,7 +256,7 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             if (disposing)
             {
                 // Unsubscribe from events
-                _autotrackingRegistry.UnregisterRegionHandler(_regionName);
+                // _autotrackingRegistry.UnregisterRegionHandler(_regionName);
                 _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
                 _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnParsedSpoilerDataChanged;
                 _savedProgressProvider.ProgressChanged -= OnProgressChanged;
@@ -296,9 +285,10 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         }
 
         // Only process certain change reasons to avoid stale state assumptions
-        bool isRelevantChange = e.ChangeReason == "ItemUpdated"
-                    || e.ChangeReason == "ItemMovedToUnknown"
-                    || e.ChangeReason == "ItemCleared";
+        bool isRelevantChange = e.ChangeReason == ChangeReason.UserModified
+                    || e.ChangeReason == ChangeReason.AutoTracked;
+                    //|| e.ChangeReason == "ItemMovedToUnknown"
+                    //|| e.ChangeReason == ChangeReason. "ItemCleared";
 
         if (!isRelevantChange)
         {
@@ -324,9 +314,9 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
     private void UpdateHoardText(SavedItem? changedItem = null)
     {
         var wothPoints = _parsedSpoilerDataService.GetWothPointsForRegion(_regionName);
-        if (wothPoints == int.MinValue || wothPoints == -1)
+        if (wothPoints < 0)
         {
-            WothPoints = "N/A";
+            WothPoints = -1;
             HasWothPoints = false;
         }
         else
@@ -338,17 +328,13 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             {
                 // Get the item name from the view model (handles both fixed and current items)
                 ItemName? itemName = null;
-                if (item is SpoilerStartItemViewModel spoilerStart)
-                {
-                    itemName = spoilerStart.CurrentItemName ?? spoilerStart.FixedItemName;
-                }
-                else if (item is SpoilerItemViewModel spoiler)
+                if (item is VialItemViewModel spoiler)
                 {
                     itemName = spoiler.CurrentItemName;
                 }
                 else if (item is RegionItemViewModel region)
                 {
-                    itemName = region.ItemName;
+                    itemName = region.CurrentItemName;
                 }
 
                 // Check if this item is actually starred in the service
@@ -373,7 +359,7 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
                     }
                 }
             }
-            WothPoints = (wothPoints - starredCount).ToString();
+            WothPoints = wothPoints - starredCount;
             HasWothPoints = true;
         }
     }
@@ -385,7 +371,7 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         var pointSpread = _parsedSpoilerDataService.GetPointSpread();
         if (pointSpread.Count == 0)
         {
-            ItemPoints = "N/A";
+            ItemPoints = -1;
             HasItemPoints = false;
         }
         else
@@ -393,8 +379,8 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             var itemsInRegion = _itemTrackingService.GetItemsInRegion(_regionName);
             var categories = itemsInRegion.Select(i => i.ItemName.ToPointCategory());
             var points = regionPoints - categories.Sum(c => pointSpread[c]);
-            ItemPoints = points.ToString();
-            HasItemPoints = points >= 0;
+            ItemPoints = points;
+            HasItemPoints = points > 0;
         }
     }
 
@@ -404,8 +390,9 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
     }
 
     /// <summary>
-    /// Attempts to auto-place an item into an appropriate vial slot in this region.
-    /// Iterates through all vials of matching color until one accepts the placement.
+    /// Attempts to auto-place an item into an appropriate slot in this region.
+    /// In spoiler mode: prioritizes empty slots, then non-autotracked slots.
+    /// In non-spoiler mode: direct placement through ItemTrackingService.
     /// </summary>
     public bool TryAutoPlaceItem(ItemName itemToPlace)
     {
@@ -413,12 +400,12 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         if (!IsSpoilerMode)
         {
             var savedItem = new SavedItem(
-            itemToPlace,
-            _regionName,
-            ItemVisibilityState.Hidden,
-            autotracked: true,
-            opacity: 1.0
-                        );
+                itemToPlace,
+                _regionName,
+                ItemVisibilityState.Hidden,
+                Autotracked: true,
+                Opacity: 1.0
+            );
 
             _itemTrackingService.SetItemState(itemToPlace, savedItem);
             return true;
@@ -428,26 +415,53 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         var targetColor = itemToPlace.ToVialColor();
 
         var matchingSlots = PlacedItems
-                    .OfType<SpoilerItemViewModel>()
+                    .OfType<VialItemViewModel>()
                     .Where(slot => slot.VialColor == targetColor)
                     .ToList();
 
-        // Scenario 3: No vials of this color in this region
+        // No vials of this color in this region
         if (matchingSlots.Count == 0)
         {
-            return false; // Invalid operation
+            return false;
         }
 
-        // Try each matching slot in order
-        foreach (var slot in matchingSlots)
+        // Priority 1: Try empty slots first
+        var emptySlots = matchingSlots
+            .Where(slot => !slot.CurrentItemName.HasValue)
+            .ToList();
+
+        foreach (var slot in emptySlots)
         {
-            if (slot.TryAutoPlaceItem(itemToPlace))
+            if (slot.CanAcceptDrop(itemToPlace, MouseDragType.None)
+                && slot.AcceptDropAndMutate(itemToPlace, MouseDragType.None))
             {
                 return true;
             }
         }
 
-        // All matching slots rejected the placement
+        // Priority 2: Try non-autotracked slots (can be overridden)
+        var overridableSlots = matchingSlots
+            .Where(slot => slot.CurrentItemName.HasValue)
+            .ToList();
+
+        foreach (var slot in overridableSlots)
+        {
+            // Check if the current item is autotracked; if so, skip it
+            var currentItem = _itemTrackingService.GetItemState(slot.CurrentItemName!.Value);
+            if (currentItem?.Autotracked == true)
+            {
+                // Skip autotracked items—can't override them
+                continue;
+            }
+
+            if (slot.CanAcceptDrop(itemToPlace, MouseDragType.None)
+                && slot.AcceptDropAndMutate(itemToPlace, MouseDragType.None))
+            {
+                return true;
+            }
+        }
+
+        // All matching slots either rejected placement or are protected autotracked items
         return false;
     }
 

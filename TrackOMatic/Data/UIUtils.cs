@@ -75,5 +75,36 @@ namespace TrackOMatic
                 window.Top = (currentScreen.WorkingArea.Top + currentScreen.WorkingArea.Height - windowScaledHeight) / dpiScale;
             }
         }
+
+        private static T? FindVisualAncestor<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject? current = child;
+            while (current != null)
+            {
+                if (current is T ancestor)
+                {
+                    return ancestor;
+                }
+                current = VisualTreeHelper.GetParent(current);
+            }
+            return null;
+        }
+
+        public static T? HitTestAt<T>(UIElement root, Point point) where T: DependencyObject
+        {
+            T? result = null;
+            VisualTreeHelper.HitTest(root, null, hitResult =>
+            {
+                var ancestor = FindVisualAncestor<T>(hitResult.VisualHit);
+                if (ancestor is not null)
+                {
+                    result = ancestor;
+                    return HitTestResultBehavior.Stop; // Stop after finding the first match
+                }
+                return HitTestResultBehavior.Continue;
+            }, new PointHitTestParameters(point));
+
+            return result;
+        }
     }
 }

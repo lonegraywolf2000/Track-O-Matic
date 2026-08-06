@@ -56,12 +56,6 @@
     <Resource Include="Fonts\**\*" />
     <Resource Include="Images\**\*" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="UiRegion.xaml.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Remove="UiRegion.xaml" />
-  </ItemGroup>
 
   <!-- NuGet Package References -->
   <ItemGroup>
@@ -79,12 +73,6 @@
     <ProjectReference Include="..\TrackOMatic.Services\TrackOMatic.Services.csproj" />
     <ProjectReference Include="..\TrackOMatic.ViewModels\TrackOMatic.ViewModels.csproj" />
     <ProjectReference Include="..\TrackOMatic.AutoTracking.Windows\TrackOMatic.AutoTracking.Windows.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="UiRegion.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </None>
-    <None Include="UiRegion.xaml.cs" />
   </ItemGroup>
 </Project>
 
