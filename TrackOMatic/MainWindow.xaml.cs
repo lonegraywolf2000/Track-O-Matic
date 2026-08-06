@@ -580,7 +580,6 @@ namespace TrackOMatic
 
                 { RegionName.HIDEOUT_HELM, new Region(RegionName.HIDEOUT_HELM, HideoutHelm, HelmImagePointsGrid, HideoutHelmPicture, HideoutHelmRegionGrid, HideoutHelmPoints, HideoutHelmTopLabel, Level8Order) },
                 // Special region that's not displayed for the user, but is where all the unhintable moves are stored.
-                {RegionName.UNHINTABLE_MOVES, new Region(RegionName.UNHINTABLE_MOVES, UnhintableMovesRegion, UnhintableMovesImagePointsGrid, null, UnhintableMovesRegionGrid) }
             };
             Collectibles = new()
             {
