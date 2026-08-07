@@ -15,7 +15,7 @@ public class ItemPointCountToColorConverter : IValueConverter
         {
             if (int.TryParse(textCount, out int count))
             {
-                return count == 0 ? "RegionComplete" : "RegionInProgress";
+                return count <= 0 ? "RegionComplete" : "RegionInProgress";
             }
         }
         return "RegionInProgress";

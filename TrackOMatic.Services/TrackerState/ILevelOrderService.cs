@@ -8,10 +8,10 @@ namespace TrackOMatic.Services.TrackerState;
 public interface ILevelOrderService
 {
     /// <summary>
-    /// Gets the current level order as a read-only list of integers.
+    /// Gets the current level order as a list of integers.
     /// </summary>
     /// <returns></returns>
-    IReadOnlyList<int> GetLevelOrder();
+    IList<int> GetLevelOrder();
 
     /// <summary>
     /// Sets the level order to a new sequence of integers.

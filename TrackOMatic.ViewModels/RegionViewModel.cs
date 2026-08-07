@@ -9,6 +9,9 @@ using TrackOMatic.Logic.Models;
 using TrackOMatic.Services;
 using TrackOMatic.Services.TrackerState;
 
+
+[assembly: InternalsVisibleTo("TrackOMatic.ViewModels.Test")]
+
 namespace TrackOMatic.ViewModels;
 
 public class RegionViewModel : INotifyPropertyChanged, IDisposable
@@ -19,22 +22,6 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
     private readonly IThemeService _themeService;
     // private readonly IAutotrackingHandoffRegistry _autotrackingRegistry;
     private readonly RegionName _regionName;
-
-    // Placed items in the grid
-    private ObservableCollection<IRegionItemViewModel> _placedItems = [];
-    public ObservableCollection<IRegionItemViewModel> PlacedItems
-    {
-        get => _placedItems;
-        private set
-        {
-            if (_placedItems != value)
-            {
-                _placedItems = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
 
     public RegionViewModel(
         RegionName regionName,
@@ -167,6 +154,21 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
 
     #region Proxy Properties
 
+    // Placed items in the grid
+    private ObservableCollection<IRegionItemViewModel> _placedItems = [];
+    public ObservableCollection<IRegionItemViewModel> PlacedItems
+    {
+        get => _placedItems;
+        private set
+        {
+            if (_placedItems != value)
+            {
+                _placedItems = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     private string _regionResourceKey = "";
     public string RegionResourceKey
     {
@@ -235,6 +237,16 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
                 OnPropertyChanged();
             }
         }
+    }
+
+    public bool ShouldShowItemPoints
+    {
+        get => _regionName != RegionName.START && HasItemPoints;
+    }
+
+    public bool ShouldShowRegionLevel
+    {
+        get => _regionName != RegionName.START && _regionName != RegionName.DK_ISLES;
     }
 
     #endregion
@@ -376,7 +388,7 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         }
     }
 
-    private void UpdateItemPointText()
+    internal void UpdateItemPointText()
     {
         // TODO: Have the point calculations take place in the service layer.
         var regionPoints = _parsedSpoilerDataService.GetPointsForRegion(_regionName);
@@ -392,11 +404,11 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             var categories = itemsInRegion.Select(i => i.ItemName.ToPointCategory());
             var points = regionPoints - categories.Sum(c => pointSpread[c]);
             ItemPoints = points;
-            HasItemPoints = points > 0;
+            HasItemPoints = points >= 0;
         }
     }
 
-    private void UpdateRegionResourceKey()
+    internal void UpdateRegionResourceKey()
     {
         RegionResourceKey = _regionName.ToString().ToLowerInvariant();
     }

@@ -1,0 +1,222 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+using TrackOMatic.Logic.Enums;
+using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
+
+namespace TrackOMatic.ViewModels;
+
+public class RegionLevelViewModel : INotifyPropertyChanged, IDisposable
+{
+    private readonly RegionName _regionName;
+    private readonly ILevelOrderService _levelOrderService;
+    private readonly IUserSettingsService _userSettingsService;
+    private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
+    private readonly ISavedProgressProvider _savedProgressProvider;
+
+    internal int ToLevelOrderIndex()
+    {
+        return (int)_regionName - 2;
+    }
+
+    public RegionLevelViewModel(
+        RegionName regionName,
+        ILevelOrderService levelOrderService,
+        IUserSettingsService userSettingsService,
+        IParsedSpoilerDataService parsedSpoilerDataService,
+        ISavedProgressProvider savedProgressProvider
+    )
+    {
+        _regionName = regionName;
+        _levelOrderService = levelOrderService ?? throw new ArgumentNullException(nameof(levelOrderService));
+        _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
+        _parsedSpoilerDataService = parsedSpoilerDataService ?? throw new ArgumentNullException(nameof(parsedSpoilerDataService));
+        _savedProgressProvider = savedProgressProvider ?? throw new ArgumentNullException(nameof(savedProgressProvider));
+        // Subscribe to level order changes
+        _levelOrderService.LevelOrderChanged += OnLevelOrderChanged;
+        _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnLevelOrderChanged;
+        _savedProgressProvider.ProgressChanged += OnLevelOrderChanged;
+        // Initialize the level order number
+        UpdateLevelOrderNumber();
+    }
+
+    #region Proxy Properties
+
+    private int _levelOrderNumber;
+    public int LevelOrderNumber
+    {
+        get => _levelOrderNumber;
+        private set
+        {
+            if (_levelOrderNumber != value)
+            {
+                _levelOrderNumber = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    private string _levelText = "?";
+    public string LevelText
+    {
+        get => _levelText;
+        internal set
+        {
+            if (_levelText != value)
+            {
+                _levelText = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    #endregion
+
+    public void IncrementLevelOrder()
+    {
+        if (_parsedSpoilerDataService.CurrentData?.HasLevelOrder == false)
+        {
+            return;
+        }
+        if (_regionName == RegionName.HIDEOUT_HELM && LevelOrderNumber == 8 && !_userSettingsService.HelmInLevelOrder)
+        {
+            return;
+        }
+        var levelOrders = _levelOrderService.GetLevelOrder().ToList();
+        var index = ToLevelOrderIndex();
+        int maxSelectableLevelOrder = _userSettingsService.HelmInLevelOrder ? 8 : 7;
+        if (index >= 0 && index < levelOrders.Count)
+        {
+            var currentNumber = levelOrders[index];
+            levelOrders[index] = (currentNumber + 1) % (maxSelectableLevelOrder + 1);
+            _levelOrderService.SetLevelOrder(levelOrders);
+        }
+    }
+
+    public void DecrementLevelOrder()
+    {
+        if (_parsedSpoilerDataService.CurrentData?.HasLevelOrder == false)
+        {
+            return;
+        }
+        if (_regionName == RegionName.HIDEOUT_HELM && LevelOrderNumber == 8 && !_userSettingsService.HelmInLevelOrder)
+        {
+            return;
+        }
+        var levelOrders = _levelOrderService.GetLevelOrder().ToList();
+        var index = ToLevelOrderIndex();
+        int maxSelectableLevelOrder = _userSettingsService.HelmInLevelOrder ? 8 : 7;
+        if (index >= 0 && index < levelOrders.Count)
+        {
+            var currentNumber = levelOrders[index];
+            levelOrders[index] = (currentNumber + maxSelectableLevelOrder) % (maxSelectableLevelOrder + 1);
+            _levelOrderService.SetLevelOrder(levelOrders);
+        }
+    }
+
+    public void HandleMouseWheel(int delta)
+    {
+        if (_parsedSpoilerDataService.CurrentData?.HasLevelOrder == false)
+        {
+            return;
+        }
+        if (delta > 0)
+        {
+            IncrementLevelOrder();
+        }
+        else if (delta < 0)
+        {
+            DecrementLevelOrder();
+        }
+    }
+
+    #region INotifyPropertyChanged Implementation
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null!)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    #endregion
+
+    #region IDisposable
+
+    private bool _disposed = false;
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                // Unsubscribe from events
+                _levelOrderService.LevelOrderChanged -= OnLevelOrderChanged;
+                _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnLevelOrderChanged;
+                _savedProgressProvider.ProgressChanged -= OnLevelOrderChanged;
+            }
+            _disposed = true;
+        }
+    }
+
+    ~RegionLevelViewModel()
+    {
+        Dispose(false);
+    }
+
+    #endregion
+
+    #region Event Methods
+
+    private void OnLevelOrderChanged(object? sender, EventArgs e)
+    {
+        UpdateLevelOrderNumber();
+        UpdateLevelText();
+    }
+
+    private void UpdateLevelOrderNumber()
+    {
+        var spoiledLevelOrder = _parsedSpoilerDataService.CurrentData?.LevelOrder ?? [];
+        if (spoiledLevelOrder.TryGetValue(_regionName, out int index))
+        {
+            _levelOrderNumber = index;
+        }
+        else
+        {
+            var levelOrders = _levelOrderService.GetLevelOrder();
+            index = ToLevelOrderIndex();
+            _levelOrderNumber = (index >= 0 && index < levelOrders.Count) ? levelOrders[index] : 0;
+        }
+        UpdateLevelText();
+    }
+
+    private void UpdateLevelText()
+    {
+        LevelText = LevelOrderNumber switch
+        {
+            1 => "1",
+            2 => "2",
+            3 => "3",
+            4 => "4",
+            5 => "5",
+            6 => "6",
+            7 => "7",
+            8 => "8",
+            _ => "?"
+        }
+    ;
+    }
+
+    #endregion
+
+    public override bool Equals(object? obj) => obj is RegionLevelViewModel other && _regionName == other._regionName;
+
+    public override int GetHashCode() => _regionName.GetHashCode();
+}

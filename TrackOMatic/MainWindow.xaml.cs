@@ -565,17 +565,7 @@ namespace TrackOMatic
         {
             UpdateHintDisplayToggles();
             UpdateBroadcastNumberDisplayToggles();
-            Regions = new()
-            {
-                { RegionName.ANGRY_AZTEC, new Region(RegionName.ANGRY_AZTEC, Level2, Level2ImagePointsGrid, Level2Picture, Level2RegionGrid, Level2Points,Level2TopLabel, Level2Order) },
-                { RegionName.FRANTIC_FACTORY, new Region(RegionName.FRANTIC_FACTORY, Level3, Level3ImagePointsGrid, Level3Picture, Level3RegionGrid, Level3Points,Level3TopLabel, Level3Order) },
-                { RegionName.GLOOMY_GALLEON, new Region(RegionName.GLOOMY_GALLEON, Level4, Level4ImagePointsGrid, Level4Picture, Level4RegionGrid, Level4Points,Level4TopLabel, Level4Order) },
-                { RegionName.CRYSTAL_CAVES, new Region(RegionName.CRYSTAL_CAVES, Level6, Level6ImagePointsGrid, Level6Picture, Level6RegionGrid, Level6Points,Level6TopLabel, Level6Order) },
-                { RegionName.CREEPY_CASTLE, new Region(RegionName.CREEPY_CASTLE, Level7, Level7ImagePointsGrid, Level7Picture, Level7RegionGrid, Level7Points,Level7TopLabel, Level7Order) },
-
-                { RegionName.HIDEOUT_HELM, new Region(RegionName.HIDEOUT_HELM, HideoutHelm, HelmImagePointsGrid, HideoutHelmPicture, HideoutHelmRegionGrid, HideoutHelmPoints, HideoutHelmTopLabel, Level8Order) },
-                // Special region that's not displayed for the user, but is where all the unhintable moves are stored.
-            };
+            Regions = [];
             Collectibles = new()
             {
                 {ItemType.DONKEY_BLUEPRINT, DonkeyBPs },
@@ -1091,20 +1081,6 @@ namespace TrackOMatic
                 Reset();
                 DataSaver.ReadSavedDataFromFile(filePath);
             }
-        }
-        public void LoadLevelOrder(List<int> order)
-        {
-            for (int i = 0; i < order.Count; ++i)
-            {
-                Regions[EndGameMappings.LOBBY_ORDER[i]].SetLevelOrderNumber(order[i]);
-            }
-        }
-        public List<int> GetLevelOrder()
-        {
-            // Temporary until we remove the need for this call.
-            return [0, 0, 0, 0, 0, 0, 0, 0];
-            var list = EndGameMappings.LOBBY_ORDER.Select(r => Regions[r].LevelOrderNumber!.GetNumber()).ToList();
-            return list;
         }
         private List<int> GetProgressiveIndices(List<ProgressiveItem> items)
         {

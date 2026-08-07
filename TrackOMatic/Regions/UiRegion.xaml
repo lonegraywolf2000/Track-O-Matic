@@ -32,17 +32,6 @@
                     <converters:ResourceKeyConverter />
                 </converters:ChainedConverter.Converters>
             </converters:ChainedConverter>
-            <converters:MultiToSingleConverter x:Key="LobbyRegionPointsToVisibilityConverter" StartConverter="{StaticResource AllAndToBoolConverter}">
-                <converters:MultiToSingleConverter.TrailingConverters>
-                    <converters:BooleanToVisibilityConverter FalseVisibility="Hidden" />
-                </converters:MultiToSingleConverter.TrailingConverters>
-            </converters:MultiToSingleConverter>
-            <converters:ChainedConverter x:Key="LobbyRegionToVisibilityConverter">
-                <converters:ChainedConverter.Converters>
-                    <converters:LobbyRegionConverter />
-                    <converters:BooleanToVisibilityConverter FalseVisibility="Hidden" />
-                </converters:ChainedConverter.Converters>
-            </converters:ChainedConverter>
             <Style TargetType="Viewbox">
                 <Setter Property="HorizontalAlignment" Value="Right" />
             </Style>
@@ -86,16 +75,14 @@
                 Margin="{StaticResource RegionPictureMargin}" />
 
             <!-- Level order number is set here. ...may consider rewriting this as well. -->
-            <!--
             <local:RegionLevel
                 Grid.RowSpan="6"
                 Grid.ColumnSpan="5"
                 RegionName="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}}"
-                Visibility="{Binding RegionName, RelativeSource={RelativeSource AncestorType=local:UiRegion}, Converter={StaticResource LobbyRegionToVisibilityConverter}}"
+                Visibility="{Binding DataContext.ShouldShowRegionLevel, RelativeSource={RelativeSource AncestorType=local:UiRegion}, Converter={StaticResource BooleanToHiddenVisibilityConverter}}"
             />
-            -->
+
             <!-- If playing with WOTH point totals, the amount of items is shown here. -->
-            <!--
             <Viewbox Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3">
                 <TextBlock
                     Grid.Row="0"
@@ -105,36 +92,18 @@
                     HorizontalAlignment="Right"
                     Text="{Binding WothPoints}"
                     Foreground="{StaticResource RequiredChecksColor}"
-                >
-                    <TextBlock.Visibility>
-                        <MultiBinding Converter="{StaticResource PlayableRegionPointsToVisibilityConverter}">
-                            <Binding Path="HasWothPoints" />
-                        </MultiBinding>
-                    </TextBlock.Visibility>
-                </TextBlock>
+                    Visibility="{Binding HasWothPoints, Converter={StaticResource BooleanToHiddenVisibilityConverter}}"
+                />
             </Viewbox>
-            -->
+
             <!-- If playing with any point item values, the total found in a region is shown here. -->
-            <!-- The color can change if no more points are available. (That is, all items claimed.) -->
-            <!-- Obviously the text & visibility can change as well. -->
-            <!--
             <Viewbox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3">
                 <TextBlock
                     Text="{Binding ItemPoints}"
                     Foreground="{Binding ItemPoints, Converter={StaticResource ItemPointsToColorConverter}}"
-                >
-                    <TextBlock.Visibility>
-                        <MultiBinding Converter="{StaticResource LobbyRegionPointsToVisibilityConverter}">
-                            <Binding Path="HasItemPoints" />
-                            <Binding Path="RegionName"
-                                     Converter="{StaticResource PlayableRegionConverter}"
-                                     RelativeSource="{RelativeSource AncestorType=local:UiRegion}"
-                            />
-                        </MultiBinding>
-                    </TextBlock.Visibility>
-                </TextBlock>
+                    Visibility="{Binding ShouldShowItemPoints, Converter={StaticResource BooleanToHiddenVisibilityConverter}}"
+                />
             </Viewbox>
-            -->
         </Grid>
         <ItemsControl
             Grid.Column="1"

@@ -429,6 +429,122 @@ public class RegionViewModelTests
 
     #endregion
 
+    #region Visibility Property Tests
+
+    [Fact]
+    public void ShouldShowItemPoints_StartRegion_ReturnsFalse()
+    {
+        var itemTrackingService = CreateMockItemTrackingService().Object;
+        var spoilerDataService = CreateMockSpoilerDataService().Object;
+        var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var themeService = CreateMockThemeService().Object;
+
+        var viewModel = new RegionViewModel(
+            RegionName.START,
+            itemTrackingService,
+            spoilerDataService,
+            savedProgressProvider,
+            themeService);
+
+        Assert.False(viewModel.ShouldShowItemPoints);
+    }
+
+    [Fact]
+    public void ShouldShowItemPoints_NoItemPoints_ReturnsFalse()
+    {
+        var itemTrackingService = CreateMockItemTrackingService().Object;
+        var spoilerDataService = CreateMockSpoilerDataService().Object;
+        var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var themeService = CreateMockThemeService().Object;
+
+        var viewModel = new RegionViewModel(
+            RegionName.JUNGLE_JAPES,
+            itemTrackingService,
+            spoilerDataService,
+            savedProgressProvider,
+            themeService);
+
+        Assert.Multiple(() =>
+        {
+            Assert.False(viewModel.HasItemPoints);
+            Assert.False(viewModel.ShouldShowItemPoints);
+        });
+    }
+
+    [Fact]
+    public void ShouldShowItemPoints_WithItemPoints_ReturnsTrue()
+    {
+        var itemTrackingService = CreateMockItemTrackingService().Object;
+        var spoilerDataService = CreateMockSpoilerDataService().Object;
+        var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var themeService = CreateMockThemeService().Object;
+
+        var viewModel = new RegionViewModel(
+            RegionName.JUNGLE_JAPES,
+            itemTrackingService,
+            spoilerDataService,
+            savedProgressProvider,
+            themeService);
+
+        Assert.Multiple(() =>
+        {
+            Assert.False(viewModel.HasItemPoints);
+            Assert.False(viewModel.ShouldShowItemPoints);
+        });
+    }
+
+    [Fact]
+    public void ShouldShowItemPoints_WithZeroPoints_ReturnsTrue()
+    {
+        var itemTrackingService = CreateMockItemTrackingService().Object;
+        var spoilerDataService = CreateMockSpoilerDataService().Object;
+        var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var themeService = CreateMockThemeService().Object;
+
+        var viewModel = new RegionViewModel(
+            RegionName.JUNGLE_JAPES,
+            itemTrackingService,
+            spoilerDataService,
+            savedProgressProvider,
+            themeService);
+
+        Assert.Multiple(() =>
+        {
+            Assert.False(viewModel.HasItemPoints);
+            Assert.False(viewModel.ShouldShowItemPoints);
+        });
+    }
+
+    [Theory]
+    [InlineData(RegionName.START, false)]
+    [InlineData(RegionName.DK_ISLES, false)]
+    [InlineData(RegionName.JUNGLE_JAPES, true)]
+    [InlineData(RegionName.ANGRY_AZTEC, true)]
+    [InlineData(RegionName.FRANTIC_FACTORY, true)]
+    [InlineData(RegionName.GLOOMY_GALLEON, true)]
+    [InlineData(RegionName.FUNGI_FOREST, true)]
+    [InlineData(RegionName.CRYSTAL_CAVES, true)]
+    [InlineData(RegionName.CREEPY_CASTLE, true)]
+    [InlineData(RegionName.HIDEOUT_HELM, true)]
+    public void ShouldShowRegionLevel_ByRegionType_ReturnsCorrectValue(RegionName regionName, bool expectedResult)
+    {
+        var itemTrackingService = CreateMockItemTrackingService().Object;
+        var spoilerDataService = CreateMockSpoilerDataService().Object;
+        var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var themeService = CreateMockThemeService().Object;
+
+        var viewModel = new RegionViewModel(
+            regionName,
+            itemTrackingService,
+            spoilerDataService,
+            savedProgressProvider,
+            themeService);
+
+        Assert.Equal(expectedResult, viewModel.ShouldShowRegionLevel);
+    }
+
+    #endregion
+
     #region PropertyChanged Tests
 
     [Fact]

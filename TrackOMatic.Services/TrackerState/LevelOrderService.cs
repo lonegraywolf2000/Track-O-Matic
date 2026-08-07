@@ -40,8 +40,13 @@ public class LevelOrderService: ILevelOrderService
 
     #region ILevelOrderService Implementation
 
-    public IReadOnlyList<int> GetLevelOrder()
+    public IList<int> GetLevelOrder()
     {
+        var list = _savedProgress.LevelOrder;
+        if (list is null || list.Count < 7)
+        {
+            return [0, 0, 0, 0, 0, 0, 0, 0];
+        }
         return _savedProgress.LevelOrder.AsReadOnly();
     }
 

@@ -67,7 +67,6 @@ namespace TrackOMatic
             CurrentSavedProgress.HelmDoorCounts = MainWindow.HelmDoorHints.GetItemCounts();
             CurrentSavedProgress.HelmKongs = MainWindow.GetHelmKongs();
             CurrentSavedProgress.BossKongs = MainWindow.GetBossKongs();
-            CurrentSavedProgress.LevelOrder = MainWindow.GetLevelOrder();
             var JSONString = JsonConvert.SerializeObject(CurrentSavedProgress);
             if (writeToFile)
             {
@@ -157,11 +156,6 @@ namespace TrackOMatic
             if (CurrentSavedProgress.BossKongs != null)
             {
                 MainWindow.LoadBossKongs(CurrentSavedProgress.BossKongs);
-            }
-
-            if (CurrentSavedProgress.LevelOrder != null)
-            {
-                MainWindow.LoadLevelOrder(CurrentSavedProgress.LevelOrder);
             }
         }
 
