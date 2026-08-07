@@ -37,9 +37,6 @@ public partial class UiRegion : UserControl
         InitializeComponent();
 
         ParsedSpoilerDataService.ParsedSpoilerDataChanged += OnSpoilerDataChanged;
-
-        // Honestly, shouldn't need to wire up the LevelOrderNumber at this point.
-        // The binding will handle that.
     }
 
     public bool TryDropItem(ItemName itemName, MouseDragType dragType)

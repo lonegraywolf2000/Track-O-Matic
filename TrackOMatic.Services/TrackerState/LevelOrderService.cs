@@ -47,7 +47,7 @@ public class LevelOrderService: ILevelOrderService
         {
             return [0, 0, 0, 0, 0, 0, 0, 0];
         }
-        return _savedProgress.LevelOrder.AsReadOnly();
+        return _savedProgress.LevelOrder;
     }
 
     public void SetLevelOrder(IEnumerable<int> levelOrder)

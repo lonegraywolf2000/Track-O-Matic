@@ -17,6 +17,7 @@ using TrackOMatic.Logic;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
 
 using Timer = System.Timers.Timer;
 
@@ -73,6 +74,8 @@ namespace TrackOMatic
         public IDataPersistenceService DataPersistenceService { get; init; }
         public ISpoilerService SpoilerService { get; init; }
         public IParsedSpoilerDataService ParsedSpoilerDataService { get; init; }
+
+        public ILevelOrderService LevelOrderService { get; init; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -389,6 +392,7 @@ namespace TrackOMatic
             IDataPersistenceService dataPersistenceService,
             ISpoilerService spoilerService,
             IParsedSpoilerDataService parsedSpoilerDataService,
+            ILevelOrderService levelOrderService,
             IAutotrackerService autotrackerService
         )
         {
@@ -400,6 +404,7 @@ namespace TrackOMatic
             SpoilerService = spoilerService;
             ParsedSpoilerDataService = parsedSpoilerDataService;
             Autotracker = autotrackerService;
+            LevelOrderService = levelOrderService;
 
             // Subscribe to settings changes to notify XAML bindings
             UserSettings.PropertyChanged += (s, e) =>
@@ -1002,11 +1007,6 @@ namespace TrackOMatic
             {
                 var region = entry.Value;
                 region.Reset();
-                region.SetLevelOrderNumber(0);
-                if (entry.Key == RegionName.HIDEOUT_HELM && !UserSettings.HelmInLevelOrder)
-                {
-                    region.SetLevelOrderNumber(8);
-                }
             }
             foreach (var item in DraggableItems.Cast<Item>())
             {

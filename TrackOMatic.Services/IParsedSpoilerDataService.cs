@@ -51,6 +51,18 @@ public interface IParsedSpoilerDataService
     /// <param name="regionName">The name of the region.</param>
     /// <returns>The WOTH point value for all items in the specified region.</returns>
     int GetWothPointsForRegion(RegionName regionName);
+
+    /// <summary>
+    /// Determines whether the current parsed spoiler data contains any item points.
+    /// </summary>
+    /// <returns></returns>
+    bool HasItemPoints();
+
+    /// <summary>
+    /// Determines whether the current parsed spoiler data contains any WOTH points.
+    /// </summary>
+    /// <returns></returns>
+    bool HasHoardPoints();
 }
 
 /// <summary>

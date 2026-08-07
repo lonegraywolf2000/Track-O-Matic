@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
@@ -84,15 +83,10 @@ namespace TrackOMatic
             "progressive_slam_1_bc_bw", "progressive_slam_1_bc", "progressive_slam_2_bc", "progressive_slam_3_bc"
         ];
 
-        private List<Image> LevelNames;
-        private List<TextBlock> PointLabels;
-        private List<TextBlock> WOTHLabels;
-        private bool pointsEnabled = false;
-        private bool WOTHEnabled = false;
-
         #region Proxy Properties for User Settings
 
         public IUserSettingsService UserSettings { get; init; }
+        public IParsedSpoilerDataService ParsedSpoilerDataService { get; init; }
 
         /// <summary>
         /// Proxy property for XAML binding to TopMost setting.
@@ -158,11 +152,26 @@ namespace TrackOMatic
             }
         }
 
+        /// <summary>
+        /// Proxy property for XAML binding to the broadcast number label setting.
+        /// </summary>
+        public BroadcastNumberLabel BroadcastNumberLabelSetting
+        {
+            get => UserSettings.BroadcastNumberLabel;
+            set
+            {
+                if (UserSettings.BroadcastNumberLabel != value)
+                {
+                    UserSettings.BroadcastNumberLabel = value;
+                    OnPropertyChanged(nameof(BroadcastNumberLabelSetting));
+                }
+            }
+        }
+
         #endregion
 
         private void InitializeMap()
         {
-            var keys = new List<ItemBackground>() { key_1, key_2, key_3, key_4, key_5, key_6, key_7, key_8 };
             var itemGrids = new List<UIElementCollection>()
             {
                 MainKongMoves.Children, TrainingMovesGrid.Children, CollectiblesGrid.Children, ShopkeepersGrid.Children
@@ -177,11 +186,6 @@ namespace TrackOMatic
                         ItemMap[itemName] = item;
                     }
                 }
-            }
-            foreach (var key in keys)
-            {
-                ItemName itemName = (ItemName)key.Tag;
-                ItemMap[itemName] = key;
             }
         }
 
@@ -210,9 +214,10 @@ namespace TrackOMatic
                 }
             }
         }
-        public BroadcastView(IUserSettingsService userSettings)
+        public BroadcastView(IUserSettingsService userSettings, IParsedSpoilerDataService parsedSpoilerDataService)
         {
             UserSettings = userSettings;
+            ParsedSpoilerDataService = parsedSpoilerDataService;
             UserSettings.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(IUserSettingsService.TopMost))
@@ -230,6 +235,10 @@ namespace TrackOMatic
                 else if (e.PropertyName == nameof(IUserSettingsService.BroadcastSongDisplay))
                 {
                     OnPropertyChanged(nameof(BroadcastSongDisplaySetting));
+                }
+                else if (e.PropertyName == nameof(IUserSettingsService.BroadcastNumberLabel))
+                {
+                    OnPropertyChanged(nameof(BroadcastNumberLabelSetting));
                 }
             };
 
@@ -249,41 +258,7 @@ namespace TrackOMatic
                 {ItemType.FAIRY, banana_fairies },
                 {ItemType.GOLDEN_BANANA, golden_bananas },
             };
-            LevelNames = new()
-            {
-                Level1Image,
-                Level2Image,
-                Level3Image,
-                Level4Image,
-                Level5Image,
-                Level6Image,
-                Level7Image,
-                HelmImage
-            };
-            PointLabels = new()
-            {
-                Level1Points,
-                Level2Points,
-                Level3Points,
-                Level4Points,
-                Level5Points,
-                Level6Points,
-                Level7Points,
-                HelmPoints,
-                IslesPoints,
-            };
-            WOTHLabels = new()
-            {
-                Level1WOTH,
-                Level2WOTH,
-                Level3WOTH,
-                Level4WOTH,
-                Level5WOTH,
-                Level6WOTH,
-                Level7WOTH,
-                HelmWOTH,
-                IslesWOTH
-            };
+
             var mainWindow = (MainWindow)Application.Current.MainWindow;
             KRoolKongs = new() { KRoolKong1, KRoolKong2, KRoolKong3, KRoolKong4, KRoolKong5 };
             HelmKongs = new() { HelmKong1, HelmKong2, HelmKong3, HelmKong4, HelmKong5 };
@@ -323,21 +298,8 @@ namespace TrackOMatic
             Collectibles[itemType].SetAmount(newAmount);
         }
 
-        private void ClearLevelLabels()
-        {
-            foreach (var image in LevelNames)
-            {
-                image.Source = (ImageSource)FindResource("unknown_label");
-            }
-            for (int i = 0; i < PointLabels.Count - 1; ++i) //skip isles
-            {
-                PointLabels[i].Text = "";
-            }
-        }
-
         public void Reset()
         {
-            ClearLevelLabels();
             foreach (var entry in Collectibles)
             {
                 entry.Value.SetAmount(0);
@@ -354,44 +316,27 @@ namespace TrackOMatic
             {
                 LevelNumbers[key] = -1;
             }
-            foreach (var label in PointLabels)
-            {
-                label.Text = "";
-            }
             MovesWidth.Width = new GridLength(345, GridUnitType.Pixel);
-            IslesGrid.Visibility = Visibility.Collapsed;
-        }
-
-        private void SetVisibility(List<TextBlock> labels, bool visible)
-        {
-            var uiVisibility = visible ? Visibility.Visible : Visibility.Collapsed;
-            foreach (var label in labels)
-            {
-                label.Visibility = uiVisibility;
-            }
         }
 
         public void AdjustLayout()
         {
-            var bothEnabled = pointsEnabled && WOTHEnabled;
+            var pointsEnabled = ParsedSpoilerDataService.HasItemPoints();
+            var hoardEnabled = ParsedSpoilerDataService.HasHoardPoints();
+            var bothEnabled = pointsEnabled && hoardEnabled;
             var displayOption = UserSettings.BroadcastNumberLabel;
 
             var pointsCanDisplay = pointsEnabled && (!bothEnabled || displayOption == BroadcastNumberLabel.Points);
-            var WOTHCanDisplay = WOTHEnabled && (!bothEnabled || displayOption == BroadcastNumberLabel.WothCount);
+            var hoardCanDisplay = hoardEnabled && (!bothEnabled || displayOption == BroadcastNumberLabel.WothCount);
 
-            SetVisibility(PointLabels, pointsCanDisplay);
-            SetVisibility(WOTHLabels, WOTHCanDisplay);
-
-            IslesGrid.Visibility = (pointsCanDisplay || WOTHCanDisplay) ? Visibility.Visible : Visibility.Collapsed;
             MovesWidth.Width = new GridLength(pointsEnabled ? 315 : 345, GridUnitType.Pixel);
         }
 
         public void ProcessSpoilerSettings(SpoilerSettings settings)
         {
-            pointsEnabled = settings.PointsEnabled;
-            WOTHEnabled = settings.WOTHEnabled;
             AdjustLayout();
         }
+
         public void AdjustWindowSize()
         {
             var baseHeight = 394;
@@ -424,64 +369,6 @@ namespace TrackOMatic
             ShopkeepersRow.Height = new GridLength(shopkeeperHeight, GridUnitType.Star);
             MainItemsRow.Height = new GridLength(mainItemsHeight, GridUnitType.Pixel);
             AdjustWindowSize();
-        }
-        private void UpdateLevelNumbers()
-        {
-            ClearLevelLabels();
-            foreach (var entry in LevelNumbers)
-            {
-                var region = entry.Key;
-                var levelNumber = entry.Value;
-                if (levelNumber <= -1)
-                {
-                    continue;
-                }
-
-                var matchingImage = LevelNames[levelNumber];
-                var imagePath = region.ToString().ToLower() + "_label";
-                matchingImage.Source = (ImageSource)FindResource(imagePath);
-                var mainWindow = (MainWindow)Application.Current.MainWindow;
-                if (mainWindow.Regions.ContainsKey(region))
-                {
-                    mainWindow.Regions[region].UpdatePoints();
-                }
-            }
-        }
-
-        private void UpdateLabel(List<TextBlock> labels, RegionName region, int count, string foregroundResource)
-        {
-            var levelIndex = -1;
-            if (region == RegionName.DK_ISLES)
-            {
-                levelIndex = 8;
-            }
-            else if (LevelNumbers.ContainsKey(region))
-            {
-                levelIndex = LevelNumbers[region];
-            }
-            if (levelIndex == -1)
-            {
-                return;
-            }
-
-            labels[levelIndex].Text = count.ToString();
-            labels[levelIndex].SetResourceReference(TextBlock.ForegroundProperty, foregroundResource);
-        }
-
-        public void UpdateRegionPoints(RegionName region, int points, string foregroundResource)
-        {
-            UpdateLabel(PointLabels, region, points, foregroundResource);
-        }
-        public void UpdateWOTHCount(RegionName region, int WOTHCount)
-        {
-            UpdateLabel(WOTHLabels, region, WOTHCount, "RequiredChecksColor");
-        }
-
-        public void UpdateLevelNumber(RegionName region, int newNumber)
-        {
-            newNumber -= 1;
-            LevelNumbers[region] = newNumber;
-            UpdateLevelNumbers();
         }
 
         public void SetItemStar(ItemName item, Visibility visibility)

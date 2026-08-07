@@ -194,6 +194,13 @@ public class RegionLevelViewModel : INotifyPropertyChanged, IDisposable
             index = ToLevelOrderIndex();
             _levelOrderNumber = (index >= 0 && index < levelOrders.Count) ? levelOrders[index] : 0;
         }
+
+        // If Hideout Helm is not in level order (setting disabled), force it to level 8
+        if (_regionName == RegionName.HIDEOUT_HELM && !_userSettingsService.HelmInLevelOrder)
+        {
+            _levelOrderNumber = 8;
+        }
+
         UpdateLevelText();
     }
 

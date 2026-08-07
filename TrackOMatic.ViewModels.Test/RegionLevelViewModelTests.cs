@@ -279,6 +279,58 @@ public class RegionLevelViewModelTests
         Assert.Equal(8, viewModel.LevelOrderNumber);
     }
 
+    [Fact]
+    public void HelmForcedToEightOnInitialization_WhenHelmInLevelOrderIsFalse()
+    {
+        // Arrange: Level order array with Helm (index 7) set to 4 (not 8)
+        var levelOrders = new List<int> { 1, 2, 3, 8, 5, 6, 7, 4 }; // Helm at index 7 is 4
+        var levelOrderService = CreateMockLevelOrderService(levelOrders);
+        var userSettingsService = CreateMockUserSettingsService(helmInLevelOrder: false).Object;
+        var parsedSpoilerDataService = CreateMockParsedSpoilerDataService(hasLevelOrder: false).Object;
+        var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+
+        // Act: Create ViewModel for HIDEOUT_HELM with setting disabled
+        var viewModel = new RegionLevelViewModel(
+            RegionName.HIDEOUT_HELM,
+            levelOrderService.Object,
+            userSettingsService,
+            parsedSpoilerDataService,
+            savedProgressProvider);
+
+        // Assert: Helm should be forced to 8 despite level order saying 4
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(8, viewModel.LevelOrderNumber);
+            Assert.Equal("8", viewModel.LevelText);
+        });
+    }
+
+    [Fact]
+    public void HelmNotForcedToEight_WhenHelmInLevelOrderIsTrue()
+    {
+        // Arrange: Level order array with Helm (index 7) set to 3
+        var levelOrders = new List<int> { 1, 2, 8, 4, 5, 6, 7, 3 }; // Helm at index 7 is 3
+        var levelOrderService = CreateMockLevelOrderService(levelOrders);
+        var userSettingsService = CreateMockUserSettingsService(helmInLevelOrder: true).Object;
+        var parsedSpoilerDataService = CreateMockParsedSpoilerDataService(hasLevelOrder: false).Object;
+        var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+
+        // Act: Create ViewModel for HIDEOUT_HELM with setting enabled
+        var viewModel = new RegionLevelViewModel(
+            RegionName.HIDEOUT_HELM,
+            levelOrderService.Object,
+            userSettingsService,
+            parsedSpoilerDataService,
+            savedProgressProvider);
+
+        // Assert: Helm should use the actual level order value (3), not forced to 8
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(3, viewModel.LevelOrderNumber);
+            Assert.Equal("3", viewModel.LevelText);
+        });
+    }
+
     #endregion
 
     #region Dispose Tests

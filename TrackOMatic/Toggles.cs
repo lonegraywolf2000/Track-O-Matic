@@ -153,7 +153,7 @@ namespace TrackOMatic
                 BroadcastView = null;
                 return;
             }
-            BroadcastView = new BroadcastView(UserSettings);
+            BroadcastView = new BroadcastView(UserSettings, ParsedSpoilerDataService);
             BroadcastView.UpdateSongInfo(SongGame.Text, SongName.Text);
             BroadcastView.Closed += BroadcastClosed;
             BroadcastView.Show();
@@ -165,10 +165,6 @@ namespace TrackOMatic
             foreach (var entry in Regions)
             {
                 var region = entry.Value;
-                if (region.LevelOrderNumber != null)
-                {
-                    region.LevelOrderNumber.UpdateLabel();
-                }
 
                 region.UpdatePoints();
                 region.UpdateRequiredChecksTotal();
@@ -202,9 +198,9 @@ namespace TrackOMatic
             UserSettings.HelmInLevelOrder = HelmInLevelOrder.IsChecked;
             if (!UserSettings.HelmInLevelOrder)
             {
-                // Known issue: MainWindow shouldn't care about Region like this.
-                // This will be refactored later.
-                Regions[RegionName.HIDEOUT_HELM].SetLevelOrderNumber(8);
+                var levelOrder = LevelOrderService.GetLevelOrder();
+                levelOrder[7] = 8;
+                LevelOrderService.SetLevelOrder(levelOrder);
             }
         }
 

@@ -181,135 +181,19 @@
                 </Grid>
             </Grid>
             <!-- Broadcast Levels here. -->
-            <Grid Grid.Column="1" Margin="-6,3,3,3" Height="284" VerticalAlignment="Top">
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <Grid Grid.Row="0" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_1" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="Level1Number" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/1.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="Level1Image"  Grid.Column="2" Source="Images/dk64/unknown.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level1Points" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level1WOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="1" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_2" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="Level2Number" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/2.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="Level2Image"  Grid.Column="2" Source="Images/dk64/unknown.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level2Points" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level2WOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="2" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_3" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="Level3Number" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/3.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="Level3Image"  Grid.Column="2" Source="Images/dk64/unknown.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level3Points" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level3WOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="3" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_4" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="Level4Number" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/4.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="Level4Image"  Grid.Column="2" Source="Images/dk64/unknown.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level4Points" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level4WOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="4" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_5" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="Level5Number" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/5.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="Level5Image"  Grid.Column="2" Source="Images/dk64/unknown.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level5Points" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level5WOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="5" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_6" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="Level6Number" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/6.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="Level6Image"  Grid.Column="2" Source="Images/dk64/unknown.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level6Points" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level6WOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="6" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_7" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="Level7Number" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/7.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="Level7Image"  Grid.Column="2" Source="Images/dk64/unknown.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level7Points" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="Level7WOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="7" Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="0,0,0,0" Interactible="False" x:Name="key_8" BackgroundItemImage="{DynamicResource basic_key_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.BASIC_KEY}" />
-                    <Image Name="HelmNumber" Margin="-18,7,9,9" Grid.Column="1" Source="Images/dk64/8.png" HorizontalAlignment="Center"/>
-                    <Image Panel.ZIndex="0" Name="HelmImage"  Grid.Column="2" Source="Images/dk64/helm.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="HelmPoints" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="HelmWOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-                <Grid Grid.Row="8" Margin="0,0,0,0" Name="IslesGrid" Visibility="Collapsed">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Image Panel.ZIndex="0" Name="IslesImage"  Grid.Column="2" Source="Images/dk64/ISLES.png" HorizontalAlignment="Left" Margin="-14,8,0,9"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="IslesPoints" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                    <TextBlock Panel.ZIndex="1" Margin="0,0,6,2" Grid.Column="3" x:Name="IslesWOTH" FontSize="16" Foreground="White" FontFamily="Helvetica" FontWeight="Medium" Text="" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                </Grid>
-            </Grid>
+            <StackPanel Grid.Column="1" Margin="-6,3,3,3" Height="284" VerticalAlignment="Top">
+                <broadcast:Level LevelNumber="1" />
+                <broadcast:Level LevelNumber="2" />
+                <broadcast:Level LevelNumber="3" />
+                <broadcast:Level LevelNumber="4" />
+                <broadcast:Level LevelNumber="5" />
+                <broadcast:Level LevelNumber="6" />
+                <broadcast:Level LevelNumber="7" />
+                <broadcast:Level LevelNumber="8" />
+                <broadcast:Isles />
+            </StackPanel>
         </Grid>
+        <!-- End Game items: Blast-O-Matic & Final Boss Order -->
         <Grid Grid.Row="1" Margin="6,1,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
@@ -372,6 +256,7 @@
             <local:CollectibleItem BGColor="Black" Interactible="False" x:Name="banana_fairies" ImageSource="Images/bw/fairy.png" Text="0" Grid.Row="0" Grid.Column="5"/>
             <local:CollectibleItem BGColor="Black" Interactible="False" x:Name="golden_bananas" ImageSource="Images/bw/gb.png" Text="0" Grid.Row="0" Grid.Column="6"/>
         </Grid>
+        <!-- Song Display -->
         <Grid Background="Transparent" Grid.Row="4" Margin="3,1,3,5" >
             <Border Grid.Row="0" Grid.RowSpan="3" CornerRadius="5" BorderThickness="1" BorderBrush="#131414" Background="#1a1b1c">
             </Border>

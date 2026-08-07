@@ -96,6 +96,15 @@
 
     <BitmapImage x:Key="basic_key" UriSource="Images/dk64/key.png"  x:Shared="false"/>
 
+    <BitmapImage x:Key="number_1" UriSource="Images/dk64/1.png" x:Shared="false"/>
+    <BitmapImage x:Key="number_2" UriSource="Images/dk64/2.png" x:Shared="false"/>
+    <BitmapImage x:Key="number_3" UriSource="Images/dk64/3.png" x:Shared="false"/>
+    <BitmapImage x:Key="number_4" UriSource="Images/dk64/4.png" x:Shared="false"/>
+    <BitmapImage x:Key="number_5" UriSource="Images/dk64/5.png" x:Shared="false"/>
+    <BitmapImage x:Key="number_6" UriSource="Images/dk64/6.png" x:Shared="false"/>
+    <BitmapImage x:Key="number_7" UriSource="Images/dk64/7.png" x:Shared="false"/>
+    <BitmapImage x:Key="number_8" UriSource="Images/dk64/8.png" x:Shared="false"/>
+
     <BitmapImage x:Key="unknown_vial" UriSource="Images/dk64/unknown_vial.png"  x:Shared="false"/>
     <BitmapImage x:Key="unknown_key" UriSource="Images/dk64/unknown_key.png"  x:Shared="false"/>
 

@@ -70,10 +70,6 @@ namespace TrackOMatic
             {
                 newLevelOrderHeight = 0.9 / (height * 1.22);
             }
-            if (Region.LevelOrderNumber != null)
-            {
-                Region.LevelOrderNumber.TopRow.Height = new GridLength(newLevelOrderHeight, GridUnitType.Star);
-            }
         }
 
         private void AdjustSpacing()

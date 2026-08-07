@@ -108,7 +108,7 @@ namespace TrackOMatic
         {
             // Extract settings from parsed data
             var spoilerSettings = spoilerData.SpoilerSettings;
-
+            /*
             // Populate regions with parsed spoiler data
             if (spoilerData.RegionData != null && spoilerData.RegionData.Count > 0)
             {
@@ -131,15 +131,7 @@ namespace TrackOMatic
                     }
                 }
             }
-
-            // Populate level order
-            foreach (var levelEntry in spoilerData.LevelOrder)
-            {
-                if (MainWindow.Regions.TryGetValue(levelEntry.Key, out var region))
-                {
-                    region.SetLevelOrderNumber(levelEntry.Value);
-                }
-            }
+            */
 
             // Populate Helm Kong order
             if (spoilerData.HelmOrder != null && spoilerData.HelmOrder.Count > 0)

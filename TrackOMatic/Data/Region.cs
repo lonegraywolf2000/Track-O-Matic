@@ -26,7 +26,6 @@ namespace TrackOMatic
         public RegionGrid RegionGrid { get; }
         public TextBlock? BottomLabel { get; }
         public TextBlock? TopLabel { get; }
-        public LevelOrderNumber? LevelOrderNumber { get; }
         public int TotalPoints { get; private set; }
         public bool SpoilerLoaded { get; private set; }
         public int CurrentPoints { get; private set; }
@@ -49,7 +48,7 @@ namespace TrackOMatic
             }
         }
 
-        public Region(RegionName regionName, Grid mainUIGrid, Grid imagePointsGrid, Image? regionButton, RegionGrid checksContainer, TextBlock? bottomLabel = null, TextBlock? topLabel = null, LevelOrderNumber? levelOrderNumber = null)
+        public Region(RegionName regionName, Grid mainUIGrid, Grid imagePointsGrid, Image? regionButton, RegionGrid checksContainer, TextBlock? bottomLabel = null, TextBlock? topLabel = null)
         {
             RegionName = regionName;
             BLockerAmount = 0;
@@ -61,8 +60,6 @@ namespace TrackOMatic
             RegionGrid = checksContainer;
             BottomLabel = bottomLabel;
             TopLabel = topLabel;
-            LevelOrderNumber = levelOrderNumber;
-            LevelOrderNumber?.SetRegion(regionName);
 
             CurrentChecks = new();
             RegionGrid.Region = this;
@@ -102,8 +99,6 @@ namespace TrackOMatic
             {
                 label.Text = toDisplay.ToString();
             }
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.BroadcastView?.UpdateWOTHCount(RegionName, toDisplay);
         }
 
         public void Reset()
@@ -128,7 +123,6 @@ namespace TrackOMatic
 
             RegionGrid.ResetVials();
             ResetLabels();
-            LevelOrderNumber?.Reset();
 
             SetAsEmptySpoiler();
         }
@@ -167,8 +161,6 @@ namespace TrackOMatic
             pointsLabel.Text = (SpoilerLoaded) ? RemainingPoints.ToString() : "?";
             var resource = (CurrentPoints >= TotalPoints && SpoilerLoaded) ? "RegionComplete" : "RegionInProgress";
             pointsLabel.SetResourceReference(TextBlock.ForegroundProperty, resource);
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
-            mainWindow.BroadcastView?.UpdateRegionPoints(RegionName, RemainingPoints, resource);
         }
 
         public void SetShuffledRegion(RegionName newRegionName)
@@ -239,16 +231,6 @@ namespace TrackOMatic
             ConfigureLabelsFromSettings();
             UpdatePoints();
             UpdateRequiredChecksTotal();
-        }
-
-        public void SetLevelOrderNumber(int number)
-        {
-            if (LevelOrderNumber == null)
-            {
-                return;
-            }
-
-            LevelOrderNumber.SetNumber(number);
         }
 
         public void SetAsEmptySpoiler()

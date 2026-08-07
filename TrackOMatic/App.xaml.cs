@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using TrackOMatic.AutoTracking.Windows;
 using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic;
 
@@ -45,6 +46,7 @@ public partial class App : Application
         var parsedSpoilerDataService = _serviceProvider.GetRequiredService<IParsedSpoilerDataService>();
         var autotrackingService = _serviceProvider.GetRequiredService<IAutotrackerService>();
         var themeService = _serviceProvider.GetRequiredService<IThemeService>();
+        var levelOrderService = _serviceProvider.GetRequiredService<ILevelOrderService>();
 
         _resourceDictionaryProvider = new WpfResourceDictionaryProvider(themeService);
         _resourceDictionaryProvider.UpdateResourceDictionaries();
@@ -58,6 +60,7 @@ public partial class App : Application
             dataPersistenceService,
             spoilerService,
             parsedSpoilerDataService,
+            levelOrderService,
             autotrackingService
         );
         mainWindow.Show();

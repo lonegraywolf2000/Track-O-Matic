@@ -87,5 +87,22 @@ public class ParsedSpoilerDataService : IParsedSpoilerDataService
         return wothPoints;
     }
 
+    public bool HasItemPoints()
+    {
+        if (CurrentData is null)
+        {
+            return false;
+        }
+        return CurrentData.RegionData.Any(kvp => kvp.Value.Points > 0);
+    }
+
+    public bool HasHoardPoints()
+    {
+        if (CurrentData is null)
+        {
+            return false;
+        }
+        return CurrentData.RegionData.Any(kvp => kvp.Value.WothCount > 0);
+    }
     #endregion
 }
