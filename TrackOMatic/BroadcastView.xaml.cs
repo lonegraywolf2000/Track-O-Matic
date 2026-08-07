@@ -421,10 +421,8 @@ namespace TrackOMatic
             bool on = UserSettings.BroadcastShopkeepers;
             var shopkeeperHeight = on ? 1.0 : 0;
             var mainItemsHeight = on ? 336 : 290;
-            var climbingColumnWidth = on ? 0 : 0;
             ShopkeepersRow.Height = new GridLength(shopkeeperHeight, GridUnitType.Star);
             MainItemsRow.Height = new GridLength(mainItemsHeight, GridUnitType.Pixel);
-            ClimbingColumn.Width = new GridLength(climbingColumnWidth, GridUnitType.Star);
             AdjustWindowSize();
         }
         private void UpdateLevelNumbers()
@@ -486,35 +484,11 @@ namespace TrackOMatic
             UpdateLevelNumbers();
         }
 
-        private void ProcessStarredSharedMoves()
-        {
-            var groupings = new Dictionary<ItemBackground, List<ItemName>>()
-            {
-                {homingscope, new(){ItemName.HOMING_AMMO, ItemName.SNIPER_SCOPE} },
-                {camerashockwave, new(){ItemName.FAIRY_CAMERA, ItemName.SHOCKWAVE} },
-                {slam, new(){ItemName.PROGRESSIVE_SLAM_1, ItemName.PROGRESSIVE_SLAM_2, ItemName.PROGRESSIVE_SLAM_3, } },
-            };
-            foreach (var entry in groupings)
-            {
-                var items = entry.Value;
-                var image = entry.Key;
-                image.SetStarVisibility(Visibility.Collapsed);
-                foreach (var item in items)
-                {
-                    if (StarredSharedMoves[item])
-                    {
-                        image.SetStarVisibility(Visibility.Visible);
-                    }
-                }
-            }
-        }
-
         public void SetItemStar(ItemName item, Visibility visibility)
         {
             if (StarredSharedMoves.ContainsKey(item))
             {
                 StarredSharedMoves[item] = (visibility == Visibility.Visible);
-                ProcessStarredSharedMoves();
                 return;
             }
             var match = GetMatchingItem(item);
@@ -524,60 +498,12 @@ namespace TrackOMatic
             }
         }
 
-        private void CheckGroupedItem(List<ItemName> items, IList<string> imageSources, ItemBackground itemBackground)
-        {
-            int imageIndex = 0;
-            ItemName firstItem = items[0];
-            ItemName secondItem = items[1];
-            if (SharedMoves[firstItem])
-            {
-                imageIndex++;
-            }
-
-            if (SharedMoves[secondItem])
-            {
-                imageIndex += 2;
-            }
-
-            itemBackground.BackgroundItemImage = (ImageSource)FindResource(imageSources[imageIndex]);
-        }
-
-        public void HandleSharedMoves()
-        {
-            int slamCount = 0;
-            foreach (var entry in SharedMoves)
-            {
-                if (entry.Key.ToString().Contains("PROGRESSIVE_SLAM") && entry.Value == true)
-                {
-                    slamCount++;
-                }
-            }
-            slam.BackgroundItemImage = (ImageSource)FindResource(slamImages[slamCount]);
-            var homingScopeGroup = new List<ItemName> { ItemName.HOMING_AMMO, ItemName.SNIPER_SCOPE };
-            var camShockwaveGroup = new List<ItemName> { ItemName.FAIRY_CAMERA, ItemName.SHOCKWAVE };
-            CheckGroupedItem(homingScopeGroup, homingScopeImages, homingscope);
-            CheckGroupedItem(camShockwaveGroup, camShockwaveImages, camerashockwave);
-        }
-
         private ItemBackground? GetMatchingItem(ItemName item)
         {
             var name = item.ToString();
             if (name.StartsWith("KEY"))
             {
                 return (ItemBackground)FindName(item.ToString().ToLower());
-            }
-            if (item == ItemName.PROGRESSIVE_SLAM_1 || item == ItemName.PROGRESSIVE_SLAM_2 || item == ItemName.PROGRESSIVE_SLAM_3)
-            {
-                return slam;
-            }
-            if (item == ItemName.SNIPER_SCOPE || item == ItemName.HOMING_AMMO)
-            {
-                return homingscope;
-            }
-
-            if (item == ItemName.FAIRY_CAMERA || item == ItemName.SHOCKWAVE)
-            {
-                return camerashockwave;
             }
 
             if (ItemMap.ContainsKey(item))
@@ -593,7 +519,6 @@ namespace TrackOMatic
             if (SharedMoves.ContainsKey(item))
             {
                 SharedMoves[item] = true;
-                HandleSharedMoves();
                 return;
             }
             var match = GetMatchingItem(item);
@@ -608,7 +533,6 @@ namespace TrackOMatic
             if (SharedMoves.ContainsKey(item))
             {
                 SharedMoves[item] = false;
-                HandleSharedMoves();
                 return;
             }
             var match = GetMatchingItem(item);

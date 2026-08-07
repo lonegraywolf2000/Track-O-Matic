@@ -152,17 +152,16 @@
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                         <ColumnDefinition/>
-                        <ColumnDefinition Name="ClimbingColumn" Width="0"/>
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="slam" BackgroundItemImage="{DynamicResource progressive_slam_1_bw}" Grid.Column="0" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.PROGRESSIVE_SLAM_1}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="homingscope" BackgroundItemImage="{DynamicResource homing_scope_bw}" Grid.Column="7" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.HOMING_SCOPE}"/>
-                    <local:ItemBackground Margin="1" Interactible="False" x:Name="camerashockwave" BackgroundItemImage="{DynamicResource camera_shockwave_bw}" Grid.Column="6" Panel.ZIndex="0" Tag="{x:Static enums:ItemName.CAMERA_SHOCKWAVE}"/>
+                    <broadcast:ProgressiveSlam Grid.Column="0" />
                     <broadcast:Item Grid.Column="1" ItemName="DIVING" />
                     <broadcast:Item Grid.Column="2" ItemName="ORANGE_THROWING" />
                     <broadcast:Item Grid.Column="3" ItemName="BARREL_THROWING" />
                     <broadcast:Item Grid.Column="4" ItemName="VINE_SWINGING" />
+                    <broadcast:CameraShockwave Grid.Column="5" />
+                    <broadcast:HomingScope Grid.Column="6" />
                 </Grid>
                 <Grid Name="ShopkeepersGrid" Grid.Row="3" Margin="0,0,0,0">
                     <Grid.ColumnDefinitions>
