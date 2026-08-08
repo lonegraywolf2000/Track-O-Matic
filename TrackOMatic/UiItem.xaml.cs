@@ -8,6 +8,7 @@ using System.Windows.Media;
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Regions;
 using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
 using TrackOMatic.ViewModels;
 
 namespace TrackOMatic;
@@ -48,12 +49,14 @@ public partial class UiItem : UserControl, INotifyPropertyChanged
 
     internal IItemTrackingService ItemTrackingService { get; private init; }
     internal IParsedSpoilerDataService ParsedSpoilerDataService { get; private init; }
+    internal ISavedProgressProvider SavedProgressProvider { get; private init; }
     internal IThemeService ThemeService { get; private init; }
 
     public UiItem()
     {
         ItemTrackingService = ServiceLocator.GetService<IItemTrackingService>() ?? throw new InvalidOperationException("IItemTrackingService not found in service locator.");
         ParsedSpoilerDataService = ServiceLocator.GetService<IParsedSpoilerDataService>() ?? throw new InvalidOperationException("IParsedSpoilerDataService not found in service locator.");
+        SavedProgressProvider = ServiceLocator.GetService<ISavedProgressProvider>() ?? throw new InvalidOperationException("ISavedProgressProvider not found in service locator.");
         ThemeService = ServiceLocator.GetService<IThemeService>() ?? throw new InvalidOperationException("IThemeService not found in service locator.");
         InitializeComponent();
     }
@@ -68,7 +71,13 @@ public partial class UiItem : UserControl, INotifyPropertyChanged
     {
         if (d is UiItem control && e.NewValue is ItemName itemName)
         {
-            control.DataContext = new UiItemViewModel(itemName, control.ItemTrackingService, control.ParsedSpoilerDataService, control.ThemeService);
+            control.DataContext = new UiItemViewModel(
+                itemName,
+                control.ItemTrackingService,
+                control.ParsedSpoilerDataService,
+                control.SavedProgressProvider,
+                control.ThemeService
+            );
         }
     }
 

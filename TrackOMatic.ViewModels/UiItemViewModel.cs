@@ -4,6 +4,7 @@ using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic.ViewModels;
 
@@ -19,8 +20,9 @@ public class UiItemViewModel : BroadcastItemViewModel, INotifyPropertyChanged
         ItemName itemName,
         IItemTrackingService itemTrackingService,
         IParsedSpoilerDataService parsedSpoilerDataService,
+        ISavedProgressProvider savedProgressProvider,
         IThemeService themeService
-    ) : base(itemName, itemTrackingService, parsedSpoilerDataService, themeService)
+    ) : base(itemName, itemTrackingService, parsedSpoilerDataService, savedProgressProvider, themeService)
     {
         _itemName = itemName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));

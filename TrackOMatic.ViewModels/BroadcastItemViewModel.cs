@@ -5,6 +5,7 @@ using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic.ViewModels;
 
@@ -19,6 +20,7 @@ public class BroadcastItemViewModel : INotifyPropertyChanged, IDisposable
 {
     private readonly IItemTrackingService _itemTrackingService;
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
+    private readonly ISavedProgressProvider _savedProgressProvider;
     private readonly IThemeService _themeService;
     private readonly ItemName _itemName;
 
@@ -39,15 +41,18 @@ public class BroadcastItemViewModel : INotifyPropertyChanged, IDisposable
         ItemName itemName,
         IItemTrackingService itemTrackingService,
         IParsedSpoilerDataService parsedSpoilerDataService,
+        ISavedProgressProvider savedProgressProvider,
         IThemeService themeService
     )
     {
         _itemName = itemName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
         _parsedSpoilerDataService = parsedSpoilerDataService ?? throw new ArgumentNullException(nameof(parsedSpoilerDataService));
+        _savedProgressProvider = savedProgressProvider ?? throw new ArgumentNullException(nameof(savedProgressProvider));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _itemTrackingService.ItemStateChanged += OnItemStateChanged;
         _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnParsedSpoilerDataChanged;
+        _savedProgressProvider.ProgressChanged += OnSavedProgressChanged;
 
         if (BarrelPadItems.Contains(_itemName))
         {
@@ -188,6 +193,16 @@ public class BroadcastItemViewModel : INotifyPropertyChanged, IDisposable
     protected virtual void OnParsedSpoilerDataChanged(object? sender, ParsedSpoilerDataChangedEventArgs e)
     {
         // When parsed spoiler data changes, reinitialize to reflect the new spoiler state
+        InitializeState();
+    }
+
+    /// <summary>
+    /// Handles changes to the saved progress (primarily on load or reset).
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    protected virtual void OnSavedProgressChanged(object? sender, ProgressReplacedEventArgs e)
+    {
         InitializeState();
     }
 

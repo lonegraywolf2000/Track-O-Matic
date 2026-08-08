@@ -3,6 +3,7 @@ using System.Windows.Controls;
 
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Services;
+using TrackOMatic.Services.TrackerState;
 using TrackOMatic.ViewModels;
 
 namespace TrackOMatic.Broadcast;
@@ -36,11 +37,12 @@ public partial class Item : UserControl
             // Create ViewModel with injected services
             var itemTrackingService = ServiceLocator.GetService<IItemTrackingService>();
             var parsedSpoilerDataService = ServiceLocator.GetService<IParsedSpoilerDataService>();
+            var savedProgressProvider = ServiceLocator.GetService<ISavedProgressProvider>();
             var themeService = ServiceLocator.GetService<IThemeService>();
 
-            if (itemTrackingService != null && parsedSpoilerDataService != null)
+            if (itemTrackingService != null && parsedSpoilerDataService != null && savedProgressProvider != null)
             {
-                control.DataContext = new BroadcastItemViewModel(itemName, itemTrackingService, parsedSpoilerDataService, themeService);
+                control.DataContext = new BroadcastItemViewModel(itemName, itemTrackingService, parsedSpoilerDataService, savedProgressProvider, themeService);
             }
         }
     }
