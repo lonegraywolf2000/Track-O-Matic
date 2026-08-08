@@ -183,6 +183,7 @@ namespace TrackOMatic
             };
 
             InitializeComponent();
+
             Collectibles = new() {
                 { ItemType.DONKEY_BLUEPRINT, DonkeyBPs},
                 { ItemType.DIDDY_BLUEPRINT, DiddyBPs},
@@ -213,8 +214,6 @@ namespace TrackOMatic
                 item.Enabled = false;
                 UpdateHelmKong(i, mainWindow.HelmKongs[i].image.Source);
             }
-            UpdateShopkeeperHeight();
-            AdjustWindowSize();
         }
 
         public void UpdateKRoolKong(int index, ImageSource newSource)
@@ -276,38 +275,11 @@ namespace TrackOMatic
             AdjustLayout();
         }
 
-        public void AdjustWindowSize()
-        {
-            var baseHeight = 394;
-            if (ShopkeepersRow.Height.Value > 0)
-            {
-                baseHeight += 47;
-            }
-            if (song_display.Height.Value > 0)
-            {
-                baseHeight += 50;
-            }
-            if (HelmKRool.Height.Value > 0)
-            {
-                baseHeight += 47;
-            }
-            Height = baseHeight;
-        }
 
         public void UpdateSongInfo(string songGame, string songName)
         {
             SongName.Text = songName;
             SongGame.Text = songGame;
-        }
-
-        public void UpdateShopkeeperHeight()
-        {
-            bool on = UserSettings.BroadcastShopkeepers;
-            var shopkeeperHeight = on ? 1.0 : 0;
-            var mainItemsHeight = on ? 336 : 290;
-            ShopkeepersRow.Height = new GridLength(shopkeeperHeight, GridUnitType.Star);
-            MainItemsRow.Height = new GridLength(mainItemsHeight, GridUnitType.Pixel);
-            AdjustWindowSize();
         }
 
         private ItemBackground? GetMatchingItem(ItemName item)

@@ -37,19 +37,16 @@ namespace TrackOMatic
         private void BroadcastSongDisplayToggle(object sender, RoutedEventArgs e)
         {
             UserSettings.BroadcastSongDisplay = BroadcastSongDisplay.IsChecked;
-            BroadcastView?.AdjustWindowSize();
         }
 
         private void BroadcastHelmKRoolToggle(object sender, RoutedEventArgs e)
         {
             UserSettings.BroadcastHelmKRool = BroadcastHelmKRool.IsChecked;
-            BroadcastView?.AdjustWindowSize();
         }
 
         private void BroadcastShopkeepersToggle(object sender, RoutedEventArgs e)
         {
             UserSettings.BroadcastShopkeepers = BroadcastShopkeepers.IsChecked;
-            BroadcastView?.UpdateShopkeeperHeight();
         }
 
         private void HintDisplayToggle(object sender, RoutedEventArgs e)
