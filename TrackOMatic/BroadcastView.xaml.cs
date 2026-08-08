@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 
 using TrackOMatic.Logic.Enums;
@@ -67,21 +66,6 @@ namespace TrackOMatic
             {RegionName.CREEPY_CASTLE, -1 },
             {RegionName.HIDEOUT_HELM, -1 }
         };
-
-        private List<string> homingScopeImages =
-        [
-            "homing_scope_bw", "homingonly", "scopeonly", "homing_scope"
-        ];
-
-        private List<string> camShockwaveImages =
-        [
-            "camera_shockwave_bw", "fairycamonly", "shockwaveonly", "camera_shockwave"
-        ];
-
-        private List<string> slamImages =
-        [
-            "progressive_slam_1_bc_bw", "progressive_slam_1_bc", "progressive_slam_2_bc", "progressive_slam_3_bc"
-        ];
 
         #region Proxy Properties for User Settings
 
@@ -170,50 +154,6 @@ namespace TrackOMatic
 
         #endregion
 
-        private void InitializeMap()
-        {
-            var itemGrids = new List<UIElementCollection>()
-            {
-                MainKongMoves.Children, TrainingMovesGrid.Children, CollectiblesGrid.Children, ShopkeepersGrid.Children
-            };
-            foreach (var itemGrid in itemGrids)
-            {
-                foreach (var control in itemGrid)
-                {
-                    if (control is ItemBackground item)
-                    {
-                        ItemName itemName = (ItemName)item.Tag;
-                        ItemMap[itemName] = item;
-                    }
-                }
-            }
-        }
-
-        public void InitializeFromItems(Dictionary<ItemName, Item> items)
-        {
-            var mainWindow = (MainWindow)Application.Current.MainWindow;
-            foreach (var entry in items)
-            {
-                var itemName = entry.Key;
-                var item = entry.Value;
-                if (itemName == ItemName.KEY_6)
-                {
-                    Console.WriteLine("???");
-                }
-                if (GetMatchingItem(itemName) != null || SharedMoves.ContainsKey(itemName))
-                {
-                    if (mainWindow.ITEM_NAME_TO_ITEM.ContainsKey(itemName))
-                    {
-                        mainWindow.ITEM_NAME_TO_ITEM[itemName].InitHoverPoints();
-                    }
-                    SetItemStar(itemName, item.Star.Visibility);
-                    if (item.Brightened && item.Image.Opacity > 0.9)
-                    {
-                        TurnItemOn(itemName);
-                    }
-                }
-            }
-        }
         public BroadcastView(IUserSettingsService userSettings, IParsedSpoilerDataService parsedSpoilerDataService)
         {
             UserSettings = userSettings;
@@ -243,7 +183,6 @@ namespace TrackOMatic
             };
 
             InitializeComponent();
-            InitializeMap();
             Collectibles = new() {
                 { ItemType.DONKEY_BLUEPRINT, DonkeyBPs},
                 { ItemType.DIDDY_BLUEPRINT, DiddyBPs},
@@ -371,20 +310,6 @@ namespace TrackOMatic
             AdjustWindowSize();
         }
 
-        public void SetItemStar(ItemName item, Visibility visibility)
-        {
-            if (StarredSharedMoves.ContainsKey(item))
-            {
-                StarredSharedMoves[item] = (visibility == Visibility.Visible);
-                return;
-            }
-            var match = GetMatchingItem(item);
-            if (match != null)
-            {
-                match.SetStarVisibility(visibility);
-            }
-        }
-
         private ItemBackground? GetMatchingItem(ItemName item)
         {
             var name = item.ToString();
@@ -450,11 +375,6 @@ namespace TrackOMatic
             }
 
             match.ToolTip.Visibility = Visibility.Collapsed;
-        }
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-
         }
     }
 }

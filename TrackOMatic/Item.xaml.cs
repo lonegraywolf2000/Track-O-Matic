@@ -130,10 +130,6 @@ namespace TrackOMatic
 
         public void SetStarVisibility(Visibility newVisibility)
         {
-            if (mainWindow.BroadcastView != null && Tag != null)
-            {
-                mainWindow.BroadcastView.SetItemStar((ItemName)Tag, newVisibility);
-            }
             Star.Visibility = newVisibility;
             if (mainWindow.ITEM_TO_BACKGROUND_IMAGE.ContainsKey(this))
             {

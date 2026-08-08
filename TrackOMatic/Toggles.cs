@@ -157,7 +157,6 @@ namespace TrackOMatic
             BroadcastView.UpdateSongInfo(SongGame.Text, SongName.Text);
             BroadcastView.Closed += BroadcastClosed;
             BroadcastView.Show();
-            BroadcastView.InitializeFromItems(ITEM_NAME_TO_ITEM);
             foreach (var entry in Collectibles)
             {
                 BroadcastView.UpdateCollectible(entry.Key, entry.Value.Text);
