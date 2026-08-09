@@ -1,4 +1,5 @@
 using TrackOMatic.Logic.Enums;
+using TrackOMatic.Logic.Models;
 using TrackOMatic.Logic.Models.Spoilers;
 
 namespace TrackOMatic.Services;
@@ -63,6 +64,13 @@ public interface IParsedSpoilerDataService
     /// </summary>
     /// <returns></returns>
     bool HasHoardPoints();
+
+    /// <summary>
+    /// Get the spoiler settings from the current parsed spoiler data.
+    /// </summary>
+    /// <remarks>If there is no current data, a new instance of <see cref="SpoilerSettings"/> will be returned.</remarks>
+    /// <returns>The spoiler settings from the current parsed spoiler data.</returns>
+    SpoilerSettings GetSpoilerSettings();
 }
 
 /// <summary>

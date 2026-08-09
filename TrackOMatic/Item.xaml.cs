@@ -370,14 +370,6 @@ namespace TrackOMatic
             }
         }
 
-        public void Item_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (e.Delta != 0)
-            {
-                ToggleStar();
-            }
-        }
-
         public void Item_Return(object sender, MouseEventArgs e)
         {
             CheckMiddleClick(sender, e);

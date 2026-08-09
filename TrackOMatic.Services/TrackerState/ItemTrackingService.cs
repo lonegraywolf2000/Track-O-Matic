@@ -166,12 +166,12 @@ public class ItemTrackingService : IItemTrackingService
 
     public IEnumerable<SavedItem> GetItemsInRegion(RegionName region)
     {
-        return _itemCache.Values.Where(item => item.Region == region);
+        return _itemCache.Values.Where(item => item is not null && item.Region == region);
     }
 
     public IEnumerable<SavedItem> GetItemsByVisibility(ItemVisibilityState state)
     {
-        return _itemCache.Values.Where(item => item.Starred == state);
+        return _itemCache.Values.Where(item => item is not null && item.Starred == state);
     }
 
     /// <summary>

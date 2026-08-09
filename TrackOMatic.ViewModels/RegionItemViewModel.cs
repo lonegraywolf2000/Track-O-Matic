@@ -124,19 +124,6 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged,
         UpdateProperties(itemState);
     }
 
-    #region IVialSlot Implementation
-
-    // The autotracked item should always be accepted (though admittedly a different slot would be prepared)
-
-    public virtual bool CanAcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState) => true;
-
-    public virtual void AcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState)
-    {
-        // For this region, the state is already updated. There's no need to do anything else.
-    }
-
-    #endregion
-
     /// <summary>
     /// A no-op implementation since this slot is already occupied with an item and cannot accept any drops.
     /// </summary>

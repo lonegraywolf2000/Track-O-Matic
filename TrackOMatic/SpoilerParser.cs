@@ -24,29 +24,6 @@ namespace TrackOMatic
             ParsedSpoilerDataService = parsedSpoilerDataService ?? ServiceLocator.GetService<IParsedSpoilerDataService>();
         }
 
-        private void ReadStartingItemsIntoUI()
-        {
-            var childElements = new List<Item>(MainWindow.Items.Children.Count);
-            foreach (UIElement child in MainWindow.Items.Children)
-            {
-                if (child is Item item)
-                {
-                    childElements.Add(item);
-                }
-            }
-            var sortedElements = childElements.OrderBy(child => (ItemName)child.Tag).ToList();
-            foreach (var item in sortedElements)
-            {
-                if (StartingItems.ContainsKey((ItemName)item.Tag))
-                {
-                    var itemName = (ItemName)item.Tag;
-                    var region = StartingItems[itemName];
-                    MainWindow.Regions[region].RegionGrid.Add_Item(item);
-                    item.SetResourceReference(Item.ItemImageProperty, itemName.ToString().ToLower());
-                }
-            }
-        }
-
         public async Task<SpoilerSettings> ParseSpoilerAsync(string fileName)
         {
             var spoilerSettings = new SpoilerSettings();
@@ -76,7 +53,6 @@ namespace TrackOMatic
                 if (parsedData.StartingItems != null && parsedData.StartingItems.Count > 0)
                 {
                     StartingItems = parsedData.StartingItems;
-                    ReadStartingItemsIntoUI();
                 }
             }
             catch (Exception ex)

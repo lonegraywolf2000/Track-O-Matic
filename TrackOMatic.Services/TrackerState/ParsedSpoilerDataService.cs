@@ -104,5 +104,8 @@ public class ParsedSpoilerDataService : IParsedSpoilerDataService
         }
         return CurrentData.RegionData.Any(kvp => kvp.Value.WothCount > 0);
     }
+
+    public SpoilerSettings GetSpoilerSettings() => _currentData?.SpoilerSettings ?? new();
+
     #endregion
 }

@@ -273,6 +273,7 @@ public class RegionViewModelTests
         spoilerDataMock.Setup(s => s.GetPointsForRegion(It.IsAny<RegionName>())).Returns(0);
         spoilerDataMock.Setup(s => s.GetPointSpread()).Returns(new Dictionary<PointCategory, int>());
         spoilerDataMock.Setup(s => s.GetWothPointsForRegion(It.IsAny<RegionName>())).Returns(-1);
+        spoilerDataMock.Setup(s => s.GetSpoilerSettings()).Returns(new SpoilerSettings(vialsEnabled: true));
 
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
         var orchestrator = CreateMockRegionPlacementOrchestrator().Object;

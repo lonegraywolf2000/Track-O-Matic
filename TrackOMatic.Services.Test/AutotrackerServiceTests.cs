@@ -27,9 +27,10 @@ public class AutotrackerServiceTests
         IProcessMemoryReader memoryReader,
         ITimerFactory timerFactory,
         IApplicationStateService appState,
-        IUserSettingsService settings
+        IUserSettingsService settings,
+        IRegionPlacementOrchestrator regionPlacementOrchestrator
     )
-        : AutotrackerService(itemTracking, emulatorAttacher, memoryReader, timerFactory, appState, settings)
+        : AutotrackerService(itemTracking, emulatorAttacher, memoryReader, timerFactory, appState, settings, regionPlacementOrchestrator)
     {
 
         // Expose protected event-raising methods for testing
@@ -55,6 +56,7 @@ public class AutotrackerServiceTests
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
         var itemTracking = new Mock<IItemTrackingService>();
+        var orchestrator = new Mock<IRegionPlacementOrchestrator>();
 
         // Configure default behavior for mocks
         mockAttacher
@@ -74,13 +76,19 @@ public class AutotrackerServiceTests
             .Setup(f => f.CreateTimer(It.IsAny<double>()))
             .Returns(mockTimer.Object);
 
+        // Orchestrator always fails placement in tests (items go to grid)
+        orchestrator
+            .Setup(o => o.TryPlaceAutoTrackedItem(It.IsAny<ItemName>(), It.IsAny<RegionName>(), It.IsAny<SavedItem>()))
+            .Returns(false);
+
         return new TestableAutotrackerService(
             itemTracking.Object,
             mockAttacher.Object,
             mockMemoryReader.Object,
             mockTimerFactory.Object,
             appState.Object,
-            settings.Object
+            settings.Object,
+            orchestrator.Object
         );
     }
 
@@ -116,8 +124,9 @@ public class AutotrackerServiceTests
         var mockTimerFactory = new Mock<ITimerFactory>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
+        var orchestrator = new Mock<IRegionPlacementOrchestrator>();
         Assert.Throws<ArgumentNullException>(() =>
-            new AutotrackerService(null!, mockAttacher.Object, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object));
+            new AutotrackerService(null!, mockAttacher.Object, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object, orchestrator.Object));
     }
 
     [Fact]
@@ -128,8 +137,9 @@ public class AutotrackerServiceTests
         var mockTimerFactory = new Mock<ITimerFactory>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
+        var orchestrator = new Mock<IRegionPlacementOrchestrator>();
         Assert.Throws<ArgumentNullException>(() =>
-            new AutotrackerService(mockTracker.Object, null!, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object));
+            new AutotrackerService(mockTracker.Object, null!, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object, orchestrator.Object));
     }
 
     [Fact]
@@ -140,8 +150,9 @@ public class AutotrackerServiceTests
         var mockTimerFactory = new Mock<ITimerFactory>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
+        var orchestrator = new Mock<IRegionPlacementOrchestrator>();
         Assert.Throws<ArgumentNullException>(() =>
-            new AutotrackerService(mockTracker.Object, mockAttacher.Object, null!, mockTimerFactory.Object, appState.Object, settings.Object));
+            new AutotrackerService(mockTracker.Object, mockAttacher.Object, null!, mockTimerFactory.Object, appState.Object, settings.Object, orchestrator.Object));
     }
 
     [Fact]
@@ -152,8 +163,9 @@ public class AutotrackerServiceTests
         var mockMemoryReader = new Mock<IProcessMemoryReader>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
+        var orchestrator = new Mock<IRegionPlacementOrchestrator>();
         Assert.Throws<ArgumentNullException>(() =>
-            new AutotrackerService(mockTracker.Object, mockAttacher.Object, mockMemoryReader.Object, null!, appState.Object, settings.Object));
+            new AutotrackerService(mockTracker.Object, mockAttacher.Object, mockMemoryReader.Object, null!, appState.Object, settings.Object, orchestrator.Object));
     }
 
     [Fact]

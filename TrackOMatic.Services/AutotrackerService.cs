@@ -23,6 +23,7 @@ public class AutotrackerService : IAutotrackerService
     private readonly ITimerFactory _timerFactory;
     private readonly IApplicationStateService _appState;
     private readonly IUserSettingsService _settings;
+    private readonly IRegionPlacementOrchestrator _regionPlacementOrchestrator;
     private bool _disposed;
     private ITimer? _pollingTimer;
     private ItemType _progHintItem;
@@ -118,7 +119,8 @@ public class AutotrackerService : IAutotrackerService
         IProcessMemoryReader memoryReader,
         ITimerFactory timerFactory,
         IApplicationStateService appState,
-        IUserSettingsService settings
+        IUserSettingsService settings,
+        IRegionPlacementOrchestrator regionPlacementOrchestrator
     )
     {
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
@@ -127,6 +129,7 @@ public class AutotrackerService : IAutotrackerService
         _timerFactory = timerFactory ?? throw new ArgumentNullException(nameof(timerFactory));
         _appState = appState ?? throw new ArgumentNullException(nameof(appState));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _regionPlacementOrchestrator = regionPlacementOrchestrator ?? throw new ArgumentNullException(nameof(regionPlacementOrchestrator));
 
         // Initialize state
         CurrentRegion = RegionName.UNKNOWN;
@@ -184,6 +187,7 @@ public class AutotrackerService : IAutotrackerService
     {
         _spoilerLoaded = false;
         _attached = false;
+        _trackedAlready.Clear();
         InitializeChecks();
         RegionLightingChanged?.Invoke(this, new AutotrackerRegionEventArgs { Region = CurrentRegion, LightUp = false });
         CurrentRegion = RegionName.UNKNOWN;
@@ -867,12 +871,19 @@ public class AutotrackerService : IAutotrackerService
 
         // Write directly to the item tracking service now.
         var oldItem = _itemTrackingService.GetItemState(check.ItemName) ?? SavedItem.CreateEmpty(check.ItemName);
-        _itemTrackingService.SetItemState(check.ItemName, oldItem with
+        var newItem = oldItem with
         {
             Autotracked = true,
             Region = regionToUse,
             Opacity = 1,
-        }, ChangeReason.AutoTracked);
+        };
+
+        // Try to place in a spoiler vial slot first (if spoiler mode is active)
+        if (!_regionPlacementOrchestrator.TryPlaceAutoTrackedItem(check.ItemName, regionToUse, newItem))
+        {
+            // Fall back to direct item tracking for non-spoiler items or if vial placement failed
+            _itemTrackingService.SetItemState(check.ItemName, newItem, ChangeReason.AutoTracked);
+        }
 
         _trackedAlready[check.ItemName] = true;
     }

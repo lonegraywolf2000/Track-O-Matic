@@ -8,7 +8,6 @@
              xmlns:media="using:Microsoft.Toolkit.Uwp.UI.Media"
              mc:Ignorable="d" Background="Transparent" PreviewGiveFeedback="Item_PreviewGiveFeedback" MouseMove="Item_MouseMove"
              MouseDown="Item_MouseDown"
-             MouseWheel="Item_MouseWheel"
                 >
 
     <ContentControl.Resources>

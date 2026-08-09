@@ -98,7 +98,8 @@ public class SpoilerParserService : ISpoilerService
                     DeserializationResult<ParsedSpoilerData>.Failure("Raw spoiler file is null."));
             }
 
-            SpoilerSettings? settings = SetUpSettings(rawSpoiler.HintData?.RegionDataDictionary?.FirstOrDefault().Value);
+            var possibleRegionInfo = rawSpoiler.HintData?.RegionDataDictionary?.FirstOrDefault().Value;
+            SpoilerSettings? settings = SetUpSettings(possibleRegionInfo);
 
             var startingInfo = rawSpoiler.HintData?.StartingInfo ?? new();
 

@@ -23,6 +23,8 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
     private readonly RegionName _regionName;
     private readonly IRegionPlacementOrchestrator _regionPlacementOrchestrator;
     private readonly RegionSlotProviderRegistry? _slotProviderRegistry;
+    private readonly SynchronizationContext _syncContext;
+    private CancellationTokenSource? _refreshDebounceToken = null;
 
 
     public RegionViewModel(
@@ -42,6 +44,10 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
         _regionPlacementOrchestrator = regionPlacementOrchestrator ?? throw new ArgumentNullException(nameof(regionPlacementOrchestrator));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
 
+        // Capture the synchronization context for UI thread marshaling in event handlers
+        // In tests (no UI thread), this will be null and we'll run directly
+        _syncContext = SynchronizationContext.Current ?? new SynchronizationContext();
+
         // Registry is optional for backwards compatibility with existing tests/code
         _slotProviderRegistry = slotProviderRegistry;
 
@@ -55,8 +61,10 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
         _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnParsedSpoilerDataChanged;
         _savedProgressProvider.ProgressChanged += OnProgressChanged;
 
+        // Initialize state directly (not debounced) in constructor
         InitializeState();
     }
+
 
     private void InitializeState()
     {
@@ -68,12 +76,13 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
 
     private void RefreshPlacedItems()
     {
-        PlacedItems.Clear();
+        // Unsubscribe from PropertyChanged events on old vials before clearing
+        foreach (var item in PlacedItems.OfType<VialItemViewModel>())
+        {
+            item.PropertyChanged -= OnPlacedVialPropertyChanged;
+        }
 
-        /*
-         * Ideally this code will only be called after every event is fired at once.
-         * There is major potential for race conditions if not handled properly.
-         */
+        PlacedItems.Clear();
 
         // Special handling for START region - it uses StartingItems from spoiler data, not RegionData vials
         if (_regionName == RegionName.START && _parsedSpoilerDataService.CurrentData?.StartingItems.Count > 0)
@@ -88,13 +97,16 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
                 var itemName = startingItemsForDisplay[slotIndex].Key;
                 var vialColor = itemName.ToVialColor();
 
-                PlacedItems.Add(new VialItemViewModel(
-                itemName, // Fixed item name for START slots
-                RegionName.START,
-                vialColor,
-                _itemTrackingService,
-                _parsedSpoilerDataService,
-                _themeService));
+                var vial = new VialItemViewModel(
+                    itemName, // Fixed item name for START slots
+                    RegionName.START,
+                    vialColor,
+                    _itemTrackingService,
+                    _parsedSpoilerDataService,
+                    _themeService);
+
+                vial.PropertyChanged += OnPlacedVialPropertyChanged;
+                PlacedItems.Add(vial);
             }
         }
         else if (_parsedSpoilerDataService.CurrentData?.RegionData.TryGetValue(_regionName, out var regionData) == true)
@@ -102,41 +114,45 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
             for (int slotIndex = 0; slotIndex < regionData.VialColors.Count; slotIndex++)
             {
                 var vialColor = regionData.VialColors[slotIndex];
-                PlacedItems.Add(new VialItemViewModel(
+                var vial = new VialItemViewModel(
                     null,
                     _regionName,
                     vialColor,
                     _itemTrackingService,
                     _parsedSpoilerDataService,
-                    _themeService)
-                );
+                    _themeService);
+
+                vial.PropertyChanged += OnPlacedVialPropertyChanged;
+                PlacedItems.Add(vial);
             }
         }
         else
         {
-            // Materialize the enumerable before iterating to avoid "collection modified during enumeration"
-            // if ItemStateChanged fires while we're adding items to PlacedItems
+            // Materialize the enumerable before iterating
             var itemsInRegion = _itemTrackingService.GetItemsInRegion(_regionName).ToList();
             foreach (var item in itemsInRegion)
             {
                 PlacedItems.Add(new RegionItemViewModel(item.ItemName, _regionName, _itemTrackingService, _parsedSpoilerDataService, _themeService));
             }
         }
+
+        // Notify UI bindings that PlacedItems collection content has changed
+        OnPropertyChanged(nameof(PlacedItems));
     }
 
     /// <summary>
-    /// Determines if this region is in spoiler mode (has vials from a spoiler log).
+    /// Determines if this region has vials enabled (spoiler mode with vials).
     /// </summary>
-    private bool IsSpoilerMode => _parsedSpoilerDataService.CurrentData?.RegionData.ContainsKey(_regionName) == true;
+    private bool HasVials => _parsedSpoilerDataService.GetSpoilerSettings()?.VialsEnabled ?? false;
 
     /// <summary>
     /// Attempts to drop an item into this region.
     /// </summary>
     public bool TryAcceptDrop(ItemName itemToPlace, MouseDragType dragType)
     {
-        if (IsSpoilerMode)
+        if (HasVials)
         {
-            // In spoiler mode: find the first empty slot that matches the vial color
+            // In vial enabled mode: find the first empty slot that matches the vial color
             var targetColor = itemToPlace.ToVialColor();
             var emptySlot = PlacedItems.FirstOrDefault(slot =>
             slot is VialItemViewModel spoilerSlot &&
@@ -329,10 +345,21 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
         {
             if (disposing)
             {
+                // Cancel any pending debounced refresh
+                _refreshDebounceToken?.Cancel();
+                _refreshDebounceToken?.Dispose();
+                _refreshDebounceToken = null;
+
                 // Unregister from slot provider registry
                 _slotProviderRegistry?.UnregisterRegionProvider(_regionName);
 
-                // Unsubscribe from events
+                // Unsubscribe from events on placed vials
+                foreach (var item in PlacedItems.OfType<VialItemViewModel>())
+                {
+                    item.PropertyChanged -= OnPlacedVialPropertyChanged;
+                }
+
+                // Unsubscribe from service events
                 _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
                 _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnParsedSpoilerDataChanged;
                 _savedProgressProvider.ProgressChanged -= OnProgressChanged;
@@ -371,26 +398,79 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
             return;
         }
 
-        // In spoiler mode, update hoard text based on starred items
-        if (IsSpoilerMode)
+        // In vial enabled mode, update hoard text based on starred items
+        if (HasVials)
         {
             UpdateHoardText(e.UpdatedItem);
         }
         else
         {
-            // In non-spoiler mode, refresh if an item is added/removed from this region
-            InitializeState();
+            // In non-vial mode, debounce the refresh to batch multiple rapid events
+            DebounceRefresh();
         }
     }
 
-    private void OnParsedSpoilerDataChanged(object? sender, EventArgs e) => InitializeState();
+    private void OnParsedSpoilerDataChanged(object? sender, EventArgs e) => DebounceRefresh();
 
-    private void OnProgressChanged(object? sender, ProgressReplacedEventArgs e) => InitializeState();
+    private void OnProgressChanged(object? sender, ProgressReplacedEventArgs e) => DebounceRefresh();
+
+    /// <summary>
+    /// Debounce refresh requests: if multiple events fire rapidly, batch them into a single refresh.
+    /// This prevents re-entrancy issues when autotracker places many items at once.
+    /// Only applies debouncing to event handlers, not constructor initialization.
+    /// </summary>
+    private void DebounceRefresh()
+    {
+        // Cancel the previous debounce timer if it exists
+        _refreshDebounceToken?.Cancel();
+        _refreshDebounceToken = new CancellationTokenSource();
+
+        // Schedule refresh after a short delay (50ms), allowing events to batch
+        var token = _refreshDebounceToken.Token;
+        Task.Delay(50, token).ContinueWith(_ =>
+        {
+            if (!token.IsCancellationRequested)
+            {
+                // In tests (SynchronizationContext.Current == null when constructed),
+                // _syncContext will be a default SynchronizationContext() with no message pump.
+                // Detect this and run directly instead of posting, to avoid deadlock.
+                if (SynchronizationContext.Current == _syncContext)
+                {
+                    // We're on the same context already - run directly
+                    InitializeState();
+                }
+                else
+                {
+                    // Try to post to the captured context (UI thread in production, or test default context)
+                    _syncContext.Post(_ =>
+                    {
+                        if (!token.IsCancellationRequested)
+                        {
+                            InitializeState();
+                        }
+                    }, null);
+                }
+            }
+        }, TaskScheduler.Default);
+    }
+
+    /// <summary>
+    /// Handles PropertyChanged events from vial slots, specifically tracking IsVialStarred changes.
+    /// When a vial is starred/unstarred, we need to recalculate hoard points.
+    /// </summary>
+    private void OnPlacedVialPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // Only recalculate hoard when vial star state changes
+        if (e.PropertyName == nameof(VialItemViewModel.IsVialStarred))
+        {
+            UpdateHoardText();
+        }
+    }
 
     private void UpdateHoardText(SavedItem? changedItem = null)
     {
         var wothPoints = _parsedSpoilerDataService.GetWothPointsForRegion(_regionName);
-        if (wothPoints < 0)
+        if (!HasVials || wothPoints < 0)
         {
             WothPoints = -1;
             HasWothPoints = false;
@@ -434,6 +514,14 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
                         starredCount++;
                     }
                 }
+                else
+                {
+                    // Check the vial to see if it's starred anyway.
+                    if (item is VialItemViewModel spoiledItem && spoiledItem.IsVialStarred)
+                    {
+                        starredCount++;
+                    }
+                }
             }
             WothPoints = wothPoints - starredCount;
             HasWothPoints = true;
@@ -445,7 +533,8 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
         // TODO: Have the point calculations take place in the service layer.
         var regionPoints = _parsedSpoilerDataService.GetPointsForRegion(_regionName);
         var pointSpread = _parsedSpoilerDataService.GetPointSpread();
-        if (pointSpread.Count == 0)
+        var hasPoints = _parsedSpoilerDataService.GetSpoilerSettings()?.PointsEnabled ?? false;
+        if (!hasPoints || pointSpread.Count == 0)
         {
             ItemPoints = -1;
             HasItemPoints = false;
@@ -467,13 +556,13 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
 
     /// <summary>
     /// Attempts to auto-place an item into an appropriate slot in this region.
-    /// In spoiler mode: prioritizes empty slots, then non-autotracked slots.
-    /// In non-spoiler mode: direct placement through ItemTrackingService.
+    /// In vial enabled mode: prioritizes empty slots, then non-autotracked slots.
+    /// In non-vial mode: direct placement through ItemTrackingService.
     /// </summary>
     public bool TryAutoPlaceItem(ItemName itemToPlace)
     {
-        // Non-spoiler mode: direct placement through ItemTrackingService
-        if (!IsSpoilerMode)
+        // Non-vial mode: direct placement through ItemTrackingService
+        if (!HasVials)
         {
             var savedItem = new SavedItem(
                 itemToPlace,

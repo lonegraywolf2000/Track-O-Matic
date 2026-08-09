@@ -1,5 +1,6 @@
 using TrackOMatic.Logic;
 using TrackOMatic.Logic.Enums;
+using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Services;
 
@@ -83,7 +84,7 @@ public class VialItemViewModel : RegionItemViewModel, IVialSlot
 
     #region IVialSlot Implementation
 
-    public bool CanAcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState)
+    public override bool CanAcceptAutoTrackedItem(ItemName itemToPlace, SavedItem itemState)
     {
         // Vial color must match the item type.
         if (itemToPlace.ToVialColor() != _vialColor)
@@ -106,13 +107,31 @@ public class VialItemViewModel : RegionItemViewModel, IVialSlot
         return currentState is not null && !currentState.Autotracked;
     }
 
-    public void AcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState)
+    public override void AcceptAutoTrackedItem(ItemName itemToPlace, SavedItem itemState)
     {
-        // Possibly redundant call, but good to have a backup.
-        ItemTrackingService.SetItemState(itemToPlace, itemState);
+        // Prepare the itemState with any vial-specific adjustments (e.g., transfer vial star to item star)
+        var hasStarToTransfer = _isVialStarred;
+        var cleanState = itemState with
+        {
+            Starred = hasStarToTransfer ? ItemVisibilityState.Visible : itemState.Starred,
+        };
 
+        // Clear the vial star since we're transferring it to the item
+        IsVialStarred = false;
+
+        // Set the item as the current occupant
         CurrentItemName = itemToPlace;
-        UpdateProperties(itemState);
+
+        // Update the service state. This will eventually fire ItemStateChanged,
+        // but we handle the UI update synchronously to ensure no race condition
+        // between setting CurrentItemName and receiving the event.
+        ItemTrackingService.SetItemState(itemToPlace, cleanState, ChangeReason.AutoTracked);
+
+        // Update properties immediately on the calling thread. This is safe because:
+        // 1. CurrentItemName is now set, so the binding is established
+        // 2. ItemStateChanged will be marshaled to the UI thread, ensuring consistency
+        // 3. Any subsequent OnItemStateChanged will simply re-apply the same state
+        UpdateProperties(cleanState);
     }
 
     #endregion
@@ -174,6 +193,7 @@ public class VialItemViewModel : RegionItemViewModel, IVialSlot
         };
         ItemTrackingService.SetItemState(itemToPlace, newItemState);
         CurrentItemName = itemToPlace;
+        IsVialStarred = false;
         UpdateProperties(newItemState);
         return true;
     }
@@ -210,6 +230,33 @@ public class VialItemViewModel : RegionItemViewModel, IVialSlot
         });
         CurrentItemName = null;
         UpdateProperties(null);
+    }
+
+    /// <summary>
+    /// Handles item state changes. When the current item in this vial is moved to a different region,
+    /// notify the change to force hoard recalculation. This ensures the hoard updates whether removal 
+    /// happens via clicking the item in the UiGrid or left-clicking the vial directly.
+    /// </summary>
+    protected override void OnItemStateChanged(object? sender, ItemStateChangedEventArgs e)
+    {
+        var wasItemInVial = CurrentItemName.HasValue && e.UpdatedItem.ItemName == CurrentItemName.Value;
+        var itemMovedAway = wasItemInVial && e.UpdatedItem.Region != RegionName;
+
+        // If the item in this vial changed, update its state
+        if (CurrentItemName.HasValue && e.UpdatedItem.ItemName == CurrentItemName.Value)
+        {
+            UpdateProperties(e.UpdatedItem);
+        }
+
+        // If the item was moved away, clear vial star and force a property notification
+        // to trigger hoard recalculation in RegionViewModel
+        if (itemMovedAway)
+        {
+            IsVialStarred = false;
+            // Force a PropertyChanged notification for IsVialStarred to trigger hoard update,
+            // even if IsVialStarred was already false before
+            OnPropertyChanged(nameof(IsVialStarred));
+        }
     }
 
     /// <summary>

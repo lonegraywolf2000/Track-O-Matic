@@ -2,7 +2,6 @@ using Newtonsoft.Json;
 
 using System.IO;
 
-using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Models;
 using TrackOMatic.Services;
 using TrackOMatic.Services.TrackerState;
@@ -74,19 +73,6 @@ namespace TrackOMatic
             }
         }
 
-        private Item? FindMatchingItem(ItemName toFind)
-        {
-            foreach (var item in MainWindow.DraggableItems)
-            {
-                var itemName = (ItemName)item.Tag;
-                if (itemName == toFind)
-                {
-                    return item;
-                }
-            }
-            return null;
-        }
-
         private async void ReadSavedProgress()
         {
             if (CurrentSavedProgress == null)
@@ -112,33 +98,7 @@ namespace TrackOMatic
                     Console.WriteLine($"Error parsing spoiler log for ParsedSpoilerDataService: {e}");
                 }
             }
-            foreach (var savedItemEntry in CurrentSavedProgress.SavedItems)
-            {
-                var savedItem = savedItemEntry.Value;
-                var region = savedItem.Region;
-                bool autoPlace = (savedItem.Autotracked || savedItem.Hinted);
-                Item? matchingItem = FindMatchingItem(savedItem.ItemName);
-                if (matchingItem == null)
-                {
-                    continue;
-                }
-                matchingItem.SetStarVisibility(savedItem.Starred.ToWpfVisibility());
-                matchingItem.ChangeOpacity(savedItem.Opacity);
-                if (savedItem.Autotracked)
-                {
-                    MainWindow.Autotracker.ProcessSavedItem(savedItem.ItemName);
-                }
 
-                if (savedItem.Region != RegionName.UNKNOWN && !savedItem.Hinted)
-                {
-                    MainWindow.Regions[region].RegionGrid.Add_Item(matchingItem, !savedItem.Autotracked, !savedItem.Hinted);
-                }
-                if (savedItem.Hinted)
-                {
-                    matchingItem.Darken();
-                }
-                matchingItem.ChangeOpacity(savedItem.Opacity);
-            }
             foreach (var savedHint in CurrentSavedProgress.SavedHints.ToList())
             {
                 var hintPanel = (HintPanel)MainWindow.FindName(savedHint.HintPanelKey);

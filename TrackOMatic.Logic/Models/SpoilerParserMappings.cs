@@ -70,36 +70,6 @@ public static class SpoilerParserMappings
 
     };
 
-    public static Dictionary<string, RegionName> REGION_MAP { get; } = new()
-    {
-        {"Cranky's Lab", RegionName.DK_ISLES },
-        {"Training", RegionName.DK_ISLES },
-        {"DK Isles", RegionName.DK_ISLES},
-        {"Jungle Japes", RegionName.JUNGLE_JAPES},
-        {"Angry Aztec", RegionName.ANGRY_AZTEC},
-        {"Frantic Factory", RegionName.FRANTIC_FACTORY},
-        {"Gloomy Galleon", RegionName.GLOOMY_GALLEON},
-        {"Fungi Forest", RegionName.FUNGI_FOREST},
-        {"Crystal Caves", RegionName.CRYSTAL_CAVES},
-        {"Creepy Castle", RegionName.CREEPY_CASTLE},
-        {"Hideout Helm", RegionName.HIDEOUT_HELM},
-        {"The End of Helm", RegionName.HIDEOUT_HELM },
-
-        {"The Banana Fairy's Gift", RegionName.DK_ISLES },
-        {"Returning the Banana Fairies", RegionName.DK_ISLES },
-
-        {"Treasure Chest Far Left Clam", RegionName.GLOOMY_GALLEON },
-        {"Treasure Chest Center Clam", RegionName.GLOOMY_GALLEON },
-        {"Treasure Chest Far Right Clam", RegionName.GLOOMY_GALLEON },
-        {"Treasure Chest Close Right Clam", RegionName.GLOOMY_GALLEON },
-        {"Treasure Chest Close Left Clam", RegionName.GLOOMY_GALLEON },
-
-        {"Diddy Kong's Cage", RegionName.JUNGLE_JAPES },
-        {"Tiny Kong's Cage", RegionName.ANGRY_AZTEC },
-        {"Lanky Kong's Cage", RegionName.ANGRY_AZTEC },
-        {"Chunky Kong's Cage", RegionName.FRANTIC_FACTORY }
-    };
-
     public static Dictionary<string, VialColor> VIAL_MAP { get; } = new()
     {
         {"Clear Vial", VialColor.CLEAR },
@@ -113,10 +83,10 @@ public static class SpoilerParserMappings
         {"Kong", VialColor.KONG }
     };
 
-    public static List<ItemName> KONGS { get; } = new()
-    {
+    public static List<ItemName> KONGS { get; } =
+    [
         ItemName.DONKEY, ItemName.DIDDY, ItemName.LANKY, ItemName.TINY, ItemName.CHUNKY
-    };
+    ];
 
     public static Dictionary<int, Bosses> KROOL_MAP_TO_IMAGE_INDEX { get; } = new()
     {
@@ -148,26 +118,6 @@ public static class SpoilerParserMappings
         { "fairy_moves", PointCategory.FairyMove },
         { "shopkeepers", PointCategory.Shopkeeper },
         { "bean", PointCategory.Bean }
-    };
-
-    public static Dictionary<string, ItemType> POINT_NAME_TO_GROUP { get; } = new()
-    {
-        {"kongs", ItemType.KONG },
-        {"keys", ItemType.KEY },
-        {"guns", ItemType.GUN },
-        {"instruments",ItemType.INSTRUMENT },
-        {"active_moves", ItemType.PHYSICAL_MOVE },
-        {"pad_moves", ItemType.PAD_MOVE },
-        {"barrel_moves", ItemType.BARREL_MOVE },
-        {"training_moves", ItemType.TRAINING_MOVE },
-        {"important_shared_moves",ItemType.SHARED_MOVE },
-        {"fairy_moves", ItemType.FAIRY_MOVE },
-        {"shopkeepers", ItemType.SHOPKEEPER }
-    };
-
-    public static Dictionary<string, ItemName> POINT_NAME_TO_SPECIFIC_VALUE { get; } = new()
-    {
-        {"bean", ItemName.BEAN }
     };
 
     public static Dictionary<string, ItemName> RANDO_NAME_TO_ITEM_NAME { get; } = new()
