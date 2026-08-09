@@ -1,7 +1,6 @@
 using TrackOMatic.Logic.Enums;
 using TrackOMatic.Logic.Events;
 using TrackOMatic.Logic.Models;
-using TrackOMatic.Logic;
 
 namespace TrackOMatic.Services.TrackerState;
 
@@ -23,9 +22,16 @@ public class ItemTrackingService : IItemTrackingService
 
     public event EventHandler<ItemStateChangedEventArgs>? ItemStateChanged;
 
+    private readonly SynchronizationContext? _uiContext;
+
     public ItemTrackingService(ISavedProgressProvider progressProvider)
     {
         _progressProvider = progressProvider ?? throw new ArgumentNullException(nameof(progressProvider));
+
+        // Capture the UI synchronization context at service creation time.
+        // If created on the UI thread, this will be the UI sync context.
+        // If created on a background thread, this will be null (and we'll use beacons to the current context).
+        _uiContext = SynchronizationContext.Current;
 
         _itemCache = [];
         _isBatchingUpdates = false;
@@ -51,6 +57,34 @@ public class ItemTrackingService : IItemTrackingService
         InitializeCache();
     }
 
+    /// <summary>
+    /// Safely invokes the ItemStateChanged event on the UI thread (or sync context).
+    /// If called from a background thread, marshals the event via SynchronizationContext.
+    /// If called from the UI thread (or if no UI context available), invokes immediately.
+    /// Uses async-friendly Post pattern suitable for modern .NET.
+    /// </summary>
+    private void RaiseItemStateChanged(SavedItem currentState, SavedItem? previousState, ChangeReason reason)
+    {
+        if (ItemStateChanged == null)
+        {
+            return;
+        }
+
+        // If we have a UI context and we're not on it, marshal asynchronously
+        if (_uiContext != null && SynchronizationContext.Current != _uiContext)
+        {
+            _uiContext.Post(_ =>
+            {
+                ItemStateChanged?.Invoke(this, new(currentState, previousState, reason));
+            }, null);
+        }
+        else
+        {
+            // Already on the UI context (or no captured context), invoke directly
+            ItemStateChanged?.Invoke(this, new(currentState, previousState, reason));
+        }
+    }
+
     public SavedItem? GetItemState(ItemName itemName)
     {
         _itemCache.TryGetValue(itemName, out var item);
@@ -58,6 +92,11 @@ public class ItemTrackingService : IItemTrackingService
     }
 
     public void SetItemState(ItemName itemName, SavedItem state)
+    {
+        SetItemState(itemName, state, ChangeReason.UserModified);
+    }
+
+    public void SetItemState(ItemName itemName, SavedItem state, ChangeReason changeReason)
     {
         if (state.ItemName != itemName)
         {
@@ -83,7 +122,7 @@ public class ItemTrackingService : IItemTrackingService
         }
         else
         {
-            ItemStateChanged?.Invoke(this, new(state, previousState, ChangeReason.UserModified));
+            RaiseItemStateChanged(state, previousState, changeReason);
         }
     }
 
@@ -120,7 +159,7 @@ public class ItemTrackingService : IItemTrackingService
             // Broadcast controls need to know to update their display
             if (removedState != null)
             {
-                ItemStateChanged?.Invoke(this, new(removedState, removedState, ChangeReason.UserModified));
+                RaiseItemStateChanged(removedState, removedState, ChangeReason.UserModified);
             }
         }
     }
@@ -202,7 +241,7 @@ public class ItemTrackingService : IItemTrackingService
                     var itemToReport = change.CurrentState ?? change.PreviousState;
                     ArgumentNullException.ThrowIfNull(itemToReport, nameof(itemToReport));
 
-                    _service.ItemStateChanged?.Invoke(_service, new(itemToReport, change.PreviousState, ChangeReason.Batched));
+                    _service.RaiseItemStateChanged(itemToReport, change.PreviousState, ChangeReason.Batched);
                 }
             }
         }

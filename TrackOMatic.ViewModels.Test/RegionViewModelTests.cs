@@ -24,23 +24,22 @@ public class RegionViewModelTests
         mock.Setup(s => s.SetItemState(It.IsAny<ItemName>(), It.IsAny<SavedItem>()))
             .Callback<ItemName, SavedItem>((itemName, item) => items[itemName] = item);
 
-        mock.Setup(s => s.ToggleStar(It.IsAny<ItemName>()))
-            .Callback<ItemName>(itemName =>
+        mock.Setup(s => s.ToggleStar(It.IsAny<ItemName>())).Callback<ItemName>(itemName =>
+        {
+            if (items.TryGetValue(itemName, out var item))
             {
-                if (items.TryGetValue(itemName, out var item))
+                var newStarred = item.Starred switch
                 {
-                    var newStarred = item.Starred switch
-                    {
-                        ItemVisibilityState.Visible => ItemVisibilityState.Hidden,
-                        _ => ItemVisibilityState.Visible
-                    };
-                    items[itemName] = item with { Starred = newStarred };
-                }
-                else
-                {
-                    items[itemName] = SavedItem.CreateEmpty(itemName) with { Starred = ItemVisibilityState.Visible };
-                }
-            });
+                    ItemVisibilityState.Visible => ItemVisibilityState.Hidden,
+                    _ => ItemVisibilityState.Visible
+                };
+                items[itemName] = item with { Starred = newStarred };
+            }
+            else
+            {
+                items[itemName] = SavedItem.CreateEmpty(itemName) with { Starred = ItemVisibilityState.Visible };
+            }
+        });
 
         return mock;
     }
@@ -65,6 +64,8 @@ public class RegionViewModelTests
 
     private static Mock<IThemeService> CreateMockThemeService() => new();
 
+    private static Mock<IRegionPlacementOrchestrator> CreateMockRegionPlacementOrchestrator() => new();
+
     #region Constructor Tests
 
     [Fact]
@@ -73,6 +74,7 @@ public class RegionViewModelTests
         var itemTrackingService = CreateMockItemTrackingService().Object;
         var spoilerDataService = CreateMockSpoilerDataService().Object;
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         var viewModel = new RegionViewModel(
@@ -80,6 +82,7 @@ public class RegionViewModelTests
             itemTrackingService,
             spoilerDataService,
             savedProgressProvider,
+            orchestrator,
             themeService);
 
         Assert.NotNull(viewModel);
@@ -90,6 +93,7 @@ public class RegionViewModelTests
     {
         var spoilerDataService = CreateMockSpoilerDataService().Object;
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         Assert.Throws<ArgumentNullException>(() =>
@@ -98,6 +102,7 @@ public class RegionViewModelTests
                 null!,
                 spoilerDataService,
                 savedProgressProvider,
+                orchestrator,
                 themeService));
     }
 
@@ -106,6 +111,7 @@ public class RegionViewModelTests
     {
         var itemTrackingService = CreateMockItemTrackingService().Object;
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         Assert.Throws<ArgumentNullException>(() =>
@@ -114,6 +120,7 @@ public class RegionViewModelTests
                 itemTrackingService,
                 null!,
                 savedProgressProvider,
+                orchestrator,
                 themeService));
     }
 
@@ -122,6 +129,7 @@ public class RegionViewModelTests
     {
         var itemTrackingService = CreateMockItemTrackingService().Object;
         var spoilerDataService = CreateMockSpoilerDataService().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         Assert.Throws<ArgumentNullException>(() =>
@@ -130,6 +138,7 @@ public class RegionViewModelTests
                 itemTrackingService,
                 spoilerDataService,
                 null!,
+                orchestrator,
                 themeService));
     }
 
@@ -139,6 +148,7 @@ public class RegionViewModelTests
         var itemTrackingService = CreateMockItemTrackingService().Object;
         var spoilerDataService = CreateMockSpoilerDataService().Object;
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         var viewModel = new RegionViewModel(
@@ -146,6 +156,7 @@ public class RegionViewModelTests
             itemTrackingService,
             spoilerDataService,
             savedProgressProvider,
+            orchestrator,
             themeService);
 
         Assert.Multiple(() =>
@@ -171,7 +182,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         var result = viewModel.TryAcceptDrop(ItemName.STRONG_KONG, MouseDragType.Left);
@@ -195,7 +206,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         // Non-spoiler mode should always accept drops, even with existing items
@@ -221,7 +232,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         var result = viewModel.TryAutoPlaceItem(ItemName.STRONG_KONG);
@@ -264,6 +275,7 @@ public class RegionViewModelTests
         spoilerDataMock.Setup(s => s.GetWothPointsForRegion(It.IsAny<RegionName>())).Returns(-1);
 
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         var viewModel = new RegionViewModel(
@@ -271,6 +283,7 @@ public class RegionViewModelTests
             itemTrackingService,
             spoilerDataMock.Object,
             savedProgressProvider,
+            orchestrator,
             themeService);
 
         // CRANKY maps to VialColor.ORANGE, but we only have YELLOW vials
@@ -304,6 +317,7 @@ public class RegionViewModelTests
         spoilerDataMock.Setup(s => s.GetWothPointsForRegion(It.IsAny<RegionName>())).Returns(-1);
 
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         var viewModel = new RegionViewModel(
@@ -311,6 +325,7 @@ public class RegionViewModelTests
             itemTrackingService,
             spoilerDataMock.Object,
             savedProgressProvider,
+            orchestrator,
             themeService);
 
         // First slot should be empty, autoplace STRONG_KONG (which is YELLOW)
@@ -353,6 +368,7 @@ public class RegionViewModelTests
         spoilerDataMock.Setup(s => s.GetWothPointsForRegion(It.IsAny<RegionName>())).Returns(-1);
 
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         var viewModel = new RegionViewModel(
@@ -360,6 +376,7 @@ public class RegionViewModelTests
             itemTrackingService,
             spoilerDataMock.Object,
             savedProgressProvider,
+            orchestrator,
             themeService);
 
         // Try to place STRONG_KONG (YELLOW), should skip the first autotracked STRONG_KONG
@@ -385,7 +402,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.Equal("jungle_japes", viewModel.RegionResourceKey);
@@ -403,7 +420,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.False(viewModel.HasWothPoints);
@@ -421,7 +438,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.False(viewModel.HasItemPoints);
@@ -443,7 +460,7 @@ public class RegionViewModelTests
             RegionName.START,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.False(viewModel.ShouldShowItemPoints);
@@ -461,7 +478,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.Multiple(() =>
@@ -483,7 +500,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.Multiple(() =>
@@ -505,7 +522,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.Multiple(() =>
@@ -531,6 +548,7 @@ public class RegionViewModelTests
         var itemTrackingService = CreateMockItemTrackingService().Object;
         var spoilerDataService = CreateMockSpoilerDataService().Object;
         var savedProgressProvider = CreateMockSavedProgressProvider().Object;
+        var orchestrator = CreateMockRegionPlacementOrchestrator().Object;
         var themeService = CreateMockThemeService().Object;
 
         var viewModel = new RegionViewModel(
@@ -538,6 +556,7 @@ public class RegionViewModelTests
             itemTrackingService,
             spoilerDataService,
             savedProgressProvider,
+            orchestrator,
             themeService);
 
         Assert.Equal(expectedResult, viewModel.ShouldShowRegionLevel);
@@ -559,7 +578,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         var propertyChanged = false;
@@ -588,7 +607,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         var propertyChanged = false;
@@ -621,14 +640,14 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         var viewModel2 = new RegionViewModel(
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.Equal(viewModel1, viewModel2);
@@ -646,14 +665,14 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         var viewModel2 = new RegionViewModel(
             RegionName.ANGRY_AZTEC,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.NotEqual(viewModel1, viewModel2);
@@ -671,14 +690,14 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         var viewModel2 = new RegionViewModel(
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         Assert.Equal(viewModel1.GetHashCode(), viewModel2.GetHashCode());
@@ -700,7 +719,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         viewModel.Dispose(); // Should not throw
@@ -718,7 +737,7 @@ public class RegionViewModelTests
             RegionName.JUNGLE_JAPES,
             itemTrackingService,
             spoilerDataService,
-            savedProgressProvider,
+            savedProgressProvider, CreateMockRegionPlacementOrchestrator().Object,
             themeService);
 
         viewModel.Dispose();

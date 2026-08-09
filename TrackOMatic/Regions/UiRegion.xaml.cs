@@ -60,11 +60,20 @@ public partial class UiRegion : UserControl
         {
             // Update the DataContext or any other properties based on the new RegionName
             var itemTrackingService = ServiceLocator.GetService<IItemTrackingService>();
+            var orchestrator = ServiceLocator.GetService<IRegionPlacementOrchestrator>();
             var themeService = ServiceLocator.GetService<IThemeService>();
+            var slotProviderRegistry = ServiceLocator.GetService<RegionSlotProviderRegistry>();
 
-            if (itemTrackingService != null && control.ParsedSpoilerDataService != null && control.SavedProgressProvider != null && themeService != null)
+            if (itemTrackingService != null && orchestrator != null && control.ParsedSpoilerDataService != null && control.SavedProgressProvider != null && themeService != null)
             {
-                control.DataContext = new RegionViewModel(regionName, itemTrackingService, control.ParsedSpoilerDataService, control.SavedProgressProvider, themeService);
+                control.DataContext = new RegionViewModel(
+                    regionName,
+                    itemTrackingService,
+                    control.ParsedSpoilerDataService,
+                    control.SavedProgressProvider,
+                    orchestrator,
+                    themeService,
+                    slotProviderRegistry);
             }
         }
     }

@@ -487,7 +487,6 @@ namespace TrackOMatic
                 }
             };
 
-            Autotracker.ItemProcessed += (sender, e) => Dispatcher.Invoke(() => ProcessNewAutotrackedItem(e.ItemName, e.RegionName, e.IsHint));
             Autotracker.CollectibleUpdated += (sender, e) => Dispatcher.Invoke(() => UpdateCollectible(e.CollectibleType, e.NewTotal));
             Autotracker.RegionLightingChanged += (sender, e) => Dispatcher.Invoke(() => SetRegionLighting(e.Region, e.LightUp));
             Autotracker.SongChanged += (sender, e) => Dispatcher.Invoke(() => SetSong(e.SongGame, e.SongName));

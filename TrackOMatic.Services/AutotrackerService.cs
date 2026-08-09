@@ -17,6 +17,7 @@ namespace TrackOMatic.Services;
 /// </summary>
 public class AutotrackerService : IAutotrackerService
 {
+    private readonly IItemTrackingService _itemTrackingService;
     private readonly IEmulatorAttacher _emulatorAttacher;
     private readonly IProcessMemoryReader _memoryReader;
     private readonly ITimerFactory _timerFactory;
@@ -30,7 +31,6 @@ public class AutotrackerService : IAutotrackerService
     private const double POLLING_INTERVAL_MS = 1000;
 
     #region Event Implementations
-    public event EventHandler<AutotrackerItemEventArgs>? ItemProcessed;
     public event EventHandler<AutotrackerCollectibleEventArgs>? CollectibleUpdated;
     public event EventHandler<AutotrackerRegionEventArgs>? RegionLightingChanged;
     public event EventHandler<AutotrackerSongEventArgs>? SongChanged;
@@ -66,6 +66,9 @@ public class AutotrackerService : IAutotrackerService
     #region Internal State
 
     private List<AutotrackedCheck> _checks { get; set; }
+    /// <summary>
+    /// A property that tracks which items have already been processed to avoid duplicate events.
+    /// </summary>
     private Dictionary<ItemName, bool> _trackedAlready { get; set; }
     private Dictionary<ItemName, RegionName> _startingItems { get; set; }
     private Dictionary<ItemName, RegionName> _trackedItemLocations { get; set; }
@@ -109,8 +112,16 @@ public class AutotrackerService : IAutotrackerService
     /// <summary>
     /// Creates a new AutotrackerService with injected platform dependencies.
     /// </summary>
-    public AutotrackerService(IEmulatorAttacher emulatorAttacher, IProcessMemoryReader memoryReader, ITimerFactory timerFactory, IApplicationStateService appState, IUserSettingsService settings)
+    public AutotrackerService(
+        IItemTrackingService itemTrackingService,
+        IEmulatorAttacher emulatorAttacher,
+        IProcessMemoryReader memoryReader,
+        ITimerFactory timerFactory,
+        IApplicationStateService appState,
+        IUserSettingsService settings
+    )
     {
+        _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
         _emulatorAttacher = emulatorAttacher ?? throw new ArgumentNullException(nameof(emulatorAttacher));
         _memoryReader = memoryReader ?? throw new ArgumentNullException(nameof(memoryReader));
         _timerFactory = timerFactory ?? throw new ArgumentNullException(nameof(timerFactory));
@@ -329,14 +340,6 @@ public class AutotrackerService : IAutotrackerService
         Shutdown();
         _disposed = true;
         GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
-    /// Raises the ItemProcessed event.
-    /// </summary>
-    public void OnItemProcessed(AutotrackerItemEventArgs e)
-    {
-        ItemProcessed?.Invoke(this, e);
     }
 
     /// <summary>
@@ -862,15 +865,14 @@ public class AutotrackerService : IAutotrackerService
             return;
         }
 
-        bool newRegion = (CurrentRegion != _previousRegion && _previousRegion != RegionName.UNKNOWN);
-
-        ItemProcessed?.Invoke(this, new AutotrackerItemEventArgs
+        // Write directly to the item tracking service now.
+        var oldItem = _itemTrackingService.GetItemState(check.ItemName) ?? SavedItem.CreateEmpty(check.ItemName);
+        _itemTrackingService.SetItemState(check.ItemName, oldItem with
         {
-            ItemName = check.ItemName,
-            RegionName = regionToUse,
-            IsHint = false,
-            IsNewRegion = newRegion
-        });
+            Autotracked = true,
+            Region = regionToUse,
+            Opacity = 1,
+        }, ChangeReason.AutoTracked);
 
         _trackedAlready[check.ItemName] = true;
     }

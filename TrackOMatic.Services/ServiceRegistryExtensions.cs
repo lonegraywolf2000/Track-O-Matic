@@ -43,6 +43,13 @@ public static class ServiceRegistryExtensions
         services.AddSingleton<ITimerFactory, SystemTimerFactory>();
         services.AddSingleton<IAutotrackerService, AutotrackerService>();
 
+        // Region slot provider registry: maintains mappings of regions to their vial slots.
+        // RegionViewModels register themselves with this registry when created.
+        services.AddSingleton<RegionSlotProviderRegistry>();
+        services.AddSingleton<IRegionSlotProvider>(sp => sp.GetRequiredService<RegionSlotProviderRegistry>());
+
+        services.AddSingleton<IRegionPlacementOrchestrator, RegionPlacementOrchestrator>();
+
         return services;
     }
 }

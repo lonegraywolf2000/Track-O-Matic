@@ -8,7 +8,7 @@ namespace TrackOMatic.ViewModels;
 /// <summary>
 /// A view model representing a vial item by default, only to be covered by a real item when found in a region.
 /// </summary>
-public class VialItemViewModel : RegionItemViewModel
+public class VialItemViewModel : RegionItemViewModel, IVialSlot
 {
     private readonly VialColor _vialColor;
     private readonly bool _isStartRegion;
@@ -73,6 +73,42 @@ public class VialItemViewModel : RegionItemViewModel
             });
         }
     }
+
+    #region IVialSlot Implementation
+
+    public bool CanAcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState)
+    {
+        // Vial color must match the item type.
+        if (itemToPlace.ToVialColor() != _vialColor)
+        {
+            return false;
+        }
+
+        // Start region: only the specific item can be placed in the start region.
+        if (_isStartRegion)
+        {
+            return CurrentItemName == itemToPlace;
+        }
+
+        if (!CurrentItemName.HasValue)
+        {
+            return true;
+        }
+
+        var currentState = ItemTrackingService.GetItemState(CurrentItemName.Value);
+        return currentState is not null && !currentState.Autotracked;
+    }
+
+    public void AcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState)
+    {
+        // Possibly redundant call, but good to have a backup.
+        ItemTrackingService.SetItemState(itemToPlace, itemState);
+
+        CurrentItemName = itemToPlace;
+        UpdateProperties(itemState);
+    }
+
+    #endregion
 
     #region Overridden Methods
 

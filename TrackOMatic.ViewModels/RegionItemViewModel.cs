@@ -11,7 +11,7 @@ namespace TrackOMatic.ViewModels;
 /// <summary>
 /// A view model representing an item in a specific region, providing properties and methods for UI binding and interaction.
 /// </summary>
-public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
+public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged, IVialSlot
 {
     protected ItemName? _itemName;
     protected readonly RegionName _regionName;
@@ -19,6 +19,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
     private readonly IThemeService _themeService;
 
+    public virtual VialColor VialColor => VialColor.NONE; // Not used in this view model but must be implemented.
     public virtual ItemName? CurrentItemName
     {
         get => _itemName;
@@ -32,7 +33,7 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         }
     }
     protected internal IItemTrackingService ItemTrackingService => _itemTrackingService;
-    protected internal RegionName RegionName => _regionName;
+    public virtual RegionName RegionName => _regionName;
 
     #region Proxy Properties
 
@@ -122,6 +123,19 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
         var itemState = _itemName.HasValue ? _itemTrackingService.GetItemState(_itemName.Value) : null;
         UpdateProperties(itemState);
     }
+
+    #region IVialSlot Implementation
+
+    // The autotracked item should always be accepted (though admittedly a different slot would be prepared)
+
+    public virtual bool CanAcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState) => true;
+
+    public virtual void AcceptAutotrackedItem(ItemName itemToPlace, SavedItem itemState)
+    {
+        // For this region, the state is already updated. There's no need to do anything else.
+    }
+
+    #endregion
 
     /// <summary>
     /// A no-op implementation since this slot is already occupied with an item and cannot accept any drops.
@@ -257,6 +271,40 @@ public class RegionItemViewModel : IRegionItemViewModel, INotifyPropertyChanged
     ~RegionItemViewModel()
     {
         Dispose(false);
+    }
+
+    #endregion
+
+    #region IVialSlot Implementation
+
+    /// <summary>
+    /// Checks if an autotracked item can be placed in this slot.
+    /// RegionItemViewModel slots don't have the same restrictions as vial slots,
+    /// so this typically returns true if the slot is empty or can accept replacement.
+    /// </summary>
+    public virtual bool CanAcceptAutoTrackedItem(ItemName itemToPlace, SavedItem itemState)
+    {
+        // In non-spoiler regions, any item can be displaced by autotracking
+        // unless it's already autotracked
+        if (_itemName.HasValue)
+        {
+            var currentItemState = _itemTrackingService.GetItemState(_itemName.Value);
+            if (currentItemState?.Autotracked == true)
+            {
+                return false; // Can't displace autotracked items
+            }
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Accepts an autotracked item into this slot and updates ItemTrackingService.
+    /// The view model will receive the updated state via ItemStateChanged event.
+    /// </summary>
+    public virtual void AcceptAutoTrackedItem(ItemName itemToPlace, SavedItem itemState)
+    {
+        // Write the autotracked item to the service; this will trigger ItemStateChanged
+        _itemTrackingService.SetItemState(itemToPlace, itemState, ChangeReason.AutoTracked);
     }
 
     #endregion

@@ -21,12 +21,18 @@ public class AutotrackerServiceTests
     /// Test-friendly subclass of AutotrackerService that allows manual event invocation.
     /// This lets us test event subscriptions and handlers in isolation.
     /// </summary>
-    private class TestableAutotrackerService(IEmulatorAttacher emulatorAttacher, IProcessMemoryReader memoryReader, ITimerFactory timerFactory, IApplicationStateService appState, IUserSettingsService settings)
-        : AutotrackerService(emulatorAttacher, memoryReader, timerFactory, appState, settings)
+    private class TestableAutotrackerService(
+        IItemTrackingService itemTracking,
+        IEmulatorAttacher emulatorAttacher,
+        IProcessMemoryReader memoryReader,
+        ITimerFactory timerFactory,
+        IApplicationStateService appState,
+        IUserSettingsService settings
+    )
+        : AutotrackerService(itemTracking, emulatorAttacher, memoryReader, timerFactory, appState, settings)
     {
 
         // Expose protected event-raising methods for testing
-        public void TestRaiseItemProcessed(AutotrackerItemEventArgs e) => OnItemProcessed(e);
         public void TestRaiseCollectibleUpdated(AutotrackerCollectibleEventArgs e) => OnCollectibleUpdated(e);
         public void TestRaiseRegionLightingChanged(AutotrackerRegionEventArgs e) => OnRegionLightingChanged(e);
         public void TestRaiseSongChanged(AutotrackerSongEventArgs e) => OnSongChanged(e);
@@ -48,6 +54,7 @@ public class AutotrackerServiceTests
         mockTimerFactory = new Mock<ITimerFactory>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
+        var itemTracking = new Mock<IItemTrackingService>();
 
         // Configure default behavior for mocks
         mockAttacher
@@ -67,7 +74,14 @@ public class AutotrackerServiceTests
             .Setup(f => f.CreateTimer(It.IsAny<double>()))
             .Returns(mockTimer.Object);
 
-        return new TestableAutotrackerService(mockAttacher.Object, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object);
+        return new TestableAutotrackerService(
+            itemTracking.Object,
+            mockAttacher.Object,
+            mockMemoryReader.Object,
+            mockTimerFactory.Object,
+            appState.Object,
+            settings.Object
+        );
     }
 
     /// <summary>
@@ -95,36 +109,51 @@ public class AutotrackerServiceTests
     }
 
     [Fact]
-    public void Constructor_WithNullEmulatorAttacher_ThrowsArgumentNullException()
+    public void Constructor_WithNullItemTracker_ThrowsArgumentNullException()
     {
+        var mockAttacher = new Mock<IEmulatorAttacher>();
         var mockMemoryReader = new Mock<IProcessMemoryReader>();
         var mockTimerFactory = new Mock<ITimerFactory>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
         Assert.Throws<ArgumentNullException>(() =>
-            new AutotrackerService(null!, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object));
+            new AutotrackerService(null!, mockAttacher.Object, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object));
+    }
+
+    [Fact]
+    public void Constructor_WithNullEmulatorAttacher_ThrowsArgumentNullException()
+    {
+        var mockTracker = new Mock<IItemTrackingService>();
+        var mockMemoryReader = new Mock<IProcessMemoryReader>();
+        var mockTimerFactory = new Mock<ITimerFactory>();
+        var appState = new Mock<IApplicationStateService>();
+        var settings = new Mock<IUserSettingsService>();
+        Assert.Throws<ArgumentNullException>(() =>
+            new AutotrackerService(mockTracker.Object, null!, mockMemoryReader.Object, mockTimerFactory.Object, appState.Object, settings.Object));
     }
 
     [Fact]
     public void Constructor_WithNullMemoryReader_ThrowsArgumentNullException()
     {
+        var mockTracker = new Mock<IItemTrackingService>();
         var mockAttacher = new Mock<IEmulatorAttacher>();
         var mockTimerFactory = new Mock<ITimerFactory>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
         Assert.Throws<ArgumentNullException>(() =>
-            new AutotrackerService(mockAttacher.Object, null!, mockTimerFactory.Object, appState.Object, settings.Object));
+            new AutotrackerService(mockTracker.Object, mockAttacher.Object, null!, mockTimerFactory.Object, appState.Object, settings.Object));
     }
 
     [Fact]
     public void Constructor_WithNullTimerFactory_ThrowsArgumentNullException()
     {
+        var mockTracker = new Mock<IItemTrackingService>();
         var mockAttacher = new Mock<IEmulatorAttacher>();
         var mockMemoryReader = new Mock<IProcessMemoryReader>();
         var appState = new Mock<IApplicationStateService>();
         var settings = new Mock<IUserSettingsService>();
         Assert.Throws<ArgumentNullException>(() =>
-            new AutotrackerService(mockAttacher.Object, mockMemoryReader.Object, null!, appState.Object, settings.Object));
+            new AutotrackerService(mockTracker.Object, mockAttacher.Object, mockMemoryReader.Object, null!, appState.Object, settings.Object));
     }
 
     [Fact]
@@ -377,7 +406,7 @@ public class AutotrackerServiceTests
 
     #region Event Tests
 
-    [Fact]
+    [Fact(Skip = "ItemProcessed event has been removed")]
     public void ItemProcessed_WhenSubscribed_CanCaptureEventData()
     {
         var service = CreateServiceWithMocks(out _, out _, out _);
@@ -385,7 +414,7 @@ public class AutotrackerServiceTests
         // Arrange: set up capture variables
         AutotrackerItemEventArgs? capturedEventArgs = null;
         object? capturedSender = null;
-
+        /*
         service.ItemProcessed += (sender, e) =>
         {
             capturedSender = sender;
@@ -401,7 +430,7 @@ public class AutotrackerServiceTests
             IsNewRegion = true
         };
         service.TestRaiseItemProcessed(testEventArgs);
-
+        */
         // Assert: verify the handler was called with correct data
         Assert.NotNull(capturedEventArgs);
         Assert.Same(service, capturedSender);
@@ -517,14 +546,14 @@ public class AutotrackerServiceTests
         Assert.Equal(15, capturedEventArgs.AmountToNextHint);
     }
 
-    [Fact]
+    [Fact(Skip = "ItemProcessed event has been removed")]
     public void MultipleHandlers_AllGetInvoked()
     {
         var service = CreateServiceWithMocks(out _, out _, out _);
 
         int handler1Calls = 0;
         int handler2Calls = 0;
-
+        /*
         service.ItemProcessed += (sender, e) => handler1Calls++;
         service.ItemProcessed += (sender, e) => handler2Calls++;
 
@@ -536,20 +565,20 @@ public class AutotrackerServiceTests
             IsNewRegion = false
         };
         service.TestRaiseItemProcessed(testEventArgs);
-
+        */
         // Both handlers should have been invoked
         Assert.Equal(1, handler1Calls);
         Assert.Equal(1, handler2Calls);
     }
 
-    [Fact]
+    [Fact(Skip = "ItemProcessed event has been removed")]
     public void EventHandlerRemoval_PreventsFurtherInvocations()
     {
         var service = CreateServiceWithMocks(out _, out _, out _);
 
         int callCount = 0;
         void handler(object? sender, AutotrackerItemEventArgs e) => callCount++;
-
+        /*
         service.ItemProcessed += handler;
 
         var testEventArgs = new AutotrackerItemEventArgs();
@@ -558,7 +587,7 @@ public class AutotrackerServiceTests
 
         service.ItemProcessed -= handler;
         service.TestRaiseItemProcessed(testEventArgs);
-
+        */
         // Handler should not have been called again after unsubscription
         Assert.Equal(1, callCount);
     }

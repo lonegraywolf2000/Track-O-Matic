@@ -14,35 +14,46 @@ using TrackOMatic.Services.TrackerState;
 
 namespace TrackOMatic.ViewModels;
 
-public class RegionViewModel : INotifyPropertyChanged, IDisposable
+public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotProvider
 {
     private readonly IItemTrackingService _itemTrackingService;
     private readonly IParsedSpoilerDataService _parsedSpoilerDataService;
     private readonly ISavedProgressProvider _savedProgressProvider;
     private readonly IThemeService _themeService;
-    // private readonly IAutotrackingHandoffRegistry _autotrackingRegistry;
     private readonly RegionName _regionName;
+    private readonly IRegionPlacementOrchestrator _regionPlacementOrchestrator;
+    private readonly RegionSlotProviderRegistry? _slotProviderRegistry;
+
 
     public RegionViewModel(
         RegionName regionName,
         IItemTrackingService itemTrackingService,
         IParsedSpoilerDataService parsedSpoilerDataService,
         ISavedProgressProvider savedProgressProvider,
-        // IAutotrackingHandoffRegistry autotrackingRegistry,
-        IThemeService themeService
+        IRegionPlacementOrchestrator regionPlacementOrchestrator,
+        IThemeService themeService,
+        RegionSlotProviderRegistry? slotProviderRegistry = null
     )
     {
         _regionName = regionName;
         _itemTrackingService = itemTrackingService ?? throw new ArgumentNullException(nameof(itemTrackingService));
         _parsedSpoilerDataService = parsedSpoilerDataService ?? throw new ArgumentNullException(nameof(parsedSpoilerDataService));
         _savedProgressProvider = savedProgressProvider ?? throw new ArgumentNullException(nameof(savedProgressProvider));
-        // _autotrackingRegistry = autotrackingRegistry ?? throw new ArgumentNullException(nameof(autotrackingRegistry));
+        _regionPlacementOrchestrator = regionPlacementOrchestrator ?? throw new ArgumentNullException(nameof(regionPlacementOrchestrator));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
+
+        // Registry is optional for backwards compatibility with existing tests/code
+        _slotProviderRegistry = slotProviderRegistry;
+
+        // Register this region's vial slots with the registry (if available)
+        if (_slotProviderRegistry != null)
+        {
+            _slotProviderRegistry.RegisterRegionProvider(_regionName, this);
+        }
 
         _itemTrackingService.ItemStateChanged += OnItemStateChanged;
         _parsedSpoilerDataService.ParsedSpoilerDataChanged += OnParsedSpoilerDataChanged;
         _savedProgressProvider.ProgressChanged += OnProgressChanged;
-        // _autotrackingRegistry.RegisterRegionHandler(_regionName, TryAutoPlaceItem);
 
         InitializeState();
     }
@@ -103,7 +114,9 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         }
         else
         {
-            var itemsInRegion = _itemTrackingService.GetItemsInRegion(_regionName);
+            // Materialize the enumerable before iterating to avoid "collection modified during enumeration"
+            // if ItemStateChanged fires while we're adding items to PlacedItems
+            var itemsInRegion = _itemTrackingService.GetItemsInRegion(_regionName).ToList();
             foreach (var item in itemsInRegion)
             {
                 PlacedItems.Add(new RegionItemViewModel(item.ItemName, _regionName, _itemTrackingService, _parsedSpoilerDataService, _themeService));
@@ -150,6 +163,29 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
             // The tracking service will handle the actual state change (replace or add) via UiItemViewModel.CompleteDrag
             return true;
         }
+    }
+
+    /// <summary>
+    /// Gets all vial slots currently in this region.
+    /// Called by the orchestrator when attempting autotracked item placement.
+    /// </summary>
+    public IEnumerable<IVialSlot> GetVialSlots()
+    {
+        return PlacedItems.OfType<IVialSlot>();
+    }
+
+    /// <summary>
+    /// Explicit implementation of IRegionSlotProvider interface.
+    /// Delegates to GetVialSlots() for this region.
+    /// </summary>
+    IEnumerable<IVialSlot> IRegionSlotProvider.GetVialSlotsForRegion(RegionName regionName)
+    {
+        // Only return slots if the queried region matches this region
+        if (regionName == _regionName)
+        {
+            return GetVialSlots();
+        }
+        return Enumerable.Empty<IVialSlot>();
     }
 
     #region Proxy Properties
@@ -279,8 +315,10 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable
         {
             if (disposing)
             {
+                // Unregister from slot provider registry
+                _slotProviderRegistry?.UnregisterRegionProvider(_regionName);
+
                 // Unsubscribe from events
-                // _autotrackingRegistry.UnregisterRegionHandler(_regionName);
                 _itemTrackingService.ItemStateChanged -= OnItemStateChanged;
                 _parsedSpoilerDataService.ParsedSpoilerDataChanged -= OnParsedSpoilerDataChanged;
                 _savedProgressProvider.ProgressChanged -= OnProgressChanged;

@@ -20,6 +20,14 @@ public interface IItemTrackingService
     void SetItemState(ItemName itemName, SavedItem state);
 
     /// <summary>
+    /// Update tracking state for an item (replaces entire entry) with a change reason.
+    /// </summary>
+    /// <param name="itemName">The item to update</param>
+    /// <param name="state">The new item state</param>
+    /// <param name="changeReason">The reason for this change (e.g., for filtering or logging)</param>
+    void SetItemState(ItemName itemName, SavedItem state, ChangeReason changeReason);
+
+    /// <summary>
     /// Remove tracking state for an item.
     /// </summary>
     void ClearItemState(ItemName itemName);

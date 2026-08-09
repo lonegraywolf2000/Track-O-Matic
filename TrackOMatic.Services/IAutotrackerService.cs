@@ -14,11 +14,6 @@ public interface IAutotrackerService : IDisposable
 {
     #region Event Callbacks
     /// <summary>
-    /// Raised when a new item has been collected and tracked.
-    /// </summary>
-    event EventHandler<AutotrackerItemEventArgs>? ItemProcessed;
-
-    /// <summary>
     /// Raised when a collectible count (e.g., Golden Bananas, Medals) changes.
     /// </summary>
     event EventHandler<AutotrackerCollectibleEventArgs>? CollectibleUpdated;
