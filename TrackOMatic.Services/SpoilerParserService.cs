@@ -249,15 +249,6 @@ public class SpoilerParserService : ISpoilerService
             {
                 newSpread[category] = value;
             }
-            // Temporary wart: also update the PointValues dictionaries.
-            if (SpoilerParserMappings.POINT_NAME_TO_GROUP.TryGetValue(key, out ItemType itemType))
-            {
-                PointValues.GroupedValues[itemType] = value;
-            }
-            else if (SpoilerParserMappings.POINT_NAME_TO_SPECIFIC_VALUE.TryGetValue(key, out ItemName itemName))
-            {
-                PointValues.SpecificValues[itemName] = value;
-            }
         }
         return newSpread;
     }

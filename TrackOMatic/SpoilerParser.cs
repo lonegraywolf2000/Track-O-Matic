@@ -78,14 +78,6 @@ namespace TrackOMatic
                     StartingItems = parsedData.StartingItems;
                     ReadStartingItemsIntoUI();
                 }
-
-                // Set spoiler settings for START region
-                MainWindow.Regions[RegionName.START].SpoilerSettings = spoilerSettings;
-
-                foreach (var entry in ImportantCheckList.ITEMS)
-                {
-                    entry.Value.InitPointValue();
-                }
             }
             catch (Exception ex)
             {

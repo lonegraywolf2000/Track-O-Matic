@@ -958,8 +958,6 @@ namespace TrackOMatic
             TotalGBs = 0;
             SpoilerLoaded = false;
             ITEM_NAME_TO_REGION.Clear();
-            PointValues.SpecificValues.Clear();
-            PointValues.GroupedValues.Clear();
             SpoilerSettings = new SpoilerSettings();
             foreach (var entry in Regions)
             {

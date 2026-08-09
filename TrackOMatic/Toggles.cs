@@ -158,13 +158,7 @@ namespace TrackOMatic
             {
                 BroadcastView.UpdateCollectible(entry.Key, entry.Value.Text);
             }
-            foreach (var entry in Regions)
-            {
-                var region = entry.Value;
 
-                region.UpdatePoints();
-                region.UpdateRequiredChecksTotal();
-            }
             BroadcastView.ProcessSpoilerSettings(SpoilerSettings);
             BroadcastOption.IsChecked = true;
         }
