@@ -16,7 +16,7 @@ public class VialItemViewModel : RegionItemViewModel, IVialSlot
     /// <summary>
     /// Gets the vial color in this slot.
     /// </summary>
-    public VialColor VialColor => _vialColor;
+    public override VialColor VialColor => _vialColor;
 
     private new ItemName? _itemName;
 
@@ -60,6 +60,13 @@ public class VialItemViewModel : RegionItemViewModel, IVialSlot
         }
         _vialColor = vialColor;
         _isStartRegion = regionName == RegionName.START;
+
+        // Re-initialize properties now that _vialColor is set.
+        // The base constructor calls InitializeState which calls UpdateProperties,
+        // but at that time _vialColor was not yet initialized, so we need to call it again.
+        var itemState = itemName.HasValue ? itemTrackingService.GetItemState(itemName.Value) : null;
+        UpdateProperties(itemState);
+
         // Initialize the vial starred state based on the item state
         if (_isStartRegion && itemName.HasValue)
         {
@@ -227,6 +234,14 @@ public class VialItemViewModel : RegionItemViewModel, IVialSlot
         if (itemState is null || !CurrentItemName.HasValue)
         {
             IsStarred = IsVialStarred;
+            ImageResourceKey = "vial_" + _vialColor.ToString().ToLower();
+            Opacity = 1;
+        }
+        else if (itemState.Region == RegionName.UNKNOWN)
+        {
+            // The item was removed: restore the vial.
+            CurrentItemName = null;
+            IsStarred = false;
             ImageResourceKey = "vial_" + _vialColor.ToString().ToLower();
             Opacity = 1;
         }
