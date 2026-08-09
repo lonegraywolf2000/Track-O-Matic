@@ -52,7 +52,7 @@ public class WindowsEmulatorAttacher(IProcessMemoryReader memoryReader) : IEmula
 
     private AttachedEmulatorInfo? AttachToProject64(Process target, IntPtr handle, GameVerificationInfo verificationInfo)
     {
-        string filePath = target.MainModule.FileName;
+        string filePath = target.MainModule!.FileName;
         FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(filePath);
         uint lowerBound = 0xDFD00000;
         uint upperBound = 0xE01F0000;
@@ -77,7 +77,7 @@ public class WindowsEmulatorAttacher(IProcessMemoryReader memoryReader) : IEmula
         ulong addressDLL = 0;
         foreach (ProcessModule mo in target.Modules)
         {
-            if (mo.ModuleName.ToLower() == "mupen64plus.dll")
+            if (mo.ModuleName.Equals("mupen64plus.dll", StringComparison.CurrentCultureIgnoreCase))
             {
                 addressDLL = (ulong)mo.BaseAddress.ToInt64();
                 break;
@@ -113,12 +113,12 @@ public class WindowsEmulatorAttacher(IProcessMemoryReader memoryReader) : IEmula
             {
                 continue;
             }
-            if (mo.ModuleName.ToLower() == "parallel_n64_next_libretro.dll")
+            if (mo.ModuleName.Equals("parallel_n64_next_libretro.dll", StringComparison.CurrentCultureIgnoreCase))
             {
                 addressDLL = (ulong)mo.BaseAddress.ToInt64();
                 break;
             }
-            else if (mo.ModuleName.ToLower() == "mupen64plus_next_libretro.dll")
+            else if (mo.ModuleName.Equals("mupen64plus_next_libretro.dll", StringComparison.CurrentCultureIgnoreCase))
             {
                 addressDLL = (ulong)mo.BaseAddress.ToInt64();
                 isMupen = true;
