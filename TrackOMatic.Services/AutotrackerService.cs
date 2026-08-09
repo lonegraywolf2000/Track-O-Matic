@@ -64,11 +64,6 @@ public class AutotrackerService : IAutotrackerService
     #endregion
 
     #region Internal State
-    private int LastFailedAttachmentTick { get; set;  } = 0;
-    private static readonly int _attachRetryThrottleTicks = 3;
-
-    private int ConsecutiveConnectionVerificationSkips { get; set; } = 0;
-    private static readonly int _connectionVerificationFrequency = 5;
 
     private List<AutotrackedCheck> _checks { get; set; }
     private Dictionary<ItemName, bool> _trackedAlready { get; set; }
@@ -454,12 +449,6 @@ public class AutotrackerService : IAutotrackerService
             return;
         }
 
-        // Only attempt to re-attach every N ticks to stop hammering the emulator.
-        if (LastFailedAttachmentTick + _attachRetryThrottleTicks > Environment.TickCount / 1000)
-        {
-            return;
-        }
-
         var verificationInfo = new GameVerificationInfo(
             0x759290, // DK64_ROM_SIGNATURE_OFFSET,
             32, // DK64_ROM_SIGNATURE_BITS,
@@ -470,7 +459,6 @@ public class AutotrackerService : IAutotrackerService
         
         if (attachedProcessInfo == null)
         {
-            LastFailedAttachmentTick = Environment.TickCount / 1000;
             return;
         }
 
@@ -486,21 +474,17 @@ public class AutotrackerService : IAutotrackerService
     /// </summary>
     private bool ProcessConnected()
     {
-        // Fast path: if recently verified, skip the check to reduce overhead.
-        if ( ConsecutiveConnectionVerificationSkips < _connectionVerificationFrequency)
+        if (GameVerificationInfo is null)
         {
-            ConsecutiveConnectionVerificationSkips++;
-            return true;
+            Detach();
+            return false;
         }
-
-        if (ReadMemory(GameVerificationInfo!.TargetAddress, GameVerificationInfo.TotalBits) == GameVerificationInfo.TargetValue)
+        if (ReadMemory(GameVerificationInfo.TargetAddress, GameVerificationInfo.TotalBits) == GameVerificationInfo.TargetValue)
         {
             Timeout = 0;
-            ConsecutiveConnectionVerificationSkips = 0;
             return true;
         }
 
-        ConsecutiveConnectionVerificationSkips = 0;
         Timeout++;
         if (Timeout > 10)
         {
