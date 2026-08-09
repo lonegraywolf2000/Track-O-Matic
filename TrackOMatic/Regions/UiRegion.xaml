@@ -43,7 +43,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <!-- This background can actually change in auto tracking mode. -->
-    <Grid Background="{StaticResource RegionBG}">
+    <Grid Background="{Binding BackgroundResourceKey, Converter={StaticResource ResourceKeyConverter}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1.5*" />
             <ColumnDefinition Width="3.3*" />

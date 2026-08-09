@@ -488,7 +488,6 @@ namespace TrackOMatic
             };
 
             Autotracker.CollectibleUpdated += (sender, e) => Dispatcher.Invoke(() => UpdateCollectible(e.CollectibleType, e.NewTotal));
-            Autotracker.RegionLightingChanged += (sender, e) => Dispatcher.Invoke(() => SetRegionLighting(e.Region, e.LightUp));
             Autotracker.SongChanged += (sender, e) => Dispatcher.Invoke(() => SetSong(e.SongGame, e.SongName));
             Autotracker.HintProgressUpdated += (sender, e) => Dispatcher.Invoke(() => UpdateUIAmountToNextHint(e.AmountToNextHint));
             Autotracker.ProgHintItemUpdated += (sender, e) => Dispatcher.Invoke(() => UpdateProgHintImage(e.ProgHintItem));
@@ -590,27 +589,6 @@ namespace TrackOMatic
             Items = ItemGrid;
             BossKongs = new() { BossKong1, BossKong2, BossKong3, BossKong4, BossKong5 };
             HelmKongs = new() { HelmKong1, HelmKong2, HelmKong3, HelmKong4, HelmKong5 };
-            foreach (var control in ItemGrid.Children)
-            {
-                if (control is Item item)
-                {
-                    var itemName = (ItemName)item.Tag;
-                    ITEM_NAME_TO_ITEM[itemName] = item;
-                }
-            }
-
-            //have a separate list of the movable tracker items so it's easy to find them even if they are moved out of the grid
-            foreach (Item item in ITEM_NAME_TO_ITEM.Values)
-            {
-                DraggableItems.Add(item);
-                var matchingButton = FindMatchingBackgroundImage(item);
-                if (matchingButton != null)
-                {
-                    ITEM_TO_BACKGROUND_IMAGE[item] = matchingButton;
-                    BACKGROUND_IMAGE_TO_ITEM[matchingButton] = item;
-                }
-            }
-
 
             HintPanels = [
                 IslesPanel,
@@ -635,27 +613,6 @@ namespace TrackOMatic
             SaveTimer.Start();
         }
 
-        public void SetRegionLighting(RegionName regionName, bool lightUp)
-        {
-            string resource = (lightUp) ? "RegionBGLitUp" : "RegionBG";
-            if (!Regions.ContainsKey(regionName))
-            {
-                return;
-            }
-
-            var region = Regions[regionName];
-            region.MainUIGrid.SetResourceReference(Panel.BackgroundProperty, resource);
-            region.RegionGrid.SetResourceReference(Panel.BackgroundProperty, resource);
-        }
-
-        public void ResetCollectibles()
-        {
-            foreach (var entry in Collectibles)
-            {
-                entry.Value.SetAmount(0);
-            }
-        }
-
         private void OnTimerSave(object? sender, ElapsedEventArgs e)
         {
             //probably don't need this
@@ -676,6 +633,7 @@ namespace TrackOMatic
 
         public bool ProcessNewAutotrackedItem(ItemName itemToProcess, RegionName regionName, bool hint = false, bool canAutosave = true)
         {
+            return false; // Will come back.
             if (regionName == RegionName.UNKNOWN)
             {
                 return false;
@@ -733,6 +691,7 @@ namespace TrackOMatic
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+            // Do we want to allow saving the resized values all the time, or just at the end? Hmm...
         }
 
         private void ResetWidthHeight()

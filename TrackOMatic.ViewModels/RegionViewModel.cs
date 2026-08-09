@@ -219,6 +219,20 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
         }
     }
 
+    private string _backgroundResourceKey = "RegionBG";
+    public string BackgroundResourceKey
+    {
+        get => _backgroundResourceKey;
+        set
+        {
+            if (_backgroundResourceKey != value)
+            {
+                _backgroundResourceKey = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     private bool _hasWothPoints = false;
     public bool HasWothPoints
     {
@@ -525,6 +539,11 @@ public class RegionViewModel : INotifyPropertyChanged, IDisposable, IRegionSlotP
 
         // All matching slots either rejected placement or are protected autotracked items
         return false;
+    }
+
+    public void SetLighting(bool isLit)
+    {
+        BackgroundResourceKey = isLit ? "RegionBGLitUp" : "RegionBG";
     }
 
     #region Equality Members
