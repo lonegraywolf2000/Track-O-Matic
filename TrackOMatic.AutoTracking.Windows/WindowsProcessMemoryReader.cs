@@ -10,24 +10,26 @@ namespace TrackOMatic.AutoTracking.Windows;
 /// Uses kernel32.dll and psapi.dll P/Invoke to access process memory.
 /// Opens a fresh process handle for each read to ensure access rights are current.
 /// </summary>
-public class WindowsProcessMemoryReader : IProcessMemoryReader
+public partial class WindowsProcessMemoryReader : IProcessMemoryReader
 {
     private const int PROCESS_WM_READ = 0x0010;
     private const int ERROR_PARTIAL_COPY = 299;
 
     private int? _lastFatalErrorProcessId = null;
 
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr OpenProcess(int dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
 
-    [DllImport("kernel32", SetLastError = true)]
-    private static extern int ReadProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, byte[] buffer, uint size, IntPtr lpNumberOfBytesRead);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial int ReadProcessMemory(IntPtr hProcess, UIntPtr lpBaseAddress, byte[] buffer, uint size, IntPtr lpNumberOfBytesRead);
 
-    [DllImport("psapi.dll", SetLastError = true)]
-    private static extern bool EnumProcessModules(IntPtr hProcess, [Out] IntPtr lphModule, uint cb, [MarshalAs(UnmanagedType.U4)] out uint lpcbNeeded);
+    [LibraryImport("psapi.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool EnumProcessModules(IntPtr hProcess, out IntPtr lphModule, uint cb, [MarshalAs(UnmanagedType.U4)] out uint lpcbNeeded);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool CloseHandle(IntPtr hObject);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CloseHandle(IntPtr hObject);
 
 
     public IntPtr OpenHandle(int processId) => OpenProcess(PROCESS_WM_READ, false, processId);
