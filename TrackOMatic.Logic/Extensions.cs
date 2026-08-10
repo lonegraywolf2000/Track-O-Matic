@@ -249,4 +249,30 @@ public static class Extensions
         ItemName.BEAN => VialColor.CLEAR,
         _ => VialColor.NONE
     };
+
+    /// <summary>
+    /// Convert a collectible <see cref="ItemType"/> to its corresponding resource key string.
+    /// </summary>
+    /// <param name="itemType">The <see cref="ItemType"/> to convert.</param>
+    /// <returns>The resource key string corresponding to the given <see cref="ItemType"/>.</returns>
+    public static string ToResourceKey(this ItemType itemType)
+    {
+        return itemType switch
+        {
+            ItemType.DONKEY_BLUEPRINT => "bp_dk",
+            ItemType.DIDDY_BLUEPRINT => "bp_diddy",
+            ItemType.LANKY_BLUEPRINT => "bp_lanky",
+            ItemType.TINY_BLUEPRINT => "bp_tiny",
+            ItemType.CHUNKY_BLUEPRINT => "bp_chunky",
+            ItemType.TOTAL_BLUEPRINTS => "bp_total",
+            ItemType.COMPANY_COIN => "count_company",
+            ItemType.RAINBOW_COIN => "count_rainbow",
+            ItemType.PEARL => "count_pearl",
+            ItemType.BATTLE_CROWN => "count_crown",
+            ItemType.BANANA_MEDAL => "count_medal",
+            ItemType.FAIRY => "count_fairy",
+            ItemType.GOLDEN_BANANA => "count_gb",
+            _ => ""
+        };
+    }
 }
