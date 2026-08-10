@@ -83,7 +83,7 @@ namespace TrackOMatic
             // Load spoiler log if it exists in the saved progress
             if (CurrentSavedProgress.spoilerPath != "" && File.Exists(CurrentSavedProgress.spoilerPath))
             {
-                MainWindow.ParseSpoiler(CurrentSavedProgress.spoilerPath);
+                await MainWindow.ParseSpoiler(CurrentSavedProgress.spoilerPath);
                 // Also parse into ParsedSpoilerDataService for access throughout the app
                 try
                 {

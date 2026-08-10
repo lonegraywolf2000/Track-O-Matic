@@ -850,41 +850,29 @@ namespace TrackOMatic
             }
         }
 
-        public async void ParseSpoiler(string fileName)
+        public async Task ParseSpoiler(string fileName)
         {
-            SpoilerSettings = await SpoilerParser.ParseSpoilerAsync(fileName);
-            foreach (var entry in SpoilerParser.StartingItems)
+            try
             {
-                if (BroadcastView != null)
+                SpoilerSettings = await SpoilerParser.ParseSpoilerAsync(fileName);
+
+                if (!SpoilerSettings.Empty())
                 {
-                    BroadcastView.TurnItemOn(entry.Key);
+                    Autotracker.SetStartingItems(SpoilerParser.StartingItems);
+                }
+                else
+                {
+                    Reset();
                 }
             }
-            if (!SpoilerSettings.Empty())
+            catch (Exception)
             {
-                Autotracker.SetStartingItems(SpoilerParser.StartingItems);
-            }
-            else
-            {
-                InitRegionsFromEmptySpoiler();
-            }
-            foreach (var entry in Regions)
-            {
-                entry.Value.SetSpoilerAsLoaded();
-            }
-
-            if (BroadcastView != null)
-            {
-                BroadcastView.ProcessSpoilerSettings(SpoilerSettings);
-            }
-
-            foreach (var entry in ITEM_TO_BACKGROUND_IMAGE)
-            {
-                entry.Key.InitHoverPoints();
+                // No matter what the exception is, treat it as a reset situation.
+                Reset();
             }
         }
 
-        private void DropFile(object sender, DragEventArgs e)
+        private async void DropFile(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -892,13 +880,13 @@ namespace TrackOMatic
                 if (Path.GetExtension(files[0]).ToUpper().Equals(".JSON"))
                 {
                     Reset();
-                    ParseSpoiler(files[0]);
+                    await ParseSpoiler(files[0]);
                     DataSaver.setSpoilerPath(files[0]);
                 }
             }
         }
 
-        private void OpenSpoiler(object sender, RoutedEventArgs e)
+        private async void OpenSpoiler(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new();
             openFileDialog.Filter = "JSON files (*.json)|*.json";
@@ -917,7 +905,7 @@ namespace TrackOMatic
 
                 AppState.LastFolderPath = folderPath;
                 Reset();
-                ParseSpoiler(selectedFilePath);
+                await ParseSpoiler(selectedFilePath);
                 DataSaver.setSpoilerPath(selectedFilePath);
             }
         }
